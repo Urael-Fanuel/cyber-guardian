@@ -65,10 +65,9 @@ nav {
 @keyframes p { 0%,100%{opacity:1} 50%{opacity:0.2} }
 .pulse-txt { font-size: 10px; color: var(--green); letter-spacing: 1.5px; }
 .lang-switcher { display: flex; gap: 4px; }
-.lang-btn { background: transparent; border: 1px solid var(--border); padding: 4px 6px; font-size: 14px; cursor: pointer; border-radius: 2px; transition: all 0.15s; opacity: 0.5; }
-.lang-btn:hover { opacity: 1; border-color: var(--border2); }
-.lang-btn.active { opacity: 1; border-color: var(--cyan); background: var(--cyan-dim); }
-
+.lang-btn  { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); padding: 4px 7px; font-size: 15px; cursor: pointer; border-radius: 4px; transition: all 0.15s; opacity: 0.85; }
+.lang-btn:hover { opacity: 1; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15); transform: scale(1.1); }
+.lang-btn.active { opacity: 1; border-color: var(--cyan); background: var(--cyan-dim); box-shadow: 0 0 8px rgba(0,212,255,0.3); }
 /* ── HERO ── */
 .hero { position: relative; z-index: 2; text-align: center; padding: 60px 40px 36px; max-width: 760px; margin: 0 auto; }
 .eyebrow { font-size: 10.5px; letter-spacing: 2.5px; color: var(--cyan); text-transform: uppercase; margin-bottom: 18px; animation: fu 0.5s 0.1s both; }
