@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDE Extension Security Scanner — Cyber-Guardian</title>
+<meta name="description" content="Scan VS Code, Cursor, and JetBrains extensions for security threats. Detects credential theft, data exfiltration, supply chain attacks before installation.">
+<meta property="og:title" content="IDE Extension Security Scanner">
+<meta property="og:description" content="Before you install a VS Code or Cursor extension, scan it. Detects credential theft and supply chain attacks.">
+
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #080C10; color: #C8D8E8; font-family: 'IBM Plex Mono', monospace; line-height: 1.7; min-height: 100vh; }
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: linear-gradient(#1E2D3D 1px, transparent 1px), linear-gradient(90deg, #1E2D3D 1px, transparent 1px);
+  background-size: 48px 48px; opacity: 0.3;
+}
+nav { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 16px 40px; border-bottom: 1px solid #1E2D3D; background: rgba(8,12,16,0.95); backdrop-filter: blur(12px); }
+.logo { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.logo-hex { width: 30px; height: 30px; background: #00D4FF; clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.back-link { color: #00D4FF; text-decoration: none; font-size: 12px; letter-spacing: 1px; }
+.back-link:hover { text-decoration: underline; }
+
+.hero { position: relative; z-index: 2; text-align: center; padding: 70px 40px 50px; max-width: 760px; margin: 0 auto; }
+.eyebrow { font-size: 10px; letter-spacing: 3px; color: #9D4EDD; text-transform: uppercase; margin-bottom: 18px; }
+h1 { font-family: 'Syne', sans-serif; font-size: clamp(32px,5vw,52px); font-weight: 800; line-height: 1.1; color: #fff; margin-bottom: 18px; letter-spacing: -1px; }
+h1 .hl { color: #9D4EDD; }
+.hero-sub { font-size: 14px; line-height: 1.7; color: #4A6070; max-width: 520px; margin: 0 auto 32px; }
+
+.cta-btn { display: inline-block; background: #9D4EDD; color: #fff; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1px; padding: 14px 32px; border-radius: 3px; text-decoration: none; transition: all 0.15s; }
+.cta-btn:hover { background: #B975E8; box-shadow: 0 0 22px rgba(157,78,221,0.45); }
+
+.features { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: #1E2D3D; border: 1px solid #1E2D3D; }
+@media(max-width:700px) { .features { grid-template-columns: 1fr; } }
+.feat { background: #0D1219; padding: 26px 22px; }
+.feat-icon { font-size: 28px; margin-bottom: 10px; }
+.feat-t { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.feat-d { font-size: 11px; color: #4A6070; line-height: 1.7; }
+
+.real-incident { position: relative; z-index: 2; max-width: 720px; margin: 0 auto 72px; padding: 22px; background: rgba(255,61,61,0.05); border-left: 3px solid #FF3D3D; }
+.real-incident-t { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: #FF3D3D; margin-bottom: 8px; }
+.real-incident-d { font-size: 12px; color: #C8D8E8; line-height: 1.7; }
+
+.lower-cta { position: relative; z-index: 2; text-align: center; padding: 40px 20px 80px; }
+.lower-cta-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 14px; }
+.lower-cta-sub { font-size: 13px; color: #4A6070; margin-bottom: 24px; }
+
+footer { position: relative; z-index: 2; border-top: 1px solid #1E2D3D; padding: 20px 40px; text-align: center; font-size: 10px; color: #4A6070; }
+footer a { color: #4A6070; text-decoration: none; }
+footer a:hover { color: #00D4FF; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">
+    <div class="logo-hex">🛡</div>
+    Cyber-Guardian
+  </a>
+  <a href="/" class="back-link">← Main scanner (MCP)</a>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">IDE Extension Security Scanner</div>
+  <h1>Scan an IDE extension <span class="hl">before installing it.</span></h1>
+  <p class="hero-sub">VS Code, Cursor, JetBrains extensions can read every file you open. A malicious one can exfiltrate your credentials, source code, and secrets. Scan first.</p>
+  <a href="/#scanner" class="cta-btn">▶ &nbsp;Open Scanner</a>
+</section>
+
+<div class="real-incident">
+  <div class="real-incident-t">⚠️ Why this matters</div>
+  <div class="real-incident-d">Multiple supply chain attacks have hit VS Code and Cursor extension marketplaces. Malicious extensions impersonating popular tools have stolen API keys, source code, and SSH credentials from thousands of developers. The marketplaces don't audit code — you have to.</div>
+</div>
+
+<div class="features">
+  <div class="feat">
+    <div class="feat-icon">🔑</div>
+    <div class="feat-t">Credential Theft</div>
+    <div class="feat-d">Detects code that reads .ssh keys, .npmrc, .gitconfig, AWS credentials.</div>
+  </div>
+  <div class="feat">
+    <div class="feat-icon">📤</div>
+    <div class="feat-t">Data Exfiltration</div>
+    <div class="feat-d">Finds network calls that send your code or files to external servers.</div>
+  </div>
+  <div class="feat">
+    <div class="feat-icon">🔗</div>
+    <div class="feat-t">Supply Chain Attacks</div>
+    <div class="feat-d">Detects typosquatting, dependency confusion, and post-install scripts.</div>
+  </div>
+</div>
+
+<div class="lower-cta">
+  <div class="lower-cta-title">Need MCP scanning too?</div>
+  <div class="lower-cta-sub">Same scanner, same account, full MCP coverage.</div>
+  <a href="/" class="cta-btn" style="background:#00D4FF;color:#000">→ &nbsp;MCP Security Scanner</a>
+</div>
+
+<footer>
+  Cyber-Guardian AI · Apache 2.0 ·
+  <a href="/">Home</a> ·
+  <a href="/skills.html">Skills</a> ·
+  <a href="/terms.html">Terms</a> ·
+  <a href="/privacy.html">Privacy</a>
+</footer>
+
+</body>
+</html>

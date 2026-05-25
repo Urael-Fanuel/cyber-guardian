@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber-Guardian — MCP Security Scanner | First scanner for MCP Servers, AI Skills & IDE Extensions</title>
+<meta name="description" content="The first security scanner for Model Context Protocol (MCP) servers. Detect malicious code, prompt injection, credential theft and tool poisoning before connecting. Also scans AI Skills and IDE extensions. Powered by Claude AI.">
+<meta name="keywords" content="MCP security, MCP scanner, Model Context Protocol security, MCP server audit, AI skill scanner, AI security, Claude MCP, Cursor MCP, prompt injection scanner">
+<meta property="og:title" content="Cyber-Guardian — The First MCP Security Scanner">
+<meta property="og:description" content="Before you connect an MCP server, scan it. 10,000+ MCP servers exist. Zero are audited.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://cyber-guardian.netlify.app/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The First MCP Security Scanner">
+<meta name="twitter:description" content="10,000+ MCP servers. Zero audited. Scan before you connect.">
+
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+Hebrew:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #080C10;
+  --bg2:      #0D1219;
+  --bg3:      #131B24;
+  --border:   #1E2D3D;
+  --border2:  #2A3F54;
+  --cyan:     #00D4FF;
+  --cyan-dim: rgba(0,212,255,0.10);
+  --green:    #00E676;
+  --green-dim:rgba(0,230,118,0.08);
+  --red:      #FF3D3D;
+  --red-dim:  rgba(255,61,61,0.08);
+  --orange:   #FF9100;
+  --orange-dim:rgba(255,145,0,0.08);
+  --purple:   #9D4EDD;
+  --purple-dim: rgba(157,78,221,0.10);
+  --text:     #C8D8E8;
+  --text-dim: #4A6070;
+  --mono:     'IBM Plex Mono','Noto Sans JP','Noto Sans KR','Noto Sans Hebrew',monospace;
+  --sans:     'Syne','Noto Sans JP','Noto Sans KR','Noto Sans Hebrew',sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px; opacity: 0.3;
+}
+[dir="rtl"] { text-align: right; }
+
+/* ── NAV ── */
+nav {
+  position: relative; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 40px; border-bottom: 1px solid var(--border);
+  background: rgba(8,12,16,0.95); backdrop-filter: blur(12px);
+  flex-wrap: wrap; gap: 12px;
+}
+.logo { font-family: var(--sans); font-size: 17px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px; }
+.logo-hex { width: 30px; height: 30px; background: var(--cyan); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display: flex; align-items: center; justify-content: center; font-size: 14px; animation: hexPulse 4s ease-in-out infinite; }
+@keyframes hexPulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.3)} }
+.nav-tag { font-size: 10px; color: var(--cyan); letter-spacing: 2px; border: 1px solid var(--border2); padding: 4px 10px; border-radius: 2px; }
+.nav-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: p 2s infinite; }
+@keyframes p { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.pulse-txt { font-size: 10px; color: var(--green); letter-spacing: 1.5px; }
+.lang-switcher { display: flex; gap: 4px; }
+.lang-btn { background: transparent; border: 1px solid var(--border); padding: 4px 6px; font-size: 14px; cursor: pointer; border-radius: 2px; transition: all 0.15s; opacity: 0.5; }
+.lang-btn:hover { opacity: 1; border-color: var(--border2); }
+.lang-btn.active { opacity: 1; border-color: var(--cyan); background: var(--cyan-dim); }
+
+/* ── HERO ── */
+.hero { position: relative; z-index: 2; text-align: center; padding: 60px 40px 36px; max-width: 760px; margin: 0 auto; }
+.eyebrow { font-size: 10.5px; letter-spacing: 2.5px; color: var(--cyan); text-transform: uppercase; margin-bottom: 18px; animation: fu 0.5s 0.1s both; }
+h1 { font-family: var(--sans); font-size: clamp(32px,5.5vw,56px); font-weight: 800; line-height: 1.05; color: #fff; margin-bottom: 18px; letter-spacing: -1px; animation: fu 0.5s 0.2s both; }
+h1 .hl { color: var(--cyan); }
+.hero-sub { font-size: 14px; line-height: 1.7; color: var(--text-dim); max-width: 560px; margin: 0 auto 32px; animation: fu 0.5s 0.3s both; }
+@keyframes fu { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── STATS ── */
+.stats { position: relative; z-index: 2; display: flex; justify-content: center; max-width: 580px; margin: 0 auto 36px; border: 1px solid var(--border); animation: fu 0.5s 0.4s both; }
+.stat { flex: 1; padding: 14px 16px; text-align: center; border-right: 1px solid var(--border); }
+.stat:last-child { border-right: none; }
+[dir="rtl"] .stat { border-right: none; border-left: 1px solid var(--border); }
+[dir="rtl"] .stat:last-child { border-left: none; }
+.stat-n { font-family: var(--sans); font-size: 22px; font-weight: 800; color: var(--cyan); display: block; }
+.stat-l { font-size: 9px; color: var(--text-dim); letter-spacing: 1.5px; margin-top: 2px; }
+
+/* ── SCANNER CARD ── */
+.wrap { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; animation: fu 0.5s 0.5s both; }
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--bg3); }
+.card-title { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); }
+.dots { display: flex; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.scan-line { height: 2px; background: linear-gradient(90deg,transparent,var(--cyan),transparent); display: none; animation: sl 1.1s linear infinite; }
+.scan-line.on { display: block; }
+@keyframes sl { from{transform:translateX(-100%)} to{transform:translateX(100vw)} }
+
+/* Scope selector pills */
+.scope-row { padding: 14px 18px 0; }
+.scope-label { font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+.scope-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.scope-pill { background: var(--bg); border: 1px solid var(--border); padding: 7px 14px; border-radius: 20px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); cursor: pointer; transition: all 0.15s; }
+.scope-pill:hover { border-color: var(--border2); color: var(--text); }
+.scope-pill.active { border-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan); font-weight: 600; }
+
+.input-area { padding: 14px 18px 18px; }
+.lbl { font-size: 9px; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; margin-bottom: 8px; display: block; }
+textarea {
+  width: 100%; height: 200px; background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
+  color: var(--text); font-family: var(--mono); font-size: 12.5px; line-height: 1.7; padding: 14px 16px;
+  resize: vertical; outline: none; transition: border-color 0.2s; caret-color: var(--cyan);
+}
+textarea:focus { border-color: var(--border2); }
+textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
+
+.bot-row { display: flex; align-items: center; justify-content: space-between; padding: 0 18px 18px; gap: 12px; flex-wrap: wrap; }
+.hint { font-size: 10px; color: var(--text-dim); flex: 1; }
+.hint kbd { background: var(--bg3); border: 1px solid var(--border2); padding: 1px 5px; border-radius: 2px; font-size: 10px; }
+.scan-btn {
+  background: var(--cyan); color: #000; border: none; cursor: pointer;
+  font-family: var(--sans); font-size: 13px; font-weight: 700; letter-spacing: 1px;
+  padding: 11px 32px; border-radius: 3px; transition: all 0.15s; min-width: 150px;
+  position: relative; overflow: hidden;
+}
+.scan-btn::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.12); transform: translateX(-110%) skewX(-12deg); transition: transform 0.35s; }
+.scan-btn:hover::after { transform: translateX(120%) skewX(-12deg); }
+.scan-btn:hover { box-shadow: 0 0 22px rgba(0,212,255,0.45); transform: translateY(-1px); }
+.scan-btn:disabled { background: var(--border2); color: var(--text-dim); cursor: not-allowed; transform: none; box-shadow: none; }
+.ai-row { padding: 8px 18px; border-top: 1px solid var(--border); background: var(--bg3); display: flex; align-items: center; gap: 8px; }
+.ai-badge { font-size: 9px; letter-spacing: 1.5px; color: var(--cyan); opacity: 0.7; }
+.ai-badge strong { color: var(--cyan); opacity: 1; }
+
+/* ── RESULTS (same as before) ── */
+#results { display: none; border-top: 1px solid var(--border); animation: ru 0.4s ease; }
+@keyframes ru { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.cache-banner { padding: 8px 24px; background: var(--cyan-dim); border-top: 1px solid var(--border); font-size: 10px; color: var(--cyan); letter-spacing: 1px; }
+.verdict { display: flex; }
+.verdict-left { flex: 1; padding: 22px 24px; display: flex; align-items: center; gap: 16px; }
+.v-icon { font-size: 32px; }
+.v-title { font-family: var(--sans); font-size: 20px; font-weight: 800; line-height: 1; }
+.v-sub { font-size: 10px; letter-spacing: 1.5px; margin-top: 4px; opacity: 0.65; }
+.v-score { padding: 22px 28px; border-left: 1px solid var(--border); text-align: center; min-width: 110px; }
+[dir="rtl"] .v-score { border-left: none; border-right: 1px solid var(--border); }
+.v-score-n { font-family: var(--sans); font-size: 38px; font-weight: 800; line-height: 1; }
+.v-score-l { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); margin-top: 3px; }
+.safe .verdict-left, .safe .v-score { background: var(--green-dim); }
+.safe .v-title, .safe .v-score-n { color: var(--green); }
+.mod .verdict-left, .mod .v-score { background: var(--orange-dim); }
+.mod .v-title, .mod .v-score-n { color: var(--orange); }
+.crit .verdict-left, .crit .v-score { background: var(--red-dim); }
+.crit .v-title, .crit .v-score-n { color: var(--red); }
+.bar-wrap { padding: 14px 24px; border-top: 1px solid var(--border); background: var(--bg3); }
+.bar-track { height: 6px; border-radius: 3px; background: var(--border); position: relative; }
+.bar-fill { height: 100%; border-radius: 3px; width: 0%; transition: width 1.3s cubic-bezier(0.4,0,0.2,1); background: linear-gradient(90deg, var(--green) 0%, var(--orange) 55%, var(--red) 100%); position: relative; }
+.bar-fill::after { content: ''; position: absolute; right: -1px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.5); }
+.bar-labels { display: flex; justify-content: space-between; margin-top: 5px; font-size: 9px; color: var(--text-dim); }
+.summary-box { padding: 16px 24px; border-top: 1px solid var(--border); font-size: 12.5px; line-height: 1.6; }
+.summary-box strong { color: #fff; }
+.threats-box { padding: 4px 24px 20px; }
+.t-heading { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin: 16px 0 10px; display: flex; align-items: center; gap: 8px; }
+.t-heading::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.t-item { display: flex; gap: 12px; padding: 11px 14px; margin-bottom: 7px; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); border-left-width: 3px; }
+.t-item.critical { border-left-color: var(--red); }
+.t-item.high { border-left-color: var(--orange); }
+.t-item.medium { border-left-color: var(--cyan); }
+.t-item.low { border-left-color: var(--text-dim); }
+[dir="rtl"] .t-item { border-left-width: 1px; border-right-width: 3px; }
+[dir="rtl"] .t-item.critical { border-right-color: var(--red); }
+[dir="rtl"] .t-item.high { border-right-color: var(--orange); }
+[dir="rtl"] .t-item.medium { border-right-color: var(--cyan); }
+.t-sev { font-size: 9px; font-weight: 600; letter-spacing: 1.5px; padding: 3px 7px; border-radius: 2px; align-self: flex-start; }
+.t-sev.critical { background: rgba(255,61,61,0.15); color: var(--red); }
+.t-sev.high { background: rgba(255,145,0,0.15); color: var(--orange); }
+.t-sev.medium { background: rgba(0,212,255,0.12); color: var(--cyan); }
+.t-sev.low { background: rgba(74,96,112,0.2); color: var(--text-dim); }
+.t-body { flex: 1; }
+.t-name { font-size: 12.5px; color: #fff; margin-bottom: 3px; }
+.t-desc { font-size: 10.5px; color: var(--text-dim); line-height: 1.5; }
+.t-evidence { display: inline-block; margin-top: 6px; font-size: 10px; color: var(--text-dim); background: var(--bg3); border: 1px solid var(--border); padding: 3px 9px; border-radius: 2px; }
+.clean-box { padding: 36px 24px; text-align: center; }
+.clean-icon { font-size: 44px; margin-bottom: 12px; }
+.clean-title { font-family: var(--sans); font-size: 20px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+.clean-desc { font-size: 12px; color: var(--text-dim); line-height: 1.7; }
+.safe-patterns { padding: 0 24px 16px; }
+.sp-item { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: var(--green); background: var(--green-dim); border: 1px solid rgba(0,230,118,0.2); padding: 4px 10px; border-radius: 2px; margin: 3px; }
+.rec-box { margin: 0 24px 16px; padding: 12px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; font-size: 11.5px; line-height: 1.6; }
+.rec-label { font-size: 9px; letter-spacing: 2px; color: var(--cyan); margin-bottom: 5px; }
+.actions { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.act-btn { padding: 8px 16px; border: 1px solid var(--border2); background: transparent; color: var(--text); font-family: var(--mono); font-size: 10px; letter-spacing: 1px; cursor: pointer; border-radius: 2px; transition: all 0.15s; }
+.act-btn:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+.conf-badge { margin-left: auto; font-size: 10px; color: var(--text-dim); }
+[dir="rtl"] .conf-badge { margin-left: 0; margin-right: auto; }
+.loading-box { padding: 48px 24px; text-align: center; }
+.spinner { width: 40px; height: 40px; border: 2px solid var(--border); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-txt { font-size: 12px; color: var(--text-dim); letter-spacing: 1px; }
+.loading-sub { font-size: 10px; color: var(--text-dim); margin-top: 6px; opacity: 0.6; }
+.error-box { padding: 24px; text-align: center; }
+.error-title { color: var(--red); font-family: var(--sans); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.error-msg { font-size: 11px; color: var(--text-dim); }
+.quota-box { padding: 28px 24px; text-align: center; background: var(--orange-dim); border-top: 1px solid var(--border); }
+.quota-title { color: var(--orange); font-family: var(--sans); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.quota-msg { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; }
+.quota-btn { display: inline-block; padding: 10px 22px; background: var(--orange); color: #000; font-family: var(--sans); font-weight: 700; font-size: 12px; border-radius: 3px; text-decoration: none; letter-spacing: 1px; }
+
+/* ── WHY MCP SECTION (NEW) ── */
+.why { position: relative; z-index: 2; max-width: 1000px; margin: 0 auto 72px; padding: 0 20px; }
+.section-lbl { font-size: 10px; letter-spacing: 3px; color: var(--cyan); text-transform: uppercase; text-align: center; margin-bottom: 16px; }
+.section-title { font-family: var(--sans); font-size: 28px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 10px; }
+.section-sub { font-size: 13px; color: var(--text-dim); text-align: center; max-width: 700px; margin: 0 auto 32px; line-height: 1.7; }
+.why-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.why-card { background: var(--bg2); padding: 26px 22px; border-top: 3px solid var(--red); }
+.why-card:nth-child(2) { border-top-color: var(--orange); }
+.why-card:nth-child(3) { border-top-color: var(--purple); }
+.why-icon { font-size: 32px; margin-bottom: 12px; }
+.why-t { font-family: var(--sans); font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.why-d { font-size: 12px; color: var(--text-dim); line-height: 1.7; }
+@media(max-width:700px){ .why-grid { grid-template-columns: 1fr; } }
+
+/* ── HOW IT WORKS ── */
+.how { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; }
+.steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.step { background: var(--bg2); padding: 26px 22px; }
+.step-n { font-family: var(--sans); font-size: 34px; font-weight: 800; color: var(--border2); line-height: 1; margin-bottom: 12px; }
+.step-t { font-family: var(--sans); font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.step-d { font-size: 11px; color: var(--text-dim); line-height: 1.7; }
+@media(max-width:700px){ .steps { grid-template-columns: 1fr; } }
+
+/* ── OTHER PRODUCTS SECTION (NEW) ── */
+.other { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; }
+.other-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:700px){ .other-grid { grid-template-columns: 1fr; } }
+.other-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 22px; transition: all 0.2s; }
+.other-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.other-card.skills { border-top: 3px solid var(--green); }
+.other-card.ext { border-top: 3px solid var(--purple); }
+.other-card-icon { font-size: 28px; margin-bottom: 10px; }
+.other-card-t { font-family: var(--sans); font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.other-card-d { font-size: 12px; color: var(--text-dim); line-height: 1.7; margin-bottom: 14px; }
+.other-card-link { font-size: 11px; color: var(--cyan); text-decoration: none; letter-spacing: 1px; font-weight: 600; }
+.other-card-link:hover { text-decoration: underline; }
+
+/* ── PRICING ── */
+.pricing { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 72px; padding: 0 20px; }
+.plans { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
+@media(max-width:980px){ .plans { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:600px){ .plans { grid-template-columns: 1fr; } }
+.plan { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 22px 18px; display: flex; flex-direction: column; position: relative; transition: all 0.2s; }
+.plan:hover { border-color: var(--border2); transform: translateY(-2px); }
+.plan.popular { border-color: var(--cyan); }
+.popular-tag { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--cyan); color: #000; font-family: var(--sans); font-size: 9px; font-weight: 700; padding: 3px 10px; border-radius: 2px; letter-spacing: 1px; }
+.plan-name { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.plan-for { font-size: 10px; color: var(--text-dim); margin-bottom: 16px; }
+.plan-price { font-family: var(--sans); font-size: 32px; font-weight: 800; color: #fff; line-height: 1; margin-bottom: 4px; }
+.plan-price span { font-size: 14px; color: var(--text-dim); font-weight: 400; }
+.plan-scans { font-size: 11px; color: var(--cyan); margin-bottom: 18px; font-weight: 600; }
+.plan-features { list-style: none; margin: 0 0 18px; flex: 1; }
+.plan-features li { font-size: 10.5px; color: var(--text); padding: 4px 0; padding-left: 18px; position: relative; }
+[dir="rtl"] .plan-features li { padding-left: 0; padding-right: 18px; }
+.plan-features li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+[dir="rtl"] .plan-features li::before { left: auto; right: 0; }
+.plan-btn { padding: 9px 14px; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 1px; border-radius: 2px; cursor: pointer; transition: all 0.15s; }
+.plan-btn:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+.plan.popular .plan-btn { background: var(--cyan); color: #000; border-color: var(--cyan); }
+.plan.popular .plan-btn:hover { background: #fff; }
+
+/* ── EMAIL ── */
+.email-sec { position: relative; z-index: 2; max-width: 600px; margin: 0 auto 72px; padding: 0 20px; text-align: center; }
+.email-form { display: flex; gap: 8px; margin-bottom: 8px; }
+@media(max-width:600px){ .email-form { flex-direction: column; } }
+.email-input { flex: 1; background: var(--bg2); border: 1px solid var(--border); padding: 11px 14px; color: var(--text); font-family: var(--mono); font-size: 12px; border-radius: 3px; outline: none; }
+.email-input:focus { border-color: var(--cyan); }
+.email-btn { background: var(--cyan); color: #000; border: none; padding: 11px 24px; font-family: var(--sans); font-weight: 700; font-size: 12px; letter-spacing: 1px; border-radius: 3px; cursor: pointer; }
+.email-btn:hover { background: #fff; }
+.email-msg { font-size: 10px; color: var(--text-dim); margin-top: 6px; }
+.email-msg.success { color: var(--green); }
+.email-msg.error { color: var(--red); }
+.email-disclaimer { font-size: 9px; color: var(--text-dim); }
+
+/* ── FAMILIES ── */
+.families { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; }
+.fam-subhead { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--cyan); margin: 24px 0 12px; text-align: center; letter-spacing: 1.5px; }
+.fam-subhead.general { color: var(--text-dim); }
+.tags { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
+.tag { font-size: 9.5px; letter-spacing: 0.5px; padding: 5px 11px; border: 1px solid var(--border); border-radius: 2px; color: var(--text-dim); background: var(--bg2); }
+.tag.mcp-tag { border-color: rgba(0,212,255,0.4); color: var(--cyan); background: var(--cyan-dim); font-weight: 600; }
+.tag.crit-tag { border-color: rgba(255,61,61,0.25); color: var(--red); background: var(--red-dim); }
+
+/* ── FOOTER ── */
+footer { position: relative; z-index: 2; border-top: 1px solid var(--border); padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: var(--text-dim); flex-wrap: wrap; gap: 8px; }
+.fl { font-family: var(--sans); font-weight: 700; color: #fff; font-size: 13px; }
+footer a { color: var(--text-dim); text-decoration: none; }
+footer a:hover { color: var(--cyan); }
+
+@media(max-width:600px) {
+  nav { padding: 12px 16px; }
+  .hero { padding: 36px 16px 28px; }
+  .wrap, .why, .how, .other, .pricing, .email-sec, .families { padding: 0 12px; }
+  .bot-row { flex-direction: column; }
+  .scan-btn { width: 100%; }
+  footer { flex-direction: column; text-align: center; }
+  .verdict { flex-direction: column; }
+  .v-score { border-left: none !important; border-right: none !important; border-top: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-hex">🛡</div>
+    Cyber-Guardian
+  </div>
+  <div class="nav-tag" data-i18n="nav_tag">MCP-FIRST · v2.0</div>
+  <div class="nav-right">
+    <div class="lang-switcher" id="lang-switcher"></div>
+    <div class="pulse"></div>
+    <span class="pulse-txt" data-i18n="nav_live">LIVE</span>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow" data-i18n="hero_eyebrow">The First MCP Security Scanner — Also covers AI Skills & IDE Extensions</div>
+  <h1><span data-i18n="hero_title_1">Before you connect an MCP Server,</span><br><span class="hl" data-i18n="hero_title_2">scan it.</span></h1>
+  <p class="hero-sub" data-i18n="hero_sub">10,000+ MCP servers exist. Zero are audited.</p>
+</section>
+
+<div class="stats">
+  <div class="stat"><span class="stat-n">60</span><div class="stat-l" data-i18n="stat_families">MCP THREATS</div></div>
+  <div class="stat"><span class="stat-n">AI</span><div class="stat-l" data-i18n="stat_ai">DEEP ANALYSIS</div></div>
+  <div class="stat"><span class="stat-n">~3s</span><div class="stat-l" data-i18n="stat_speed">SCAN TIME</div></div>
+  <div class="stat"><span class="stat-n">7</span><div class="stat-l" data-i18n="stat_free">FREE / MONTH</div></div>
+</div>
+
+<div class="wrap" id="scanner">
+  <div class="card">
+    <div class="card-header">
+      <div class="dots">
+        <div class="dot" style="background:#FF5F56"></div>
+        <div class="dot" style="background:#FFBD2E"></div>
+        <div class="dot" style="background:#27C93F"></div>
+      </div>
+      <div class="card-title" data-i18n="card_title">PASTE CODE BELOW</div>
+      <div style="width:48px"></div>
+    </div>
+
+    <div class="scan-line" id="scan-line"></div>
+
+    <div class="scope-row">
+      <div class="scope-label" data-i18n="scope_label">What are you scanning?</div>
+      <div class="scope-pills">
+        <button class="scope-pill active" data-scope="mcp" data-i18n="scope_mcp">🔌 MCP Server</button>
+        <button class="scope-pill" data-scope="skill" data-i18n="scope_skill">📜 AI Skill</button>
+        <button class="scope-pill" data-scope="extension" data-i18n="scope_extension">🧩 IDE Extension</button>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <label class="lbl" for="code-input" data-i18n="input_label">// paste your MCP server, skill, or extension code here</label>
+      <textarea id="code-input" data-i18n-placeholder="placeholder"></textarea>
+    </div>
+
+    <div class="bot-row">
+      <div class="hint">
+        <span data-i18n="hint_langs">MCP · Skill · Extension · Any code</span>
+        &nbsp;|&nbsp; <kbd>Ctrl+Enter</kbd> <span data-i18n="hint_shortcut">to scan</span>
+      </div>
+      <button class="scan-btn" id="scan-btn" onclick="runScan()">▶ &nbsp;<span data-i18n="btn_scan">SCAN NOW</span></button>
+    </div>
+
+    <div class="ai-row">
+      <div class="pulse" style="width:6px;height:6px"></div>
+      <div class="ai-badge">
+        <span data-i18n="ai_badge_pre">Powered by</span>
+        <strong>Claude AI</strong>
+        <span data-i18n="ai_badge_post">· 60 threat families · MCP-aware</span>
+      </div>
+    </div>
+
+    <div id="results"></div>
+  </div>
+</div>
+
+<section class="why">
+  <div class="section-lbl" data-i18n="why_label">// why_mcp_security_matters</div>
+  <h2 class="section-title" data-i18n="why_title">Why MCP scanning matters — now</h2>
+  <p class="section-sub" data-i18n="why_sub">MCP (Model Context Protocol) lets AI assistants connect to anything: your Gmail, Notion, GitHub, files. A malicious MCP server runs on your machine with full permissions.</p>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon">📊</div>
+      <div class="why-t" data-i18n="why_p1_title">10,000+ MCP servers</div>
+      <div class="why-d" data-i18n="why_p1_desc">Anyone can publish one. Most aren't audited.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🔓</div>
+      <div class="why-t" data-i18n="why_p2_title">Full system access</div>
+      <div class="why-d" data-i18n="why_p2_desc">MCP servers run locally with your credentials.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">⚠️</div>
+      <div class="why-t" data-i18n="why_p3_title">No security standard</div>
+      <div class="why-d" data-i18n="why_p3_desc">No app store review. No code signing. No mandatory audit.</div>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="section-lbl" data-i18n="how_label">// how_it_works</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">01</div>
+      <div class="step-t" data-i18n="step1_title">Paste the Code</div>
+      <div class="step-d" data-i18n="step1_desc">MCP server, AI Skill, IDE extension. Any language.</div>
+    </div>
+    <div class="step">
+      <div class="step-n">02</div>
+      <div class="step-t" data-i18n="step2_title">AI Deep Scan</div>
+      <div class="step-d" data-i18n="step2_desc">MCP-specific signatures + Claude AI deep analysis.</div>
+    </div>
+    <div class="step">
+      <div class="step-n">03</div>
+      <div class="step-t" data-i18n="step3_title">Clear Verdict</div>
+      <div class="step-d" data-i18n="step3_desc">SAFE / REVIEW / BLOCK — plain English.</div>
+    </div>
+  </div>
+</section>
+
+<section class="other">
+  <div class="section-lbl" data-i18n="other_label">// also_scans</div>
+  <h2 class="section-title" data-i18n="other_title">Beyond MCP — full coverage</h2>
+  <p class="section-sub" data-i18n="other_sub">Same scanner, dedicated coverage for two more categories:</p>
+  <div class="other-grid">
+    <div class="other-card skills">
+      <div class="other-card-icon">📜</div>
+      <div class="other-card-t" data-i18n="other_card1_title">AI Skills</div>
+      <div class="other-card-d" data-i18n="other_card1_desc">Claude Skills, Cursor Skills, custom prompts. Catches prompt injection, role confusion, hidden payloads.</div>
+      <a href="/skills.html" class="other-card-link" data-i18n="other_card1_link">Skills scanner →</a>
+    </div>
+    <div class="other-card ext">
+      <div class="other-card-icon">🧩</div>
+      <div class="other-card-t" data-i18n="other_card2_title">IDE Extensions</div>
+      <div class="other-card-d" data-i18n="other_card2_desc">VS Code, Cursor, JetBrains extensions. Catches credential theft, supply chain attacks.</div>
+      <a href="/extensions.html" class="other-card-link" data-i18n="other_card2_link">Extension scanner →</a>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="section-lbl" data-i18n="pricing_label">// pricing</div>
+  <h2 class="section-title" data-i18n="pricing_title">Pick your plan</h2>
+  <p class="section-sub" data-i18n="pricing_sub">Start free. Upgrade when you need more scans.</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name" data-i18n="plan_free_name">Free</div>
+      <div class="plan-for" data-i18n="plan_free_for">Try it out</div>
+      <div class="plan-price">$0</div>
+      <div class="plan-scans" data-i18n="plan_free_scans">7 scans / month</div>
+      <ul class="plan-features">
+        <li data-i18n="plan_feat_signatures">All 60 threat families (MCP + general)</li>
+        <li data-i18n="plan_feat_ai">Claude AI deep analysis</li>
+      </ul>
+      <button class="plan-btn" data-i18n="btn_get_started" onclick="scrollToScanner()">Get Started</button>
+    </div>
+    <div class="plan popular">
+      <div class="popular-tag" data-i18n="plan_popular">MOST POPULAR</div>
+      <div class="plan-name" data-i18n="plan_pro_name">Pro</div>
+      <div class="plan-for" data-i18n="plan_pro_for">Solo developer</div>
+      <div class="plan-price">$9<span>/mo</span></div>
+      <div class="plan-scans" data-i18n="plan_pro_scans">150 scans / month</div>
+      <ul class="plan-features">
+        <li data-i18n="plan_feat_signatures">All 60 threat families</li>
+        <li data-i18n="plan_feat_ai">Claude AI deep analysis</li>
+        <li data-i18n="plan_feat_support">Email support</li>
+      </ul>
+      <button class="plan-btn" data-i18n="btn_subscribe" onclick="alert('Stripe: add your link')">Subscribe</button>
+    </div>
+    <div class="plan">
+      <div class="plan-name" data-i18n="plan_team_name">Team</div>
+      <div class="plan-for" data-i18n="plan_team_for">Startup</div>
+      <div class="plan-price">$29<span>/mo</span></div>
+      <div class="plan-scans" data-i18n="plan_team_scans">500 scans / month</div>
+      <ul class="plan-features">
+        <li data-i18n="plan_feat_signatures">All 60 threat families</li>
+        <li data-i18n="plan_feat_ai">Claude AI deep analysis</li>
+        <li data-i18n="plan_feat_api">API access</li>
+        <li data-i18n="plan_feat_priority">Priority scanning</li>
+      </ul>
+      <button class="plan-btn" data-i18n="btn_subscribe" onclick="alert('Stripe: add your link')">Subscribe</button>
+    </div>
+    <div class="plan">
+      <div class="plan-name" data-i18n="plan_business_name">Business</div>
+      <div class="plan-for" data-i18n="plan_business_for">Growing company</div>
+      <div class="plan-price">$99<span>/mo</span></div>
+      <div class="plan-scans" data-i18n="plan_business_scans">3,000 scans / month</div>
+      <ul class="plan-features">
+        <li data-i18n="plan_feat_signatures">All 60 threat families</li>
+        <li data-i18n="plan_feat_ai">Claude AI deep analysis</li>
+        <li data-i18n="plan_feat_api">API access</li>
+        <li data-i18n="plan_feat_priority">Priority scanning</li>
+        <li data-i18n="plan_feat_support">Email support</li>
+      </ul>
+      <button class="plan-btn" data-i18n="btn_subscribe" onclick="alert('Stripe: add your link')">Subscribe</button>
+    </div>
+    <div class="plan">
+      <div class="plan-name" data-i18n="plan_enterprise_name">Enterprise</div>
+      <div class="plan-for" data-i18n="plan_enterprise_for">Large organization</div>
+      <div class="plan-price" data-i18n="btn_custom">Custom</div>
+      <div class="plan-scans" data-i18n="plan_enterprise_scans">Custom volume + SLA</div>
+      <ul class="plan-features">
+        <li data-i18n="plan_feat_signatures">All 60 threat families</li>
+        <li data-i18n="plan_feat_sla">99.9% SLA + dedicated support</li>
+        <li data-i18n="plan_feat_custom">Custom MCP integrations</li>
+      </ul>
+      <button class="plan-btn" data-i18n="btn_contact_us" onclick="window.location='mailto:sales@your-domain.com'">Contact Us</button>
+    </div>
+  </div>
+</section>
+
+<section class="email-sec">
+  <div class="section-lbl" data-i18n="email_label">// stay_in_the_loop</div>
+  <h2 class="section-title" data-i18n="email_title">Get alerted to new MCP threats</h2>
+  <p class="section-sub" data-i18n="email_sub">We'll email you when we detect new MCP threat patterns. No spam.</p>
+  <div class="email-form">
+    <input type="email" id="email-input" class="email-input" data-i18n-placeholder="email_placeholder" placeholder="your@email.com">
+    <button class="email-btn" onclick="subscribeEmail()" data-i18n="email_btn">Subscribe</button>
+  </div>
+  <div class="email-msg" id="email-msg"></div>
+  <div class="email-disclaimer" data-i18n="email_disclaimer">Free, unsubscribe anytime.</div>
+</section>
+
+<section class="families">
+  <div class="section-lbl" data-i18n="families_label">// 60_threat_families_covered</div>
+
+  <div class="fam-subhead" data-i18n="families_subhead_mcp">MCP-Specific Threats</div>
+  <div class="tags">
+    <span class="tag mcp-tag">Tool Poisoning</span>
+    <span class="tag mcp-tag">Indirect Prompt Injection</span>
+    <span class="tag mcp-tag">MCP Credential Exfiltration</span>
+    <span class="tag mcp-tag">Cross-Tool Confusion</span>
+    <span class="tag mcp-tag">Tool Description Manipulation</span>
+    <span class="tag mcp-tag">MCP Session Hijacking</span>
+    <span class="tag mcp-tag">Resource Hijacking</span>
+    <span class="tag mcp-tag">Context Exfiltration</span>
+    <span class="tag mcp-tag">Tool Result Injection</span>
+    <span class="tag mcp-tag">MCP Auth Bypass</span>
+  </div>
+
+  <div class="fam-subhead general" data-i18n="families_subhead_general">General Code Threats</div>
+  <div class="tags">
+    <span class="tag crit-tag">Prompt Injection</span>
+    <span class="tag crit-tag">OS Command Execution</span>
+    <span class="tag crit-tag">Data Exfiltration</span>
+    <span class="tag crit-tag">API Key Theft</span>
+    <span class="tag crit-tag">Reverse Shell</span>
+    <span class="tag">Role Confusion</span><span class="tag">System Override</span>
+    <span class="tag">Jailbreak Patterns</span><span class="tag">SQL Injection</span>
+    <span class="tag">Path Traversal</span><span class="tag">Template Injection</span>
+    <span class="tag">Deserialization Attack</span><span class="tag">Env Variable Theft</span>
+    <span class="tag">Network Callback</span><span class="tag">DNS Exfiltration</span>
+    <span class="tag">Credential Theft</span><span class="tag">Cloud Credential Theft</span>
+    <span class="tag">Base64 Obfuscation</span><span class="tag">Unicode Tricks</span>
+    <span class="tag">Char Code Hiding</span><span class="tag">Hex Obfuscation</span>
+    <span class="tag">XOR Encoding</span><span class="tag">Steganography</span>
+    <span class="tag">Zero-Width Characters</span><span class="tag">Homoglyph Attack</span>
+    <span class="tag">Resource Exhaustion</span><span class="tag">Fork Bomb</span>
+    <span class="tag">Zip Bomb</span><span class="tag">Memory Exhaustion</span>
+    <span class="tag">C2 Callback</span><span class="tag">Privilege Escalation</span>
+    <span class="tag">File System Attack</span><span class="tag">Symlink Attack</span>
+    <span class="tag">Crypto Mining</span><span class="tag">Ransomware Pattern</span>
+    <span class="tag">Wiper Pattern</span><span class="tag">Supply Chain Attack</span>
+    <span class="tag">Dependency Confusion</span><span class="tag">Typosquatting</span>
+    <span class="tag">Logic Bomb</span><span class="tag">Time-Based Attack</span>
+    <span class="tag">Memory Poisoning</span><span class="tag">XXE Injection</span>
+    <span class="tag">SSRF Attempt</span><span class="tag">Regex DoS</span>
+    <span class="tag">Billion Laughs</span><span class="tag">Recursive Bomb</span>
+    <span class="tag">Clipboard Hijack</span><span class="tag">Keylogger Pattern</span>
+    <span class="tag">Screen Capture</span><span class="tag">Browser Hijack</span>
+    <span class="tag">Cookie Theft</span><span class="tag">Dynamic Eval</span>
+  </div>
+</section>
+
+<footer>
+  <div class="fl">Cyber-Guardian AI</div>
+  <div data-i18n="footer_tagline">MCP-FIRST · 60 THREAT FAMILIES · CLAUDE AI</div>
+  <div>
+    <span data-i18n="footer_legal">Apache 2.0 · </span>
+    <a href="/terms.html" data-i18n="footer_terms">Terms</a>
+    &nbsp;·&nbsp;
+    <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a>
+  </div>
+</footer>
+
+<script src="/locales/translations.js"></script>
+<script>
+(function buildLangSwitcher() {
+  const container = document.getElementById('lang-switcher');
+  Object.entries(LANGS).forEach(([code, info]) => {
+    const btn = document.createElement('button');
+    btn.className = 'lang-btn';
+    btn.setAttribute('data-lang', code);
+    btn.textContent = info.flag;
+    btn.title = info.name;
+    btn.onclick = () => setLang(code);
+    container.appendChild(btn);
+  });
+})();
+setLang(detectLang());
+
+// Scope pill switching
+let currentScope = 'mcp';
+document.querySelectorAll('.scope-pill').forEach(pill => {
+  pill.onclick = () => {
+    document.querySelectorAll('.scope-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    currentScope = pill.getAttribute('data-scope');
+  };
+});
+
+const FREE_QUOTA = 7;
+function getMonthKey() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+function getQuotaUsed() { return parseInt(localStorage.getItem(`cg-quota-${getMonthKey()}`) || '0', 10); }
+function incrementQuota() { localStorage.setItem(`cg-quota-${getMonthKey()}`, String(getQuotaUsed() + 1)); }
+
+async function runScan() {
+  const code = document.getElementById('code-input').value;
+  const btn  = document.getElementById('scan-btn');
+  const sl   = document.getElementById('scan-line');
+  const res  = document.getElementById('results');
+
+  if (!code.trim()) {
+    const ta = document.getElementById('code-input');
+    ta.style.borderColor = 'var(--red)';
+    setTimeout(() => ta.style.borderColor = 'var(--border)', 1200);
+    ta.focus(); return;
+  }
+
+  if (getQuotaUsed() >= FREE_QUOTA) {
+    res.style.display = 'block';
+    res.innerHTML = `<div class="quota-box">
+      <div class="quota-title">${t('quota_exceeded_title')}</div>
+      <div class="quota-msg">${t('quota_exceeded_msg')}</div>
+      <a href="#pricing" class="quota-btn">${t('btn_get_started')} →</a>
+    </div>`;
+    res.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span>' + t('btn_scanning') + '</span>';
+  sl.classList.add('on');
+  res.style.display = 'block';
+  res.innerHTML = `<div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-txt">${t('loading_main')}</div>
+    <div class="loading-sub">${t('loading_sub')}</div>
+  </div>`;
+
+  let result;
+  try {
+    const response = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, scope: currentScope })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || `Server error ${response.status}`);
+    }
+
+    result = await response.json();
+    incrementQuota();
+
+  } catch (err) {
+    sl.classList.remove('on');
+    btn.disabled = false;
+    btn.innerHTML = '▶ &nbsp;<span>' + t('btn_scan_again') + '</span>';
+    res.innerHTML = `<div class="error-box">
+      <div class="error-title">⚠ ${t('error_title')}</div>
+      <div class="error-msg">${escHtml(err.message)}<br><br>${t('error_msg')}</div>
+    </div>`;
+    return;
+  }
+
+  sl.classList.remove('on');
+  btn.disabled = false;
+  btn.innerHTML = '▶ &nbsp;<span>' + t('btn_scan_again') + '</span>';
+  renderResult(result);
+}
+
+function renderResult(r) {
+  const statusMap = {
+    STATUS_SAFE:      { cls:'safe',  icon:'✅', title:t('verdict_safe_title'), sub:t('verdict_safe_sub') },
+    STATUS_MODERATE:  { cls:'mod',   icon:'⚠️', title:t('verdict_mod_title'),  sub:t('verdict_mod_sub') },
+    STATUS_CRITICAL:  { cls:'crit',  icon:'🚨', title:t('verdict_crit_title'), sub:t('verdict_crit_sub') },
+    STATUS_AMBIGUOUS: { cls:'',      icon:'❓', title:t('verdict_amb_title'),  sub:t('verdict_amb_sub') },
+  };
+  const s = statusMap[r.status] || statusMap['STATUS_AMBIGUOUS'];
+  const threats = r.threats || [];
+  const score   = r.threat_score || 0;
+
+  let html = '';
+  if (r._from_cache) html += `<div class="cache-banner">⚡ ${t('cache_notice')}</div>`;
+
+  html += `
+  <div class="verdict ${s.cls}">
+    <div class="verdict-left">
+      <div class="v-icon">${s.icon}</div>
+      <div>
+        <div class="v-title">${s.title}</div>
+        <div class="v-sub">${s.sub}</div>
+      </div>
+    </div>
+    <div class="v-score">
+      <div class="v-score-n">${score}</div>
+      <div class="v-score-l">${t('score_label')}</div>
+    </div>
+  </div>
+  <div class="bar-wrap">
+    <div class="bar-track"><div class="bar-fill" id="bfill"></div></div>
+    <div class="bar-labels"><span>${t('bar_safe')}</span><span>${t('bar_review')}</span><span>${t('bar_block')}</span></div>
+  </div>`;
+
+  if (r.summary) html += `<div class="summary-box"><strong>${t('summary_label')}</strong> ${escHtml(r.summary)}</div>`;
+
+  if (threats.length === 0) {
+    html += `<div class="clean-box">
+      <div class="clean-icon">✅</div>
+      <div class="clean-title">${t('clean_title')}</div>
+      <div class="clean-desc">${t('clean_desc')}</div>
+    </div>`;
+  } else {
+    const headTxt = threats.length === 1 ? t('threats_heading_one') : t('threats_heading_many');
+    html += `<div class="threats-box"><div class="t-heading">${threats.length} ${headTxt}</div>`;
+    threats.forEach(tt => {
+      const sev = (tt.severity||'medium').toLowerCase();
+      html += `<div class="t-item ${sev}">
+        <div class="t-sev ${sev}">${tt.severity||'MEDIUM'}</div>
+        <div class="t-body">
+          <div class="t-name">${escHtml(tt.family||'Unknown')}</div>
+          <div class="t-desc">${escHtml(tt.description||'')}</div>
+          ${tt.evidence ? `<div class="t-evidence">${escHtml(tt.evidence.substring(0,80))}</div>` : ''}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (r.safe_patterns_noted && r.safe_patterns_noted.length > 0) {
+    html += `<div class="safe-patterns"><div class="t-heading">${t('good_practices')}</div>`;
+    r.safe_patterns_noted.forEach(p => { html += `<span class="sp-item">✓ ${escHtml(p)}</span>`; });
+    html += `</div>`;
+  }
+
+  if (r.recommendation) html += `<div class="rec-box"><div class="rec-label">${t('recommendation_label')}</div>${escHtml(r.recommendation)}</div>`;
+
+  html += `<div class="actions">
+    <button class="act-btn" onclick="copyReport(${score},'${r.status}',${threats.length})">${t('action_copy')}</button>
+    <button class="act-btn" onclick="clearScan()">${t('action_clear')}</button>
+    <span class="conf-badge">${t('confidence')}: ${((r.confidence||0)*100).toFixed(0)}%</span>
+  </div>`;
+
+  document.getElementById('results').innerHTML = html;
+  setTimeout(() => { const bf = document.getElementById('bfill'); if(bf) bf.style.width = score + '%'; }, 80);
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyReport(score, status, count) {
+  const txt = `Cyber-Guardian AI — MCP Security Scan Report\n${'─'.repeat(48)}\nScope:          ${currentScope.toUpperCase()}\nStatus:         ${status}\nThreat Score:   ${score}/100\nThreats Found:  ${count}\nScanned At:     ${new Date().toISOString()}\nPowered By:     Claude AI · MCP-aware\n${'─'.repeat(48)}`;
+  navigator.clipboard.writeText(txt).then(() => {
+    const b = event.target; const o = b.textContent;
+    b.textContent = '✓ ' + t('action_copy'); b.style.color = 'var(--green)';
+    setTimeout(() => { b.textContent = o; b.style.color = ''; }, 1500);
+  });
+}
+
+function clearScan() {
+  document.getElementById('code-input').value = '';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('scan-btn').innerHTML = '▶ &nbsp;<span>' + t('btn_scan') + '</span>';
+  document.getElementById('code-input').focus();
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function scrollToScanner() { document.getElementById('scanner').scrollIntoView({ behavior:'smooth' }); }
+
+async function subscribeEmail() {
+  const input = document.getElementById('email-input');
+  const msg   = document.getElementById('email-msg');
+  const email = input.value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msg.textContent = 'Please enter a valid email';
+    msg.className = 'email-msg error'; return;
+  }
+  try {
+    const r = await fetch('/api/subscribe', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await r.json();
+    if (r.ok) {
+      msg.textContent = data.message || 'Subscribed!';
+      msg.className = 'email-msg success'; input.value = '';
+    } else {
+      msg.textContent = data.error || 'Subscription failed';
+      msg.className = 'email-msg error';
+    }
+  } catch {
+    msg.textContent = 'Connection error';
+    msg.className = 'email-msg error';
+  }
+}
+
+document.getElementById('code-input').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runScan();
+});
+</script>
+</body>
+</html>
