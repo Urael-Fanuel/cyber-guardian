@@ -19,10 +19,10 @@ function setCors(res) {
 }
 
 async function actionStats(sb, res) {
-  const { data: runs }    = await sb.table('mcp_scan_runs').select('*').order('started_at', { ascending: false }).limit(1);
-  const { data: servers } = await sb.table('mcp_servers').select('risk_level, source');
-  const { data: cats }    = await sb.table('mcp_threat_category_counts').select('*');
-  const { data: trend }   = await sb.table('mcp_scan_runs').select('started_at,total_scanned,total_malicious').order('started_at', { ascending: false }).limit(7);
+  const { data: runs }    = await sb.from('mcp_scan_runs').select('*').order('started_at', { ascending: false }).limit(1);
+  const { data: servers } = await sb.from('mcp_servers').select('risk_level, source');
+  const { data: cats }    = await sb.from('mcp_threat_category_counts').select('*');
+  const { data: trend }   = await sb.from('mcp_scan_runs').select('started_at,total_scanned,total_malicious').order('started_at', { ascending: false }).limit(7);
 
   const riskCounts = {}, srcCounts = {};
   for (const r of (servers || [])) {
@@ -48,7 +48,7 @@ async function actionServers(sb, params, res) {
   const risk    = params.get('risk_level');
   const offset  = (page - 1) * perPage;
 
-  let query = sb.table('mcp_servers')
+  let query = sb.from('mcp_servers')
     .select('id,name,source,url,description,stars,language,owner,risk_score,risk_level,threat_count,scan_date,files_scanned')
     .order('risk_score', { ascending: false })
     .range(offset, offset + perPage - 1);
@@ -63,14 +63,14 @@ async function actionServers(sb, params, res) {
 async function actionThreats(sb, params, res) {
   const limit  = Math.min(parseInt(params.get('limit') || '50', 10), 200);
   const source = params.get('source');
-  let query = sb.table('mcp_threats_view').select('*').limit(limit);
+  let query = sb.from('mcp_threats_view').select('*').limit(limit);
   if (source) query = query.eq('source', source);
   const { data } = await query;
   res.status(200).json({ threats: data || [] });
 }
 
 async function actionHistory(sb, res) {
-  const { data } = await sb.table('mcp_scan_runs').select('*').order('started_at', { ascending: false }).limit(30);
+  const { data } = await sb.from('mcp_scan_runs').select('*').order('started_at', { ascending: false }).limit(30);
   res.status(200).json({ history: [...(data || [])].reverse() });
 }
 
