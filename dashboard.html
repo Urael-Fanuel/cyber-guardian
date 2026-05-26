@@ -58,7 +58,10 @@ nav {
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 .back-btn { font-size: 11px; color: var(--cyan); text-decoration: none; letter-spacing: 1px; border: 1px solid var(--border); padding: 6px 14px; border-radius: 2px; transition: all 0.15s; }
 .back-btn:hover { border-color: var(--cyan); background: var(--cyan2); }
-.last-update { font-size: 10px; color: var(--dim); letter-spacing: 1px; }
+.lang-switcher { display: flex; gap: 4px; flex-wrap: wrap; }
+.lang-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); padding: 4px 7px; font-size: 15px; cursor: pointer; border-radius: 4px; transition: all 0.15s; opacity: 0.85; }
+.lang-btn:hover { opacity: 1; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15); transform: scale(1.1); }
+.lang-btn.active { opacity: 1; border-color: var(--cyan); background: var(--cyan2); box-shadow: 0 0 8px rgba(0,212,255,0.3); }
 
 /* HERO */
 .hero { position: relative; z-index: 2; text-align: center; padding: 56px 20px 40px; }
@@ -164,7 +167,8 @@ footer { position: relative; z-index: 2; border-top: 1px solid var(--border); pa
   <div class="nav-r">
     <div class="live-dot"><div class="dot"></div> LIVE DATA</div>
     <div class="last-update" id="last-update">Loading...</div>
-    <a href="/" class="back-btn">← Scanner</a>
+    <div class="lang-switcher" id="lang-switcher"></div>
+    <a href="/" class="back-btn" id="back-btn">← Scanner</a>
   </div>
 </nav>
 
@@ -184,7 +188,124 @@ footer { position: relative; z-index: 2; border-top: 1px solid var(--border); pa
 <footer>Cyber-Guardian AI · Live Threat Intelligence · Powered by Claude AI · Data updates in real time</footer>
 
 <script>
-// ── Helpers ─────────────────────────────────────────────────────────
+// ── Dashboard Translations ───────────────────────────────────────────
+const DASH_T = {
+  en: {
+    live: 'LIVE DATA', back: '← Scanner', loading: 'LOADING LIVE DATA...',
+    tag: '// threat_intelligence_dashboard',
+    title1: 'Real threats.', title2: 'Real numbers.', title3: 'Real protection.',
+    sub: 'Every scan performed on Cyber-Guardian is tracked here. See exactly how many MCP servers, AI Skills, and IDE extensions contain malicious code.',
+    kpi_total: 'Total Scans', kpi_total_sub: 'MCP · Skills · Extensions',
+    kpi_threats: 'Threats Detected', kpi_mod: 'Need Review', kpi_mod_sub: 'Suspicious patterns found',
+    kpi_safe: 'Clean Code', detection_rate: 'detection rate', passed_safely: 'passed safely',
+    risk_label: 'RISK DISTRIBUTION — ALL SCANS',
+    safe_lbl: 'SAFE', review_lbl: 'REVIEW', crit_lbl: 'CRITICAL',
+    mcp_label: 'MCP Servers', skill_label: 'AI Skills', ext_label: 'IDE Extensions', scanned: 'SCANNED',
+    chart1: '// verdict_breakdown', chart2: '// scan_type_breakdown', chart3: '// 7_day_trend',
+    recent_hdr: '// recent_scans',
+    no_scans: 'No scans yet — be the first to scan!',
+    cta_title: 'Scan your MCP server now — free',
+    cta_sub: 'Join hundreds of developers who\'ve already protected their AI stack.',
+    cta_btn: '▶ \u00a0Start Scanning',
+    last_scan: 'Last scan:', just_now: 'just now', min_ago: 'm ago', hr_ago: 'h ago', day_ago: 'd ago',
+    scope_mcp: 'MCP Server', scope_skill: 'AI Skill', scope_ext: 'IDE Extension',
+    score: 'Score', threat: 'threat', threats: 'threats',
+  },
+  he: {
+    live: 'נתונים חיים', back: '← סורק',  loading: 'טוען נתונים...',
+    tag: '// לוח_מודיעין_איומים',
+    title1: 'איומים אמיתיים.', title2: 'מספרים אמיתיים.', title3: 'הגנה אמיתית.',
+    sub: 'כל סריקה שבוצעה ב-Cyber-Guardian מתועדת כאן. ראה בדיוק כמה שרתי MCP, AI Skills והרחבות IDE מכילים קוד זדוני.',
+    kpi_total: 'סך סריקות', kpi_total_sub: 'MCP · Skills · הרחבות',
+    kpi_threats: 'איומים זוהו', kpi_mod: 'לבדיקה', kpi_mod_sub: 'דפוסים חשודים נמצאו',
+    kpi_safe: 'קוד נקי', detection_rate: 'שיעור זיהוי', passed_safely: 'עברו בצלחה',
+    risk_label: 'התפלגות סיכונים — כל הסריקות',
+    safe_lbl: 'בטוח', review_lbl: 'בדיקה', crit_lbl: 'קריטי',
+    mcp_label: 'שרתי MCP', skill_label: 'AI Skills', ext_label: 'הרחבות IDE', scanned: 'נסרקו',
+    chart1: '// התפלגות_פסיקות', chart2: '// סוגי_סריקות', chart3: '// טרנד_7_ימים',
+    recent_hdr: '// סריקות_אחרונות',
+    no_scans: 'אין סריקות עדיין — היה הראשון!',
+    cta_title: 'סרוק את שרת ה-MCP שלך עכשיו — בחינם',
+    cta_sub: 'הצטרף למפתחים שכבר הגנו על ה-AI stack שלהם.',
+    cta_btn: '▶ \u00a0התחל לסרוק',
+    last_scan: 'סריקה אחרונה:', just_now: 'הרגע', min_ago: 'ד׳ לפני', hr_ago: 'ש׳ לפני', day_ago: 'י׳ לפני',
+    scope_mcp: 'שרת MCP', scope_skill: 'AI Skill', scope_ext: 'הרחבת IDE',
+    score: 'ציון', threat: 'איום', threats: 'איומים',
+  },
+  de: {
+    live: 'LIVE', back: '← Scanner', loading: 'LADE DATEN...',
+    tag: '// bedrohungs_dashboard',
+    title1: 'Echte Bedrohungen.', title2: 'Echte Zahlen.', title3: 'Echter Schutz.',
+    sub: 'Jeder Scan auf Cyber-Guardian wird hier erfasst.',
+    kpi_total: 'Scans gesamt', kpi_total_sub: 'MCP · Skills · Erweiterungen',
+    kpi_threats: 'Bedrohungen', kpi_mod: 'Zu prüfen', kpi_mod_sub: 'Verdächtige Muster',
+    kpi_safe: 'Sauberer Code', detection_rate: 'Erkennungsrate', passed_safely: 'sicher bestanden',
+    risk_label: 'RISIKOVERTEILUNG',
+    safe_lbl: 'SICHER', review_lbl: 'PRÜFEN', crit_lbl: 'KRITISCH',
+    mcp_label: 'MCP-Server', skill_label: 'KI-Skills', ext_label: 'IDE-Erweiterungen', scanned: 'GESCANNT',
+    chart1: '// ergebnis', chart2: '// scan_typ', chart3: '// 7_tage_trend',
+    recent_hdr: '// letzte_scans', no_scans: 'Noch keine Scans.',
+    cta_title: 'Jetzt MCP-Server scannen — kostenlos',
+    cta_sub: 'Schließen Sie sich Entwicklern an, die ihren AI-Stack bereits schützen.',
+    cta_btn: '▶ \u00a0Jetzt scannen',
+    last_scan: 'Letzter Scan:', just_now: 'gerade', min_ago: 'Min. her', hr_ago: 'Std. her', day_ago: 'T. her',
+    scope_mcp: 'MCP-Server', scope_skill: 'KI-Skill', scope_ext: 'IDE-Erweiterung',
+    score: 'Score', threat: 'Bedrohung', threats: 'Bedrohungen',
+  },
+  ja: { live:'ライブ', back:'← スキャナー', loading:'読み込み中...', tag:'// 脅威ダッシュボード', title1:'本物の脅威。', title2:'本物の数字。', title3:'本物の保護。', sub:'Cyber-Guardianで実行されたすべてのスキャンを追跡。', kpi_total:'総スキャン数', kpi_total_sub:'MCP · スキル · 拡張', kpi_threats:'脅威検出', kpi_mod:'要確認', kpi_mod_sub:'疑わしいパターン', kpi_safe:'クリーン', detection_rate:'検出率', passed_safely:'安全合格', risk_label:'リスク分布', safe_lbl:'安全', review_lbl:'確認', crit_lbl:'危険', mcp_label:'MCPサーバー', skill_label:'AIスキル', ext_label:'IDE拡張', scanned:'スキャン済', chart1:'// 判定', chart2:'// タイプ', chart3:'// 7日間', recent_hdr:'// 最近のスキャン', no_scans:'スキャンなし', cta_title:'今すぐMCPサーバーをスキャン', cta_sub:'AIスタックを保護しましょう。', cta_btn:'▶ \u00a0スキャン開始', last_scan:'最終スキャン:', just_now:'たった今', min_ago:'分前', hr_ago:'時間前', day_ago:'日前', scope_mcp:'MCPサーバー', scope_skill:'AIスキル', scope_ext:'IDE拡張', score:'スコア', threat:'脅威', threats:'脅威' },
+  ko: { live:'라이브', back:'← 스캐너', loading:'로딩 중...', tag:'// 위협_대시보드', title1:'실제 위협.', title2:'실제 숫자.', title3:'실제 보호.', sub:'Cyber-Guardian에서 수행된 모든 스캔이 여기에 기록됩니다.', kpi_total:'총 스캔', kpi_total_sub:'MCP · 스킬 · 확장', kpi_threats:'위협 탐지', kpi_mod:'검토 필요', kpi_mod_sub:'의심 패턴', kpi_safe:'안전 코드', detection_rate:'탐지율', passed_safely:'안전 통과', risk_label:'위험 분포', safe_lbl:'안전', review_lbl:'검토', crit_lbl:'위험', mcp_label:'MCP 서버', skill_label:'AI 스킬', ext_label:'IDE 확장', scanned:'스캔됨', chart1:'// 판정', chart2:'// 유형', chart3:'// 7일 추세', recent_hdr:'// 최근 스캔', no_scans:'스캔 없음', cta_title:'지금 MCP 서버 스캔 — 무료', cta_sub:'AI 스택을 보호하세요.', cta_btn:'▶ \u00a0스캔 시작', last_scan:'마지막 스캔:', just_now:'방금', min_ago:'분 전', hr_ago:'시간 전', day_ago:'일 전', scope_mcp:'MCP 서버', scope_skill:'AI 스킬', scope_ext:'IDE 확장', score:'점수', threat:'위협', threats:'위협' },
+  fr: { live:'EN DIRECT', back:'← Scanner', loading:'CHARGEMENT...', tag:'// tableau_de_bord', title1:'Vraies menaces.', title2:'Vrais chiffres.', title3:'Vraie protection.', sub:'Chaque scan effectué sur Cyber-Guardian est suivi ici.', kpi_total:'Scans totaux', kpi_total_sub:'MCP · Skills · Extensions', kpi_threats:'Menaces détectées', kpi_mod:'À vérifier', kpi_mod_sub:'Patterns suspects', kpi_safe:'Code propre', detection_rate:'taux de détection', passed_safely:'passé en sécurité', risk_label:'DISTRIBUTION DES RISQUES', safe_lbl:'SÛR', review_lbl:'VÉRIFIER', crit_lbl:'CRITIQUE', mcp_label:'Serveurs MCP', skill_label:'IA Skills', ext_label:'Extensions IDE', scanned:'SCANNÉS', chart1:'// verdicts', chart2:'// types', chart3:'// tendance 7j', recent_hdr:'// scans récents', no_scans:'Aucun scan pour l\'instant.', cta_title:'Scannez votre serveur MCP maintenant', cta_sub:'Rejoignez les développeurs qui protègent leur stack IA.', cta_btn:'▶ \u00a0Commencer', last_scan:'Dernier scan:', just_now:'à l\'instant', min_ago:'min', hr_ago:'h', day_ago:'j', scope_mcp:'Serveur MCP', scope_skill:'IA Skill', scope_ext:'Extension IDE', score:'Score', threat:'menace', threats:'menaces' },
+  pt: { live:'AO VIVO', back:'← Scanner', loading:'CARREGANDO...', tag:'// painel_de_ameaças', title1:'Ameaças reais.', title2:'Números reais.', title3:'Proteção real.', sub:'Cada scan no Cyber-Guardian é registrado aqui.', kpi_total:'Total de Scans', kpi_total_sub:'MCP · Skills · Extensões', kpi_threats:'Ameaças Detectadas', kpi_mod:'Revisar', kpi_mod_sub:'Padrões suspeitos', kpi_safe:'Código Limpo', detection_rate:'taxa de detecção', passed_safely:'passou com segurança', risk_label:'DISTRIBUIÇÃO DE RISCO', safe_lbl:'SEGURO', review_lbl:'REVISAR', crit_lbl:'CRÍTICO', mcp_label:'Servidores MCP', skill_label:'AI Skills', ext_label:'Extensões IDE', scanned:'ESCANEADOS', chart1:'// veredictos', chart2:'// tipos', chart3:'// tendência 7d', recent_hdr:'// scans recentes', no_scans:'Nenhum scan ainda.', cta_title:'Escaneie seu servidor MCP agora — grátis', cta_sub:'Junte-se a desenvolvedores que já protegem seu AI stack.', cta_btn:'▶ \u00a0Começar', last_scan:'Último scan:', just_now:'agora', min_ago:'min', hr_ago:'h', day_ago:'d', scope_mcp:'Servidor MCP', scope_skill:'AI Skill', scope_ext:'Extensão IDE', score:'Score', threat:'ameaça', threats:'ameaças' },
+};
+
+const LANGS = {
+  en:{flag:'🇺🇸',dir:'ltr'}, he:{flag:'🇮🇱',dir:'rtl'},
+  de:{flag:'🇩🇪',dir:'ltr'}, ja:{flag:'🇯🇵',dir:'ltr'},
+  ko:{flag:'🇰🇷',dir:'ltr'}, fr:{flag:'🇫🇷',dir:'ltr'}, pt:{flag:'🇧🇷',dir:'ltr'}
+};
+
+function getLang() {
+  const saved = localStorage.getItem('cg-lang');
+  if (saved && DASH_T[saved]) return saved;
+  const browser = (navigator.language || 'en').toLowerCase().split('-')[0];
+  return DASH_T[browser] ? browser : 'en';
+}
+
+let currentLang = getLang();
+
+function applyLang(code) {
+  currentLang = code;
+  localStorage.setItem('cg-lang', code);
+  document.documentElement.lang = code;
+  document.documentElement.dir = LANGS[code].dir;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === code));
+  // Update static nav elements
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) backBtn.textContent = t('back');
+  // Re-render if data available
+  if (window._dashData) render(window._dashData);
+}
+
+function t(key) { return DASH_T[currentLang]?.[key] || DASH_T.en[key] || key; }
+
+function buildLangSwitcher() {
+  const container = document.getElementById('lang-switcher');
+  if (!container) return;
+  container.innerHTML = '';
+  Object.entries(LANGS).forEach(([code, info]) => {
+    const btn = document.createElement('button');
+    btn.className = 'lang-btn' + (code === currentLang ? ' active' : '');
+    btn.setAttribute('data-lang', code);
+    btn.textContent = info.flag;
+    btn.title = code.toUpperCase();
+    btn.onclick = () => applyLang(code);
+    container.appendChild(btn);
+  });
+}
+
+buildLangSwitcher();
+document.documentElement.dir = LANGS[currentLang].dir;
+
 function animateCount(el, target, duration = 1500) {
   const start = 0;
   const step = target / (duration / 16);
@@ -200,11 +321,11 @@ function timeAgo(dateStr) {
   if (!dateStr) return '—';
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t('just_now');
+  if (mins < 60) return `${mins}${t('min_ago')}`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs/24)}d ago`;
+  if (hrs < 24) return `${hrs}${t('hr_ago')}`;
+  return `${Math.floor(hrs/24)}${t('day_ago')}`;
 }
 
 function statusClass(status) {
@@ -231,52 +352,53 @@ function scopeLabel(scope) {
 
 // ── Render ───────────────────────────────────────────────────────────
 function render(d) {
+  window._dashData = d;
   const detRate = d.detection_rate || 0;
   const safeP   = d.total > 0 ? Math.round((d.safe   / d.total) * 100) : 0;
   const modP    = d.total > 0 ? Math.round((d.moderate / d.total) * 100) : 0;
   const critP   = d.total > 0 ? Math.round((d.critical / d.total) * 100) : 0;
 
   document.getElementById('last-update').textContent =
-    d.last_scan ? `Last scan: ${timeAgo(d.last_scan)}` : 'No scans yet';
+    d.last_scan ? `${t('last_scan')} ${timeAgo(d.last_scan)}` : '';
 
   document.getElementById('main-content').innerHTML = `
 
     <!-- KPI GRID -->
     <div class="kpi-grid">
       <div class="kpi total">
-        <div class="kpi-label">Total Scans</div>
+        <div class="kpi-label">${t('kpi_total')}</div>
         <div class="kpi-num" id="n-total">0</div>
-        <div class="kpi-sub">MCP · Skills · Extensions</div>
+        <div class="kpi-sub">${t('kpi_total_sub')}</div>
       </div>
       <div class="kpi crit">
-        <div class="kpi-label">Threats Detected</div>
+        <div class="kpi-label">${t('kpi_threats')}</div>
         <div class="kpi-num" id="n-threats">0</div>
-        <div class="kpi-sub">${detRate}% detection rate</div>
+        <div class="kpi-sub">${detRate}% ${t('detection_rate')}</div>
       </div>
       <div class="kpi mod">
-        <div class="kpi-label">Need Review</div>
+        <div class="kpi-label">${t('kpi_mod')}</div>
         <div class="kpi-num" id="n-mod">0</div>
-        <div class="kpi-sub">Suspicious patterns found</div>
+        <div class="kpi-sub">${t('kpi_mod_sub')}</div>
       </div>
       <div class="kpi safe">
-        <div class="kpi-label">Clean Code</div>
+        <div class="kpi-label">${t('kpi_safe')}</div>
         <div class="kpi-num" id="n-safe">0</div>
-        <div class="kpi-sub">${safeP}% passed safely</div>
+        <div class="kpi-sub">${safeP}% ${t('passed_safely')}</div>
       </div>
     </div>
 
     <!-- RISK BAR -->
     <div class="risk-bar-wrap">
-      <div class="risk-bar-label">RISK DISTRIBUTION — ALL SCANS</div>
+      <div class="risk-bar-label">${t('risk_label')}</div>
       <div class="risk-bar">
-        <div class="rb-safe" id="rb-safe" style="width:0%">${safeP > 8 ? safeP+'% SAFE' : ''}</div>
-        <div class="rb-mod"  id="rb-mod"  style="width:0%">${modP  > 8 ? modP+'% REVIEW' : ''}</div>
-        <div class="rb-crit" id="rb-crit" style="width:0%">${critP > 8 ? critP+'% CRITICAL' : ''}</div>
+        <div class="rb-safe" id="rb-safe" style="width:0%">${safeP > 8 ? safeP+'% '+t('safe_lbl') : ''}</div>
+        <div class="rb-mod"  id="rb-mod"  style="width:0%">${modP  > 8 ? modP+'% '+t('review_lbl') : ''}</div>
+        <div class="rb-crit" id="rb-crit" style="width:0%">${critP > 8 ? critP+'% '+t('crit_lbl') : ''}</div>
       </div>
       <div class="risk-legend">
-        <div class="rl-item"><div class="rl-dot" style="background:var(--green)"></div> SAFE (${safeP}%)</div>
-        <div class="rl-item"><div class="rl-dot" style="background:var(--orange)"></div> REVIEW (${modP}%)</div>
-        <div class="rl-item"><div class="rl-dot" style="background:var(--red)"></div> CRITICAL (${critP}%)</div>
+        <div class="rl-item"><div class="rl-dot" style="background:var(--green)"></div> ${t('safe_lbl')} (${safeP}%)</div>
+        <div class="rl-item"><div class="rl-dot" style="background:var(--orange)"></div> ${t('review_lbl')} (${modP}%)</div>
+        <div class="rl-item"><div class="rl-dot" style="background:var(--red)"></div> ${t('crit_lbl')} (${critP}%)</div>
       </div>
     </div>
 
@@ -284,51 +406,51 @@ function render(d) {
     <div class="scope-cards">
       <div class="scope-card">
         <div class="scope-icon">🔌</div>
-        <div class="scope-name">MCP Servers</div>
+        <div class="scope-name">${t('mcp_label')}</div>
         <div class="scope-count" id="n-mcp">0</div>
-        <div class="scope-label">SCANNED</div>
+        <div class="scope-label">${t('scanned')}</div>
       </div>
       <div class="scope-card">
         <div class="scope-icon">📜</div>
-        <div class="scope-name">AI Skills</div>
+        <div class="scope-name">${t('skill_label')}</div>
         <div class="scope-count" id="n-skill">0</div>
-        <div class="scope-label">SCANNED</div>
+        <div class="scope-label">${t('scanned')}</div>
       </div>
       <div class="scope-card">
         <div class="scope-icon">🧩</div>
-        <div class="scope-name">IDE Extensions</div>
+        <div class="scope-name">${t('ext_label')}</div>
         <div class="scope-count" id="n-ext">0</div>
-        <div class="scope-label">SCANNED</div>
+        <div class="scope-label">${t('scanned')}</div>
       </div>
     </div>
 
     <!-- CHARTS -->
     <div class="charts">
       <div class="chart-card">
-        <div class="chart-title">// verdict_breakdown</div>
+        <div class="chart-title">${t('chart1')}</div>
         <canvas id="chart-verdict"></canvas>
       </div>
       <div class="chart-card">
-        <div class="chart-title">// scan_type_breakdown</div>
+        <div class="chart-title">${t('chart2')}</div>
         <canvas id="chart-scope"></canvas>
       </div>
       <div class="chart-card">
-        <div class="chart-title">// 7_day_trend</div>
+        <div class="chart-title">${t('chart3')}</div>
         <canvas id="chart-trend"></canvas>
       </div>
     </div>
 
     <!-- RECENT FEED -->
     <div class="recent">
-      <div class="section-hdr">// recent_scans</div>
+      <div class="section-hdr">${t('recent_hdr')}</div>
       <div class="feed" id="feed">
         ${d.recent.length === 0
-          ? '<div class="feed-item" style="justify-content:center;color:var(--dim)">No scans yet — be the first to scan!</div>'
+          ? `<div class="feed-item" style="justify-content:center;color:var(--dim)">${t('no_scans')}</div>`
           : d.recent.map(s => `
           <div class="feed-item">
             <div class="fi-scope">${scopeEmoji(s.scope)}</div>
             <div class="fi-status ${statusClass(s.status)}">${statusLabel(s.status)}</div>
-            <div class="fi-score">${scopeLabel(s.scope)} · Score: ${s.threat_score}/100 · ${s.threat_count} threat${s.threat_count !== 1 ? 's' : ''}</div>
+            <div class="fi-score">${scopeLabel(s.scope)} · ${t('score')}: ${s.threat_score}/100 · ${s.threat_count} ${s.threat_count !== 1 ? t('threats') : t('threat')}</div>
             <div class="fi-time">${timeAgo(s.scanned_at)}</div>
           </div>`).join('')}
       </div>
@@ -337,10 +459,10 @@ function render(d) {
     <!-- CTA -->
     <div class="cta-band">
       <div class="cta-text">
-        <h3>Scan your MCP server now — free</h3>
-        <p>Join hundreds of developers who've already protected their AI stack with Cyber-Guardian.</p>
+        <h3>${t('cta_title')}</h3>
+        <p>${t('cta_sub')}</p>
       </div>
-      <a href="/" class="cta-btn">▶ &nbsp;Start Scanning</a>
+      <a href="/" class="cta-btn">${t('cta_btn')}</a>
     </div>
   `;
 
