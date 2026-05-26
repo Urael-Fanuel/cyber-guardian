@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cyber-Guardian — MCP Security Scanner | First scanner for MCP Servers, AI Skills & IDE Extensions</title>
-<meta name="description" content="The first security scanner for Model Context Protocol (MCP) servers. Detect malicious code, prompt injection, credential theft and tool poisoning before connecting. Also scans AI Skills and IDE extensions. Powered by Claude AI.">
-<meta name="keywords" content="MCP security, MCP scanner, Model Context Protocol security, MCP server audit, AI skill scanner, AI security, Claude MCP, Cursor MCP, prompt injection scanner">
+<meta name="description" content="The first security scanner for Model Context Protocol (MCP) servers. Detect malicious code, prompt injection, credential theft and tool poisoning before connecting. Also scans AI Skills and IDE extensions. Powered by Advanced AI Engine.">
+<meta name="keywords" content="MCP security, MCP scanner, Model Context Protocol security, MCP server audit, AI skill scanner, AI security, MCP security, Cursor MCP, prompt injection scanner">
 <meta property="og:title" content="Cyber-Guardian — The First MCP Security Scanner">
 <meta property="og:description" content="Before you connect an MCP server, scan it. 10,000+ MCP servers exist. Zero are audited.">
 <meta property="og:type" content="website">
@@ -34,13 +34,13 @@
   --orange-dim:rgba(255,145,0,0.08);
   --purple:   #9D4EDD;
   --purple-dim: rgba(157,78,221,0.10);
-  --text:     #C8D8E8;
-  --text-dim: #4A6070;
+  --text:     #D8E8F4;
+  --text-dim: #6A8090;
   --mono:     'IBM Plex Mono','Noto Sans JP','Noto Sans KR','Noto Sans Hebrew',monospace;
   --sans:     'Syne','Noto Sans JP','Noto Sans KR','Noto Sans Hebrew',sans-serif;
 }
 html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; overflow-x: hidden; }
+body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; overflow-x: hidden; font-size: 14px; line-height: 1.7; }
 body::before {
   content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
@@ -375,7 +375,7 @@ footer a:hover { color: var(--cyan); }
       <div class="pulse" style="width:6px;height:6px"></div>
       <div class="ai-badge">
         <span data-i18n="ai_badge_pre">Powered by</span>
-        <strong>Claude AI</strong>
+        <strong>AI Engine</strong>
         <span data-i18n="ai_badge_post">· 60 threat families · MCP-aware</span>
       </div>
     </div>
@@ -418,7 +418,7 @@ footer a:hover { color: var(--cyan); }
     <div class="step">
       <div class="step-n">02</div>
       <div class="step-t" data-i18n="step2_title">AI Deep Scan</div>
-      <div class="step-d" data-i18n="step2_desc">MCP-specific signatures + Claude AI deep analysis.</div>
+      <div class="step-d" data-i18n="step2_desc">MCP-specific signatures + Advanced AI deep analysis.</div>
     </div>
     <div class="step">
       <div class="step-n">03</div>
@@ -436,7 +436,7 @@ footer a:hover { color: var(--cyan); }
     <div class="other-card skills">
       <div class="other-card-icon">📜</div>
       <div class="other-card-t" data-i18n="other_card1_title">AI Skills</div>
-      <div class="other-card-d" data-i18n="other_card1_desc">Claude Skills, Cursor Skills, custom prompts. Catches prompt injection, role confusion, hidden payloads.</div>
+      <div class="other-card-d" data-i18n="other_card1_desc">AI Skills, Cursor Skills, custom prompts. Catches prompt injection, role confusion, hidden payloads.</div>
       <a href="/skills.html" class="other-card-link" data-i18n="other_card1_link">Skills scanner →</a>
     </div>
     <div class="other-card ext">
@@ -488,7 +488,7 @@ footer a:hover { color: var(--cyan); }
       <div class="plan-scans" data-i18n="plan_free_scans">7 scans / month</div>
       <ul class="plan-features">
         <li data-i18n="plan_feat_signatures">All 60 threat families (MCP + general)</li>
-        <li data-i18n="plan_feat_ai">Claude AI deep analysis</li>
+        <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
       </ul>
       <button class="plan-btn" data-i18n="btn_get_started" onclick="scrollToScanner()">Get Started</button>
     </div>
@@ -500,7 +500,7 @@ footer a:hover { color: var(--cyan); }
       <div class="plan-scans" data-i18n="plan_pro_scans">150 scans / month</div>
       <ul class="plan-features">
         <li data-i18n="plan_feat_signatures">All 60 threat families</li>
-        <li data-i18n="plan_feat_ai">Claude AI deep analysis</li>
+        <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
         <li data-i18n="plan_feat_support">Email support</li>
       </ul>
       <button class="plan-btn" data-i18n="btn_subscribe" onclick="alert('Stripe: add your link')">Subscribe</button>
@@ -512,7 +512,7 @@ footer a:hover { color: var(--cyan); }
       <div class="plan-scans" data-i18n="plan_team_scans">500 scans / month</div>
       <ul class="plan-features">
         <li data-i18n="plan_feat_signatures">All 60 threat families</li>
-        <li data-i18n="plan_feat_ai">Claude AI deep analysis</li>
+        <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
         <li data-i18n="plan_feat_api">API access</li>
         <li data-i18n="plan_feat_priority">Priority scanning</li>
       </ul>
@@ -525,7 +525,7 @@ footer a:hover { color: var(--cyan); }
       <div class="plan-scans" data-i18n="plan_business_scans">3,000 scans / month</div>
       <ul class="plan-features">
         <li data-i18n="plan_feat_signatures">All 60 threat families</li>
-        <li data-i18n="plan_feat_ai">Claude AI deep analysis</li>
+        <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
         <li data-i18n="plan_feat_api">API access</li>
         <li data-i18n="plan_feat_priority">Priority scanning</li>
         <li data-i18n="plan_feat_support">Email support</li>
@@ -797,7 +797,7 @@ function renderResult(r) {
 }
 
 function copyReport(score, status, count) {
-  const txt = `Cyber-Guardian AI — MCP Security Scan Report\n${'─'.repeat(48)}\nScope:          ${currentScope.toUpperCase()}\nStatus:         ${status}\nThreat Score:   ${score}/100\nThreats Found:  ${count}\nScanned At:     ${new Date().toISOString()}\nPowered By:     Claude AI · MCP-aware\n${'─'.repeat(48)}`;
+  const txt = `Cyber-Guardian AI — MCP Security Scan Report\n${'─'.repeat(48)}\nScope:          ${currentScope.toUpperCase()}\nStatus:         ${status}\nThreat Score:   ${score}/100\nThreats Found:  ${count}\nScanned At:     ${new Date().toISOString()}\nPowered By:     AI Engine · MCP-aware\n${'─'.repeat(48)}`;
   navigator.clipboard.writeText(txt).then(() => {
     const b = event.target; const o = b.textContent;
     b.textContent = '✓ ' + t('action_copy'); b.style.color = 'var(--green)';

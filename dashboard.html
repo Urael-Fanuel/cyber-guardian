@@ -173,9 +173,9 @@ footer { position: relative; z-index: 2; border-top: 1px solid var(--border); pa
 </nav>
 
 <div class="hero">
-  <div class="page-tag">// threat_intelligence_dashboard</div>
-  <h1 class="page-title">Real threats. <span>Real numbers.</span><br>Real protection.</h1>
-  <p class="page-sub">Every scan performed on Cyber-Guardian is tracked here. See exactly how many MCP servers, AI Skills, and IDE extensions contain malicious code — and what we found.</p>
+  <div class="page-tag" id="hero-tag">// threat_intelligence_dashboard</div>
+  <h1 class="page-title" id="hero-title">Real threats. <span>Real numbers.</span><br>Real protection.</h1>
+  <p class="page-sub" id="hero-sub">Every scan performed on Cyber-Guardian is tracked here. See exactly how many MCP servers, AI Skills, and IDE extensions contain malicious code — and what we found.</p>
 </div>
 
 <div class="wrap" id="main-content">
@@ -185,7 +185,7 @@ footer { position: relative; z-index: 2; border-top: 1px solid var(--border); pa
   </div>
 </div>
 
-<footer>Cyber-Guardian AI · Live Threat Intelligence · Powered by Claude AI · Data updates in real time</footer>
+<footer>Cyber-Guardian AI · Live Threat Intelligence · Powered by AI Engine · Data updates in real time</footer>
 
 <script>
 // ── Dashboard Translations ───────────────────────────────────────────
@@ -279,9 +279,15 @@ function applyLang(code) {
   document.documentElement.lang = code;
   document.documentElement.dir = LANGS[code].dir;
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === code));
-  // Update static nav elements
+  // Update static elements
   const backBtn = document.getElementById('back-btn');
   if (backBtn) backBtn.textContent = t('back');
+  const heroTag = document.getElementById('hero-tag');
+  if (heroTag) heroTag.textContent = t('tag');
+  const heroTitle = document.getElementById('hero-title');
+  if (heroTitle) heroTitle.innerHTML = `${t('title1')} <span>${t('title2')}</span><br>${t('title3')}`;
+  const heroSub = document.getElementById('hero-sub');
+  if (heroSub) heroSub.textContent = t('sub');
   // Re-render if data available
   if (window._dashData) render(window._dashData);
 }
