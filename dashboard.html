@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber-Guardian — Live Threat Intelligence Dashboard</title>
+<meta name="description" content="Real-time security scan statistics. See how many MCP servers, AI Skills, and IDE extensions have been scanned and how many threats detected.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:     #060A0E;
+  --bg2:    #0B1117;
+  --bg3:    #111820;
+  --border: #1A2535;
+  --b2:     #243346;
+  --cyan:   #00D4FF;
+  --cyan2:  rgba(0,212,255,0.12);
+  --green:  #00E676;
+  --green2: rgba(0,230,118,0.10);
+  --red:    #FF3D3D;
+  --red2:   rgba(255,61,61,0.10);
+  --orange: #FF9100;
+  --orange2:rgba(255,145,0,0.10);
+  --text:   #B8CCD8;
+  --dim:    #3A5060;
+  --mono:   'IBM Plex Mono', monospace;
+  --sans:   'Syne', sans-serif;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--mono); min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px; opacity: 0.25;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 40px; border-bottom: 1px solid var(--border);
+  background: rgba(6,10,14,0.95); backdrop-filter: blur(16px);
+}
+.logo { font-family: var(--sans); font-size: 16px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.logo-hex { width: 28px; height: 28px; background: var(--cyan); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display: flex; align-items: center; justify-content: center; font-size: 13px; animation: pulse 3s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.4)} }
+.nav-r { display: flex; align-items: center; gap: 16px; }
+.live-dot { display: flex; align-items: center; gap: 6px; font-size: 10px; letter-spacing: 2px; color: var(--green); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.back-btn { font-size: 11px; color: var(--cyan); text-decoration: none; letter-spacing: 1px; border: 1px solid var(--border); padding: 6px 14px; border-radius: 2px; transition: all 0.15s; }
+.back-btn:hover { border-color: var(--cyan); background: var(--cyan2); }
+.last-update { font-size: 10px; color: var(--dim); letter-spacing: 1px; }
+
+/* HERO */
+.hero { position: relative; z-index: 2; text-align: center; padding: 56px 20px 40px; }
+.page-tag { font-size: 10px; letter-spacing: 3px; color: var(--cyan); text-transform: uppercase; margin-bottom: 14px; }
+.page-title { font-family: var(--sans); font-size: clamp(28px,4vw,48px); font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 12px; }
+.page-title span { color: var(--cyan); }
+.page-sub { font-size: 13px; color: var(--dim); max-width: 560px; margin: 0 auto; line-height: 1.7; }
+
+/* KPI GRID */
+.kpi-grid { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); max-width: 1100px; margin: 0 auto 40px; }
+@media(max-width:800px){ .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:480px){ .kpi-grid { grid-template-columns: 1fr; } }
+.kpi { background: var(--bg2); padding: 28px 24px; border-top: 3px solid var(--border); transition: all 0.2s; }
+.kpi:hover { background: var(--bg3); }
+.kpi.safe  { border-top-color: var(--green); }
+.kpi.mod   { border-top-color: var(--orange); }
+.kpi.crit  { border-top-color: var(--red); }
+.kpi.total { border-top-color: var(--cyan); }
+.kpi-label { font-size: 9px; letter-spacing: 2.5px; color: var(--dim); text-transform: uppercase; margin-bottom: 10px; }
+.kpi-num { font-family: var(--sans); font-size: 44px; font-weight: 900; line-height: 1; color: #fff; margin-bottom: 6px; }
+.kpi.safe  .kpi-num { color: var(--green); }
+.kpi.mod   .kpi-num { color: var(--orange); }
+.kpi.crit  .kpi-num { color: var(--red); }
+.kpi.total .kpi-num { color: var(--cyan); }
+.kpi-sub { font-size: 10px; color: var(--dim); }
+
+/* RISK BAR */
+.risk-bar-wrap { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 40px; border: 1px solid var(--border); background: var(--bg2); padding: 20px 24px; }
+.risk-bar-label { font-size: 9px; letter-spacing: 2px; color: var(--dim); margin-bottom: 12px; }
+.risk-bar { display: flex; height: 32px; border-radius: 2px; overflow: hidden; gap: 2px; }
+.rb-safe  { background: var(--green);  transition: width 1.5s ease; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #000; min-width: 0; overflow: hidden; }
+.rb-mod   { background: var(--orange); transition: width 1.5s ease; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #000; min-width: 0; overflow: hidden; }
+.rb-crit  { background: var(--red);    transition: width 1.5s ease; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; min-width: 0; overflow: hidden; }
+.risk-legend { display: flex; gap: 24px; margin-top: 10px; flex-wrap: wrap; }
+.rl-item { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--dim); }
+.rl-dot { width: 8px; height: 8px; border-radius: 1px; }
+
+/* CHARTS ROW */
+.charts { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+@media(max-width:800px){ .charts { grid-template-columns: 1fr; } }
+.chart-card { background: var(--bg2); padding: 24px; }
+.chart-title { font-size: 10px; letter-spacing: 2px; color: var(--dim); text-transform: uppercase; margin-bottom: 16px; }
+canvas { max-height: 200px; }
+
+/* SCOPE BREAKDOWN */
+.scope-cards { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 40px; display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+@media(max-width:600px){ .scope-cards { grid-template-columns: 1fr; } }
+.scope-card { background: var(--bg2); padding: 24px; text-align: center; }
+.scope-icon { font-size: 32px; margin-bottom: 10px; }
+.scope-name { font-family: var(--sans); font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.scope-count { font-family: var(--sans); font-size: 36px; font-weight: 900; color: var(--cyan); line-height: 1; }
+.scope-label { font-size: 9px; color: var(--dim); letter-spacing: 1.5px; margin-top: 4px; }
+
+/* RECENT FEED */
+.recent { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 40px; }
+.section-hdr { font-size: 10px; letter-spacing: 3px; color: var(--cyan); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+.section-hdr::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.feed { border: 1px solid var(--border); }
+.feed-item { display: flex; align-items: center; gap: 16px; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 11px; transition: background 0.15s; }
+.feed-item:last-child { border-bottom: none; }
+.feed-item:hover { background: var(--bg2); }
+.fi-scope { font-size: 18px; width: 28px; text-align: center; }
+.fi-status { padding: 3px 8px; border-radius: 2px; font-size: 9px; font-weight: 700; letter-spacing: 1px; min-width: 80px; text-align: center; }
+.fi-status.safe { background: var(--green2); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+.fi-status.mod  { background: var(--orange2); color: var(--orange); border: 1px solid rgba(255,145,0,0.2); }
+.fi-status.crit { background: var(--red2); color: var(--red); border: 1px solid rgba(255,61,61,0.2); }
+.fi-score { color: var(--dim); flex: 1; }
+.fi-time { color: var(--dim); font-size: 10px; }
+
+/* LOADING */
+.loading { text-align: center; padding: 80px 20px; }
+.spin { width: 40px; height: 40px; border: 2px solid var(--border); border-top-color: var(--cyan); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* CTA */
+.cta-band { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 60px; background: var(--cyan2); border: 1px solid rgba(0,212,255,0.25); padding: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.cta-text h3 { font-family: var(--sans); font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.cta-text p { font-size: 12px; color: var(--dim); }
+.cta-btn { background: var(--cyan); color: #000; font-family: var(--sans); font-weight: 700; font-size: 13px; letter-spacing: 1px; padding: 12px 28px; border-radius: 2px; text-decoration: none; transition: all 0.15s; white-space: nowrap; }
+.cta-btn:hover { background: #fff; box-shadow: 0 0 20px rgba(0,212,255,0.4); }
+
+/* FOOTER */
+footer { position: relative; z-index: 2; border-top: 1px solid var(--border); padding: 18px 40px; text-align: center; font-size: 10px; color: var(--dim); }
+
+/* WRAP */
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+@media(max-width:600px) {
+  nav { padding: 12px 16px; }
+  .hero { padding: 36px 16px 28px; }
+  .wrap { padding: 0 12px; }
+  .cta-band { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">
+    <div class="logo-hex">🛡</div>
+    Cyber-Guardian
+  </a>
+  <div class="nav-r">
+    <div class="live-dot"><div class="dot"></div> LIVE DATA</div>
+    <div class="last-update" id="last-update">Loading...</div>
+    <a href="/" class="back-btn">← Scanner</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="page-tag">// threat_intelligence_dashboard</div>
+  <h1 class="page-title">Real threats. <span>Real numbers.</span><br>Real protection.</h1>
+  <p class="page-sub">Every scan performed on Cyber-Guardian is tracked here. See exactly how many MCP servers, AI Skills, and IDE extensions contain malicious code — and what we found.</p>
+</div>
+
+<div class="wrap" id="main-content">
+  <div class="loading">
+    <div class="spin"></div>
+    <div style="font-size:12px;color:var(--dim);letter-spacing:1px">LOADING LIVE DATA...</div>
+  </div>
+</div>
+
+<footer>Cyber-Guardian AI · Live Threat Intelligence · Powered by Claude AI · Data updates in real time</footer>
+
+<script>
+// ── Helpers ─────────────────────────────────────────────────────────
+function animateCount(el, target, duration = 1500) {
+  const start = 0;
+  const step = target / (duration / 16);
+  let current = start;
+  const timer = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = Math.floor(current).toLocaleString();
+    if (current >= target) clearInterval(timer);
+  }, 16);
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs/24)}d ago`;
+}
+
+function statusClass(status) {
+  if (status === 'STATUS_SAFE') return 'safe';
+  if (status === 'STATUS_CRITICAL') return 'crit';
+  return 'mod';
+}
+function statusLabel(status) {
+  if (status === 'STATUS_SAFE') return '✅ SAFE';
+  if (status === 'STATUS_CRITICAL') return '🚨 CRITICAL';
+  if (status === 'STATUS_MODERATE') return '⚠️ REVIEW';
+  return '❓ UNKNOWN';
+}
+function scopeEmoji(scope) {
+  if (scope === 'mcp') return '🔌';
+  if (scope === 'skill') return '📜';
+  return '🧩';
+}
+function scopeLabel(scope) {
+  if (scope === 'mcp') return 'MCP Server';
+  if (scope === 'skill') return 'AI Skill';
+  return 'IDE Extension';
+}
+
+// ── Render ───────────────────────────────────────────────────────────
+function render(d) {
+  const detRate = d.detection_rate || 0;
+  const safeP   = d.total > 0 ? Math.round((d.safe   / d.total) * 100) : 0;
+  const modP    = d.total > 0 ? Math.round((d.moderate / d.total) * 100) : 0;
+  const critP   = d.total > 0 ? Math.round((d.critical / d.total) * 100) : 0;
+
+  document.getElementById('last-update').textContent =
+    d.last_scan ? `Last scan: ${timeAgo(d.last_scan)}` : 'No scans yet';
+
+  document.getElementById('main-content').innerHTML = `
+
+    <!-- KPI GRID -->
+    <div class="kpi-grid">
+      <div class="kpi total">
+        <div class="kpi-label">Total Scans</div>
+        <div class="kpi-num" id="n-total">0</div>
+        <div class="kpi-sub">MCP · Skills · Extensions</div>
+      </div>
+      <div class="kpi crit">
+        <div class="kpi-label">Threats Detected</div>
+        <div class="kpi-num" id="n-threats">0</div>
+        <div class="kpi-sub">${detRate}% detection rate</div>
+      </div>
+      <div class="kpi mod">
+        <div class="kpi-label">Need Review</div>
+        <div class="kpi-num" id="n-mod">0</div>
+        <div class="kpi-sub">Suspicious patterns found</div>
+      </div>
+      <div class="kpi safe">
+        <div class="kpi-label">Clean Code</div>
+        <div class="kpi-num" id="n-safe">0</div>
+        <div class="kpi-sub">${safeP}% passed safely</div>
+      </div>
+    </div>
+
+    <!-- RISK BAR -->
+    <div class="risk-bar-wrap">
+      <div class="risk-bar-label">RISK DISTRIBUTION — ALL SCANS</div>
+      <div class="risk-bar">
+        <div class="rb-safe" id="rb-safe" style="width:0%">${safeP > 8 ? safeP+'% SAFE' : ''}</div>
+        <div class="rb-mod"  id="rb-mod"  style="width:0%">${modP  > 8 ? modP+'% REVIEW' : ''}</div>
+        <div class="rb-crit" id="rb-crit" style="width:0%">${critP > 8 ? critP+'% CRITICAL' : ''}</div>
+      </div>
+      <div class="risk-legend">
+        <div class="rl-item"><div class="rl-dot" style="background:var(--green)"></div> SAFE (${safeP}%)</div>
+        <div class="rl-item"><div class="rl-dot" style="background:var(--orange)"></div> REVIEW (${modP}%)</div>
+        <div class="rl-item"><div class="rl-dot" style="background:var(--red)"></div> CRITICAL (${critP}%)</div>
+      </div>
+    </div>
+
+    <!-- SCOPE BREAKDOWN -->
+    <div class="scope-cards">
+      <div class="scope-card">
+        <div class="scope-icon">🔌</div>
+        <div class="scope-name">MCP Servers</div>
+        <div class="scope-count" id="n-mcp">0</div>
+        <div class="scope-label">SCANNED</div>
+      </div>
+      <div class="scope-card">
+        <div class="scope-icon">📜</div>
+        <div class="scope-name">AI Skills</div>
+        <div class="scope-count" id="n-skill">0</div>
+        <div class="scope-label">SCANNED</div>
+      </div>
+      <div class="scope-card">
+        <div class="scope-icon">🧩</div>
+        <div class="scope-name">IDE Extensions</div>
+        <div class="scope-count" id="n-ext">0</div>
+        <div class="scope-label">SCANNED</div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts">
+      <div class="chart-card">
+        <div class="chart-title">// verdict_breakdown</div>
+        <canvas id="chart-verdict"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">// scan_type_breakdown</div>
+        <canvas id="chart-scope"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">// 7_day_trend</div>
+        <canvas id="chart-trend"></canvas>
+      </div>
+    </div>
+
+    <!-- RECENT FEED -->
+    <div class="recent">
+      <div class="section-hdr">// recent_scans</div>
+      <div class="feed" id="feed">
+        ${d.recent.length === 0
+          ? '<div class="feed-item" style="justify-content:center;color:var(--dim)">No scans yet — be the first to scan!</div>'
+          : d.recent.map(s => `
+          <div class="feed-item">
+            <div class="fi-scope">${scopeEmoji(s.scope)}</div>
+            <div class="fi-status ${statusClass(s.status)}">${statusLabel(s.status)}</div>
+            <div class="fi-score">${scopeLabel(s.scope)} · Score: ${s.threat_score}/100 · ${s.threat_count} threat${s.threat_count !== 1 ? 's' : ''}</div>
+            <div class="fi-time">${timeAgo(s.scanned_at)}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-band">
+      <div class="cta-text">
+        <h3>Scan your MCP server now — free</h3>
+        <p>Join hundreds of developers who've already protected their AI stack with Cyber-Guardian.</p>
+      </div>
+      <a href="/" class="cta-btn">▶ &nbsp;Start Scanning</a>
+    </div>
+  `;
+
+  // Animate counters
+  animateCount(document.getElementById('n-total'),  d.total);
+  animateCount(document.getElementById('n-threats'), d.moderate + d.critical);
+  animateCount(document.getElementById('n-mod'),     d.moderate);
+  animateCount(document.getElementById('n-safe'),    d.safe);
+  animateCount(document.getElementById('n-mcp'),     d.by_scope.mcp || 0);
+  animateCount(document.getElementById('n-skill'),   d.by_scope.skill || 0);
+  animateCount(document.getElementById('n-ext'),     d.by_scope.extension || 0);
+
+  // Animate risk bar
+  setTimeout(() => {
+    document.getElementById('rb-safe').style.width = safeP + '%';
+    document.getElementById('rb-mod').style.width  = modP  + '%';
+    document.getElementById('rb-crit').style.width = critP + '%';
+  }, 200);
+
+  // Charts
+  const chartDefaults = {
+    plugins: { legend: { labels: { color: '#3A5060', font: { family: 'IBM Plex Mono', size: 10 } } } },
+    scales: {}
+  };
+
+  // Verdict donut
+  new Chart(document.getElementById('chart-verdict'), {
+    type: 'doughnut',
+    data: {
+      labels: ['SAFE', 'REVIEW', 'CRITICAL'],
+      datasets: [{
+        data: [d.safe || 0, d.moderate || 0, d.critical || 0],
+        backgroundColor: ['#00E676', '#FF9100', '#FF3D3D'],
+        borderColor: '#0B1117', borderWidth: 3
+      }]
+    },
+    options: { ...chartDefaults, cutout: '65%' }
+  });
+
+  // Scope donut
+  new Chart(document.getElementById('chart-scope'), {
+    type: 'doughnut',
+    data: {
+      labels: ['MCP Server', 'AI Skill', 'Extension'],
+      datasets: [{
+        data: [d.by_scope.mcp || 0, d.by_scope.skill || 0, d.by_scope.extension || 0],
+        backgroundColor: ['#00D4FF', '#00E676', '#9D4EDD'],
+        borderColor: '#0B1117', borderWidth: 3
+      }]
+    },
+    options: { ...chartDefaults, cutout: '65%' }
+  });
+
+  // Trend line
+  new Chart(document.getElementById('chart-trend'), {
+    type: 'line',
+    data: {
+      labels: (d.trend || []).map(t => t.date.slice(5)),
+      datasets: [
+        {
+          label: 'Total',
+          data: (d.trend || []).map(t => t.total),
+          borderColor: '#00D4FF', backgroundColor: 'rgba(0,212,255,0.08)',
+          tension: 0.4, fill: true, pointRadius: 3
+        },
+        {
+          label: 'Threats',
+          data: (d.trend || []).map(t => t.threats),
+          borderColor: '#FF3D3D', backgroundColor: 'rgba(255,61,61,0.08)',
+          tension: 0.4, fill: true, pointRadius: 3
+        }
+      ]
+    },
+    options: {
+      ...chartDefaults,
+      scales: {
+        x: { ticks: { color: '#3A5060', font: { size: 9 } }, grid: { color: '#1A2535' } },
+        y: { ticks: { color: '#3A5060', font: { size: 9 } }, grid: { color: '#1A2535' } }
+      }
+    }
+  });
+}
+
+// ── Fetch ────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch('/api/site-stats');
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    render(data);
+  } catch (err) {
+    document.getElementById('main-content').innerHTML = `
+      <div style="text-align:center;padding:60px 20px;color:var(--dim)">
+        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+        <div>Could not load data. <a href="/" style="color:var(--cyan)">Back to scanner →</a></div>
+      </div>`;
+  }
+}
+
+loadData();
+// Auto-refresh every 30 seconds
+setInterval(loadData, 30000);
+</script>
+</body>
+</html>
