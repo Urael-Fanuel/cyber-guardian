@@ -230,6 +230,27 @@ module.exports = async function handler(req, res) {
     }
 
     saveToCache(codeHash, result);
+try {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+  if (supabaseUrl && supabaseKey) {
+    await fetch(`${supabaseUrl}/rest/v1/site_scans`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        scope: scope,
+        status: result.status,
+        threat_score: result.threat_score || 0,
+        threat_count: (result.threats || []).length
+      })
+    });
+  }
+} catch (e) {}
     return res.status(200).json(result);
 
   } catch (err) {
