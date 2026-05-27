@@ -196,8 +196,9 @@ const DASH_T = {
     title1: 'Real threats.', title2: 'Real numbers.', title3: 'Real protection.',
     sub: 'Every scan performed on Cyber-Guardian is tracked here. See exactly how many MCP servers, AI Skills, and IDE extensions contain malicious code.',
     kpi_total: 'Total Scans', kpi_total_sub: 'MCP · Skills · Extensions',
-    kpi_threats: 'Threats Detected', kpi_mod: 'Need Review', kpi_mod_sub: 'Suspicious patterns found',
+    kpi_threats: 'Critical Threats', kpi_mod: 'Under Review', kpi_mod_sub: 'Suspicious patterns found',
     kpi_safe: 'Clean Code', detection_rate: 'detection rate', passed_safely: 'passed safely',
+    of_total: 'of all scans',
     risk_label: 'RISK DISTRIBUTION — ALL SCANS',
     safe_lbl: 'SAFE', review_lbl: 'REVIEW', crit_lbl: 'CRITICAL',
     mcp_label: 'MCP Servers', skill_label: 'AI Skills', ext_label: 'IDE Extensions', scanned: 'SCANNED',
@@ -217,8 +218,9 @@ const DASH_T = {
     title1: 'איומים אמיתיים.', title2: 'מספרים אמיתיים.', title3: 'הגנה אמיתית.',
     sub: 'כל סריקה שבוצעה ב-Cyber-Guardian מתועדת כאן. ראה בדיוק כמה שרתי MCP, AI Skills והרחבות IDE מכילים קוד זדוני.',
     kpi_total: 'סך סריקות', kpi_total_sub: 'MCP · Skills · הרחבות',
-    kpi_threats: 'איומים זוהו', kpi_mod: 'לבדיקה', kpi_mod_sub: 'דפוסים חשודים נמצאו',
+    kpi_threats: 'איומים קריטיים', kpi_mod: 'לבדיקה', kpi_mod_sub: 'דפוסים חשודים נמצאו',
     kpi_safe: 'קוד נקי', detection_rate: 'שיעור זיהוי', passed_safely: 'עברו בצלחה',
+    of_total: 'מסך הסריקות',
     risk_label: 'התפלגות סיכונים — כל הסריקות',
     safe_lbl: 'בטוח', review_lbl: 'בדיקה', crit_lbl: 'קריטי',
     mcp_label: 'שרתי MCP', skill_label: 'AI Skills', ext_label: 'הרחבות IDE', scanned: 'נסרקו',
@@ -238,8 +240,9 @@ const DASH_T = {
     title1: 'Echte Bedrohungen.', title2: 'Echte Zahlen.', title3: 'Echter Schutz.',
     sub: 'Jeder Scan auf Cyber-Guardian wird hier erfasst.',
     kpi_total: 'Scans gesamt', kpi_total_sub: 'MCP · Skills · Erweiterungen',
-    kpi_threats: 'Bedrohungen', kpi_mod: 'Zu prüfen', kpi_mod_sub: 'Verdächtige Muster',
+    kpi_threats: 'Kritische Bedrohungen', kpi_mod: 'Zu prüfen', kpi_mod_sub: 'Verdächtige Muster',
     kpi_safe: 'Sauberer Code', detection_rate: 'Erkennungsrate', passed_safely: 'sicher bestanden',
+    of_total: 'aller Scans',
     risk_label: 'RISIKOVERTEILUNG',
     safe_lbl: 'SICHER', review_lbl: 'PRÜFEN', crit_lbl: 'KRITISCH',
     mcp_label: 'MCP-Server', skill_label: 'KI-Skills', ext_label: 'IDE-Erweiterungen', scanned: 'GESCANNT',
@@ -252,10 +255,10 @@ const DASH_T = {
     scope_mcp: 'MCP-Server', scope_skill: 'KI-Skill', scope_ext: 'IDE-Erweiterung',
     score: 'Score', threat: 'Bedrohung', threats: 'Bedrohungen',
   },
-  ja: { live:'ライブ', back:'← スキャナー', loading:'読み込み中...', tag:'// 脅威ダッシュボード', title1:'本物の脅威。', title2:'本物の数字。', title3:'本物の保護。', sub:'Cyber-Guardianで実行されたすべてのスキャンを追跡。', kpi_total:'総スキャン数', kpi_total_sub:'MCP · スキル · 拡張', kpi_threats:'脅威検出', kpi_mod:'要確認', kpi_mod_sub:'疑わしいパターン', kpi_safe:'クリーン', detection_rate:'検出率', passed_safely:'安全合格', risk_label:'リスク分布', safe_lbl:'安全', review_lbl:'確認', crit_lbl:'危険', mcp_label:'MCPサーバー', skill_label:'AIスキル', ext_label:'IDE拡張', scanned:'スキャン済', chart1:'// 判定', chart2:'// タイプ', chart3:'// 7日間', recent_hdr:'// 最近のスキャン', no_scans:'スキャンなし', cta_title:'今すぐMCPサーバーをスキャン', cta_sub:'AIスタックを保護しましょう。', cta_btn:'▶ \u00a0スキャン開始', last_scan:'最終スキャン:', just_now:'たった今', min_ago:'分前', hr_ago:'時間前', day_ago:'日前', scope_mcp:'MCPサーバー', scope_skill:'AIスキル', scope_ext:'IDE拡張', score:'スコア', threat:'脅威', threats:'脅威' },
-  ko: { live:'라이브', back:'← 스캐너', loading:'로딩 중...', tag:'// 위협_대시보드', title1:'실제 위협.', title2:'실제 숫자.', title3:'실제 보호.', sub:'Cyber-Guardian에서 수행된 모든 스캔이 여기에 기록됩니다.', kpi_total:'총 스캔', kpi_total_sub:'MCP · 스킬 · 확장', kpi_threats:'위협 탐지', kpi_mod:'검토 필요', kpi_mod_sub:'의심 패턴', kpi_safe:'안전 코드', detection_rate:'탐지율', passed_safely:'안전 통과', risk_label:'위험 분포', safe_lbl:'안전', review_lbl:'검토', crit_lbl:'위험', mcp_label:'MCP 서버', skill_label:'AI 스킬', ext_label:'IDE 확장', scanned:'스캔됨', chart1:'// 판정', chart2:'// 유형', chart3:'// 7일 추세', recent_hdr:'// 최근 스캔', no_scans:'스캔 없음', cta_title:'지금 MCP 서버 스캔 — 무료', cta_sub:'AI 스택을 보호하세요.', cta_btn:'▶ \u00a0스캔 시작', last_scan:'마지막 스캔:', just_now:'방금', min_ago:'분 전', hr_ago:'시간 전', day_ago:'일 전', scope_mcp:'MCP 서버', scope_skill:'AI 스킬', scope_ext:'IDE 확장', score:'점수', threat:'위협', threats:'위협' },
-  fr: { live:'EN DIRECT', back:'← Scanner', loading:'CHARGEMENT...', tag:'// tableau_de_bord', title1:'Vraies menaces.', title2:'Vrais chiffres.', title3:'Vraie protection.', sub:'Chaque scan effectué sur Cyber-Guardian est suivi ici.', kpi_total:'Scans totaux', kpi_total_sub:'MCP · Skills · Extensions', kpi_threats:'Menaces détectées', kpi_mod:'À vérifier', kpi_mod_sub:'Patterns suspects', kpi_safe:'Code propre', detection_rate:'taux de détection', passed_safely:'passé en sécurité', risk_label:'DISTRIBUTION DES RISQUES', safe_lbl:'SÛR', review_lbl:'VÉRIFIER', crit_lbl:'CRITIQUE', mcp_label:'Serveurs MCP', skill_label:'IA Skills', ext_label:'Extensions IDE', scanned:'SCANNÉS', chart1:'// verdicts', chart2:'// types', chart3:'// tendance 7j', recent_hdr:'// scans récents', no_scans:'Aucun scan pour l\'instant.', cta_title:'Scannez votre serveur MCP maintenant', cta_sub:'Rejoignez les développeurs qui protègent leur stack IA.', cta_btn:'▶ \u00a0Commencer', last_scan:'Dernier scan:', just_now:'à l\'instant', min_ago:'min', hr_ago:'h', day_ago:'j', scope_mcp:'Serveur MCP', scope_skill:'IA Skill', scope_ext:'Extension IDE', score:'Score', threat:'menace', threats:'menaces' },
-  pt: { live:'AO VIVO', back:'← Scanner', loading:'CARREGANDO...', tag:'// painel_de_ameaças', title1:'Ameaças reais.', title2:'Números reais.', title3:'Proteção real.', sub:'Cada scan no Cyber-Guardian é registrado aqui.', kpi_total:'Total de Scans', kpi_total_sub:'MCP · Skills · Extensões', kpi_threats:'Ameaças Detectadas', kpi_mod:'Revisar', kpi_mod_sub:'Padrões suspeitos', kpi_safe:'Código Limpo', detection_rate:'taxa de detecção', passed_safely:'passou com segurança', risk_label:'DISTRIBUIÇÃO DE RISCO', safe_lbl:'SEGURO', review_lbl:'REVISAR', crit_lbl:'CRÍTICO', mcp_label:'Servidores MCP', skill_label:'AI Skills', ext_label:'Extensões IDE', scanned:'ESCANEADOS', chart1:'// veredictos', chart2:'// tipos', chart3:'// tendência 7d', recent_hdr:'// scans recentes', no_scans:'Nenhum scan ainda.', cta_title:'Escaneie seu servidor MCP agora — grátis', cta_sub:'Junte-se a desenvolvedores que já protegem seu AI stack.', cta_btn:'▶ \u00a0Começar', last_scan:'Último scan:', just_now:'agora', min_ago:'min', hr_ago:'h', day_ago:'d', scope_mcp:'Servidor MCP', scope_skill:'AI Skill', scope_ext:'Extensão IDE', score:'Score', threat:'ameaça', threats:'ameaças' },
+  ja: { live:'ライブ', back:'← スキャナー', loading:'読み込み中...', tag:'// 脅威ダッシュボード', title1:'本物の脅威。', title2:'本物の数字。', title3:'本物の保護。', sub:'Cyber-Guardianで実行されたすべてのスキャンを追跡。', kpi_total:'総スキャン数', kpi_total_sub:'MCP · スキル · 拡張', kpi_threats:'脅威検出', kpi_mod:'要確認', kpi_mod_sub:'疑わしいパターン', kpi_safe:'クリーン', detection_rate:'検出率', passed_safely:'安全合格', risk_label:'リスク分布', safe_lbl:'安全', review_lbl:'確認', crit_lbl:'危険', mcp_label:'MCPサーバー', skill_label:'AIスキル', ext_label:'IDE拡張', scanned:'スキャン済', chart1:'// 判定', chart2:'// タイプ', chart3:'// 7日間', recent_hdr:'// 最近のスキャン', no_scans:'スキャンなし', cta_title:'今すぐMCPサーバーをスキャン', cta_sub:'AIスタックを保護しましょう。', cta_btn:'▶ \u00a0スキャン開始', last_scan:'最終スキャン:', just_now:'たった今', min_ago:'分前', hr_ago:'時間前', day_ago:'日前', scope_mcp:'MCPサーバー', scope_skill:'AIスキル', scope_ext:'IDE拡張', score:'スコア', threat:'脅威', threats:'脅威', of_total:'全スキャンの' },
+  ko: { live:'라이브', back:'← 스캐너', loading:'로딩 중...', tag:'// 위협_대시보드', title1:'실제 위협.', title2:'실제 숫자.', title3:'실제 보호.', sub:'Cyber-Guardian에서 수행된 모든 스캔이 여기에 기록됩니다.', kpi_total:'총 스캔', kpi_total_sub:'MCP · 스킬 · 확장', kpi_threats:'위협 탐지', kpi_mod:'검토 필요', kpi_mod_sub:'의심 패턴', kpi_safe:'안전 코드', detection_rate:'탐지율', passed_safely:'안전 통과', risk_label:'위험 분포', safe_lbl:'안전', review_lbl:'검토', crit_lbl:'위험', mcp_label:'MCP 서버', skill_label:'AI 스킬', ext_label:'IDE 확장', scanned:'스캔됨', chart1:'// 판정', chart2:'// 유형', chart3:'// 7일 추세', recent_hdr:'// 최근 스캔', no_scans:'스캔 없음', cta_title:'지금 MCP 서버 스캔 — 무료', cta_sub:'AI 스택을 보호하세요.', cta_btn:'▶ \u00a0스캔 시작', last_scan:'마지막 스캔:', just_now:'방금', min_ago:'분 전', hr_ago:'시간 전', day_ago:'일 전', scope_mcp:'MCP 서버', scope_skill:'AI 스킬', scope_ext:'IDE 확장', score:'점수', threat:'위협', threats:'위협', of_total:'전체 스캔 중' },
+  fr: { live:'EN DIRECT', back:'← Scanner', loading:'CHARGEMENT...', tag:'// tableau_de_bord', title1:'Vraies menaces.', title2:'Vrais chiffres.', title3:'Vraie protection.', sub:'Chaque scan effectué sur Cyber-Guardian est suivi ici.', kpi_total:'Scans totaux', kpi_total_sub:'MCP · Skills · Extensions', kpi_threats:'Menaces détectées', kpi_mod:'À vérifier', kpi_mod_sub:'Patterns suspects', kpi_safe:'Code propre', detection_rate:'taux de détection', passed_safely:'passé en sécurité', risk_label:'DISTRIBUTION DES RISQUES', safe_lbl:'SÛR', review_lbl:'VÉRIFIER', crit_lbl:'CRITIQUE', mcp_label:'Serveurs MCP', skill_label:'IA Skills', ext_label:'Extensions IDE', scanned:'SCANNÉS', chart1:'// verdicts', chart2:'// types', chart3:'// tendance 7j', recent_hdr:'// scans récents', no_scans:'Aucun scan pour l\'instant.', cta_title:'Scannez votre serveur MCP maintenant', cta_sub:'Rejoignez les développeurs qui protègent leur stack IA.', cta_btn:'▶ \u00a0Commencer', last_scan:'Dernier scan:', just_now:'à l\'instant', min_ago:'min', hr_ago:'h', day_ago:'j', scope_mcp:'Serveur MCP', scope_skill:'IA Skill', scope_ext:'Extension IDE', score:'Score', threat:'menace', threats:'menaces', of_total:'des scans' },
+  pt: { live:'AO VIVO', back:'← Scanner', loading:'CARREGANDO...', tag:'// painel_de_ameaças', title1:'Ameaças reais.', title2:'Números reais.', title3:'Proteção real.', sub:'Cada scan no Cyber-Guardian é registrado aqui.', kpi_total:'Total de Scans', kpi_total_sub:'MCP · Skills · Extensões', kpi_threats:'Ameaças Detectadas', kpi_mod:'Revisar', kpi_mod_sub:'Padrões suspeitos', kpi_safe:'Código Limpo', detection_rate:'taxa de detecção', passed_safely:'passou com segurança', risk_label:'DISTRIBUIÇÃO DE RISCO', safe_lbl:'SEGURO', review_lbl:'REVISAR', crit_lbl:'CRÍTICO', mcp_label:'Servidores MCP', skill_label:'AI Skills', ext_label:'Extensões IDE', scanned:'ESCANEADOS', chart1:'// veredictos', chart2:'// tipos', chart3:'// tendência 7d', recent_hdr:'// scans recentes', no_scans:'Nenhum scan ainda.', cta_title:'Escaneie seu servidor MCP agora — grátis', cta_sub:'Junte-se a desenvolvedores que já protegem seu AI stack.', cta_btn:'▶ \u00a0Começar', last_scan:'Último scan:', just_now:'agora', min_ago:'min', hr_ago:'h', day_ago:'d', scope_mcp:'Servidor MCP', scope_skill:'AI Skill', scope_ext:'Extensão IDE', score:'Score', threat:'ameaça', threats:'ameaças', of_total:'dos scans' },
 };
 
 const LANGS = {
@@ -391,17 +394,17 @@ function render(d) {
       <div class="kpi crit">
         <div class="kpi-label">${t('kpi_threats')}</div>
         <div class="kpi-num" id="n-threats">0</div>
-        <div class="kpi-sub">${detRate}% ${t('detection_rate')}</div>
+        <div class="kpi-sub">${critP}% ${t('of_total')}</div>
       </div>
       <div class="kpi mod">
         <div class="kpi-label">${t('kpi_mod')}</div>
         <div class="kpi-num" id="n-mod">0</div>
-        <div class="kpi-sub">${t('kpi_mod_sub')}</div>
+        <div class="kpi-sub">${modP}% ${t('of_total')}</div>
       </div>
       <div class="kpi safe">
         <div class="kpi-label">${t('kpi_safe')}</div>
         <div class="kpi-num" id="n-safe">0</div>
-        <div class="kpi-sub">${safeP}% ${t('passed_safely')}</div>
+        <div class="kpi-sub">${safeP}% ${t('of_total')}</div>
       </div>
     </div>
 
@@ -486,7 +489,7 @@ function render(d) {
 
   // Animate counters
   animateCount(document.getElementById('n-total'),  d.total);
-  animateCount(document.getElementById('n-threats'), d.moderate + d.critical);
+  animateCount(document.getElementById('n-threats'), d.critical);
   animateCount(document.getElementById('n-mod'),     d.moderate);
   animateCount(document.getElementById('n-safe'),    d.safe);
   animateCount(document.getElementById('n-mcp'),     d.by_scope.mcp || 0);
