@@ -807,7 +807,19 @@ def save_server(sb: Client, server: ScannedServer, run_id: str) -> Optional[str]
 async def run_scan():
     run_id     = hashlib.md5(str(time.time()).encode()).hexdigest()[:12]
     started_at = datetime.now(timezone.utc).isoformat()
+    start_time = time.time()
+    MAX_RUNTIME = int(os.environ.get("MAX_RUNTIME_MINUTES", "270")) * 60  # 4.5 hours default
     log.info(f"╔══ MCP Security Scan START  run_id={run_id} ══╗")
+
+    def time_remaining():
+        return MAX_RUNTIME - (time.time() - start_time)
+
+    def should_stop():
+        remaining = time_remaining()
+        if remaining < 600:  # less than 10 minutes left
+            log.warning(f"⏰ Time budget nearly exhausted ({remaining:.0f}s left) — stopping gracefully")
+            return True
+        return False
 
     sb = get_supabase()
     all_servers: list[ScannedServer] = []
@@ -830,6 +842,7 @@ async def run_scan():
         # ── 2. Scan each server ────────────────────────────────────────
         log.info("▶ Scanning GitHub repos…")
         for repo in github_repos:
+            if should_stop(): break
             try:
                 server = await scan_github_server(client, repo)
                 all_servers.append(server)
@@ -845,6 +858,7 @@ async def run_scan():
 
         log.info("▶ Scanning npm packages…")
         for pkg in npm_pkgs:
+            if should_stop(): break
             try:
                 server = await scan_npm_server(client, pkg)
                 all_servers.append(server)
@@ -860,6 +874,7 @@ async def run_scan():
 
         log.info("▶ Scanning mcp.so servers…")
         for item in mcpso_items:
+            if should_stop(): break
             try:
                 server = await scan_mcpso_server(client, item)
                 if server:

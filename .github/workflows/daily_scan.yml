@@ -26,7 +26,7 @@ jobs:
   scan:
     name: Scan MCP Servers
     runs-on: ubuntu-latest
-    timeout-minutes: 90            # 1.5 hours max
+    timeout-minutes: 300            # 5 hours max
 
     steps:
       # ── Checkout ────────────────────────────────────────────
@@ -57,7 +57,7 @@ jobs:
           SCAN_LIMIT:           ${{ github.event.inputs.scan_limit || '200' }}
           DRY_RUN:              ${{ github.event.inputs.dry_run || 'false' }}
           CYBER_GUARDIAN_URL:   https://cyber-guardian-mu.vercel.app
-          CG_SCAN_DELAY:        "15"
+          CG_SCAN_DELAY:        "12"
         run: |
           echo "══════════════════════════════════════"
           echo "  Starting MCP Scanner"
