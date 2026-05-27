@@ -8,7 +8,7 @@ Live: https://cyber-guardian-mu.vercel.app
 
 Cyber-Guardian AI helps developers and security teams review code before installing an MCP server, AI Skill, or IDE extension.
 
-It checks for high-risk behavior such as:
+It checks 60 canonical threat families before a user decides whether to install or trust a component. Examples include:
 
 - Tool poisoning and prompt injection
 - Credential and API key access
@@ -35,6 +35,9 @@ It checks for high-risk behavior such as:
 - Server-side free quota and rate limits via Supabase
 - Global daily API cap
 - Submitted code is not executed
+- Canonical 60-family threat registry
+- Definition for every threat family
+- Static deterministic rule coverage for every family
 - Static deterministic rules are merged with AI findings
 - AI findings cannot downgrade high-confidence static findings
 - No full submitted code is intentionally stored in Supabase
@@ -69,7 +72,17 @@ supabase/migrations/001_scan_usage_limits.sql
 
 ## Security Engine
 
-See `SECURITY_ENGINE.md` for the rule model and next detection families to add.
+See `SECURITY_ENGINE.md` for the rule model.
+
+The scan engine currently enforces:
+
+- exactly 60 canonical threat families;
+- one definition per family;
+- at least one deterministic static rule per family;
+- AI semantic analysis across the same 60-family registry;
+- test coverage that fails if a family, definition, or static rule is missing.
+
+Every normalized scan response includes `threat_families_checked`, `threat_family_definitions`, and `coverage` metadata.
 
 ## License
 
