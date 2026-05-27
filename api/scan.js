@@ -60,6 +60,33 @@ function getSupabase() {
   return supabaseClient;
 }
 
+function summarizeThreats(threats) {
+  if (!Array.isArray(threats)) return "";
+  return threats
+    .map(threat => threat?.family)
+    .filter(Boolean)
+    .filter(family => family !== "UNCLASSIFIED")
+    .slice(0, 5)
+    .join(", ");
+}
+
+async function saveSiteScan(scope, result) {
+  const sb = getSupabase();
+  if (!sb || !result?.status) return;
+
+  const threats = Array.isArray(result.threats) ? result.threats : [];
+  const row = {
+    scope,
+    status: result.status,
+    threat_score: result.threat_score || 0,
+    threat_count: threats.length,
+    threats_summary: result.status === "STATUS_SAFE" ? "" : summarizeThreats(threats),
+  };
+
+  const { error } = await sb.from("site_scans").insert(row);
+  if (error) console.error("[site-scan-save]", error.message);
+}
+
 function checkRateLimit(ip) {
   const now = Date.now();
   const minuteAgo = now - 60_000;
@@ -719,6 +746,7 @@ async function handler(req, res) {
     result = mergeStaticThreats(result, staticResult);
 
     if (!usingSupabaseUsage) incrementMonthlyQuota(ip);
+    await saveSiteScan(scope, result);
     saveToCache(codeHash, result);
     return res.status(200).json(result);
 

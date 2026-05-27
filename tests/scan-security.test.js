@@ -4,6 +4,9 @@ const Module = require("node:module");
 process.env.NODE_ENV = "test";
 process.env.SUPABASE_URL = "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_KEY = "service-key";
+process.env.ANTHROPIC_API_KEY = "test-anthropic-key";
+
+const insertedRows = [];
 
 const originalLoad = Module._load;
 Module._load = function patchedLoad(request, parent, isMain) {
@@ -13,6 +16,12 @@ Module._load = function patchedLoad(request, parent, isMain) {
         rpc: async () => ({
           data: [{ ok: true, quota_used: 1, quota_limit: 7 }],
           error: null,
+        }),
+        from: (table) => ({
+          insert: async (row) => {
+            insertedRows.push({ table, row });
+            return { error: null };
+          },
         }),
       }),
     };
@@ -30,6 +39,32 @@ const {
   ALL_STATIC_RULES,
   coverageMetadata,
 } = scan._test;
+
+global.fetch = async () => ({
+  ok: true,
+  json: async () => ({
+    content: [{
+      text: JSON.stringify({
+        status: "STATUS_SAFE",
+        threat_score: 2,
+        confidence: 0.9,
+        summary: "No suspicious behavior found.",
+        threats: [],
+        safe_patterns_noted: ["No network calls"],
+        recommendation: "Review manually before installation.",
+      }),
+    }],
+  }),
+});
+
+function mockRes() {
+  const res = { statusCode: 200, headers: {}, body: undefined, ended: false };
+  res.setHeader = (key, value) => { res.headers[key.toLowerCase()] = value; };
+  res.status = (code) => { res.statusCode = code; return res; };
+  res.json = (body) => { res.body = body; return res; };
+  res.end = () => { res.ended = true; return res; };
+  return res;
+}
 
 function testCanonicalSixtyFamilies() {
   assert.equal(THREAT_FAMILIES.length, 60);
@@ -115,6 +150,29 @@ function testStaticMergeCannotDowngrade() {
   assert.deepEqual(merged.safe_patterns_noted, []);
 }
 
+async function testManualScanPersistsDashboardMetadata() {
+  insertedRows.length = 0;
+  const res = mockRes();
+  await scan({
+    method: "POST",
+    headers: {
+      origin: "https://cyber-guardian-mu.vercel.app",
+      host: "cyber-guardian-mu.vercel.app",
+      "x-forwarded-for": "203.0.113.44",
+    },
+    body: { code: 'console.log("dashboard persistence test");', scope: "skill" },
+    url: "/api/scan",
+  }, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(insertedRows.length, 1);
+  assert.equal(insertedRows[0].table, "site_scans");
+  assert.equal(insertedRows[0].row.scope, "skill");
+  assert.equal(insertedRows[0].row.status, "STATUS_SAFE");
+  assert.equal(insertedRows[0].row.threat_score, 2);
+  assert.ok(!Object.prototype.hasOwnProperty.call(insertedRows[0].row, "code"));
+}
+
 testStaticReverseShell();
 testStaticSecretRead();
 testStaticPromptInjection();
@@ -124,4 +182,9 @@ testCoverageMetadata();
 testEveryFamilyHasDefinitionAndStaticRule();
 testNormalizeAddsSixtyFamilyMetadata();
 
-console.log("scan-security tests: ok");
+testManualScanPersistsDashboardMetadata()
+  .then(() => console.log("scan-security tests: ok"))
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
