@@ -35,6 +35,8 @@ SUPABASE_KEY   = os.environ["SUPABASE_SERVICE_KEY"]   # required (service role)
 SCAN_LIMIT     = int(os.environ.get("SCAN_LIMIT", 200))   # servers per run
 GITHUB_DELAY   = float(os.environ.get("GITHUB_DELAY", 1.2))   # seconds between API calls
 NPM_DELAY      = float(os.environ.get("NPM_DELAY", 0.5))
+CYBER_GUARDIAN_URL = os.environ.get("CYBER_GUARDIAN_URL", "https://cyber-guardian-mu.vercel.app")
+CG_SCAN_DELAY  = float(os.environ.get("CG_SCAN_DELAY", 15.0))  # seconds between CG API calls
 
 logging.basicConfig(
     level=logging.INFO,
@@ -98,6 +100,7 @@ class ScannedServer:
     files_scanned: int        = 0
     scan_error:    str        = ""
     content_hash:  str        = ""
+    source_code:   str        = ""  # combined code for AI scan (max 200k chars)
 
 
 # ─────────────────────────────────────────────
@@ -519,6 +522,7 @@ async def scan_github_server(client: httpx.AsyncClient, repo: dict) -> ScannedSe
 
     all_content = "\n".join(files.values())
     server.content_hash = hashlib.sha256(all_content.encode()).hexdigest()[:16]
+    server.source_code  = all_content[:200000]  # store for AI scan
 
     all_threats: list[Threat] = []
     for path, content in files.items():
@@ -627,6 +631,7 @@ async def scan_npm_server(client: httpx.AsyncClient, pkg: dict) -> ScannedServer
 
     all_content = "\n".join(files.values())
     server.content_hash = hashlib.sha256(all_content.encode()).hexdigest()[:16]
+    server.source_code  = all_content[:200000]  # store for AI scan
 
     all_threats: list[Threat] = []
     for path, content in files.items():
@@ -694,6 +699,47 @@ async def scan_mcpso_server(client: httpx.AsyncClient, item: dict) -> Optional[S
     server = await scan_github_server(client, repo_mock)
     server.source = "mcpso"
     return server
+
+
+# ─────────────────────────────────────────────
+#  CYBER-GUARDIAN AI SCANNER
+# ─────────────────────────────────────────────
+
+async def scan_with_cyber_guardian(client: httpx.AsyncClient, code: str, scope: str = "mcp") -> dict:
+    """Send code to Cyber-Guardian AI scanner and get threat analysis."""
+    if not code or not code.strip():
+        return {}
+    try:
+        r = await client.post(
+            f"{CYBER_GUARDIAN_URL}/api/scan",
+            json={"code": code[:200000], "scope": scope},
+            timeout=60,
+            headers={"Content-Type": "application/json"},
+        )
+        if r.status_code == 200:
+            result = r.json()
+            log.info(f"  [CG] status={result.get('status')} score={result.get('threat_score')}")
+            return result
+        else:
+            log.warning(f"  [CG] scan returned {r.status_code}")
+    except Exception as e:
+        log.warning(f"  [CG] scan error: {e}")
+    return {}
+
+
+def save_site_scan(sb: Client, scope: str, result: dict) -> None:
+    """Save AI scan result to site_scans table (visible in dashboard)."""
+    if not result or not result.get("status"):
+        return
+    try:
+        sb.table("site_scans").insert({
+            "scope":        scope,
+            "status":       result.get("status", "STATUS_AMBIGUOUS"),
+            "threat_score": result.get("threat_score", 0),
+            "threat_count": len(result.get("threats", [])),
+        }).execute()
+    except Exception as e:
+        log.warning(f"  [CG] Failed to save site scan: {e}")
 
 
 # ─────────────────────────────────────────────
@@ -788,6 +834,12 @@ async def run_scan():
                 server = await scan_github_server(client, repo)
                 all_servers.append(server)
                 save_server(sb, server, run_id)
+                # Send to Cyber-Guardian AI scanner
+                if server.source_code:
+                    cg_result = await scan_with_cyber_guardian(client, server.source_code, "mcp")
+                    if cg_result:
+                        save_site_scan(sb, "mcp", cg_result)
+                    await asyncio.sleep(CG_SCAN_DELAY)
             except Exception as e:
                 log.error(f"  Error scanning {repo.get('full_name')}: {e}")
 
@@ -797,6 +849,12 @@ async def run_scan():
                 server = await scan_npm_server(client, pkg)
                 all_servers.append(server)
                 save_server(sb, server, run_id)
+                # Send to Cyber-Guardian AI scanner
+                if server.source_code:
+                    cg_result = await scan_with_cyber_guardian(client, server.source_code, "mcp")
+                    if cg_result:
+                        save_site_scan(sb, "mcp", cg_result)
+                    await asyncio.sleep(CG_SCAN_DELAY)
             except Exception as e:
                 log.error(f"  Error scanning {pkg.get('name')}: {e}")
 
@@ -807,6 +865,12 @@ async def run_scan():
                 if server:
                     all_servers.append(server)
                     save_server(sb, server, run_id)
+                    # Send to Cyber-Guardian AI scanner
+                    if server.source_code:
+                        cg_result = await scan_with_cyber_guardian(client, server.source_code, "mcp")
+                        if cg_result:
+                            save_site_scan(sb, "mcp", cg_result)
+                        await asyncio.sleep(CG_SCAN_DELAY)
             except Exception as e:
                 log.error(f"  Error scanning mcp.so item: {e}")
 

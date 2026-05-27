@@ -56,6 +56,8 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SCAN_LIMIT:           ${{ github.event.inputs.scan_limit || '200' }}
           DRY_RUN:              ${{ github.event.inputs.dry_run || 'false' }}
+          CYBER_GUARDIAN_URL:   https://cyber-guardian-mu.vercel.app
+          CG_SCAN_DELAY:        "15"
         run: |
           echo "══════════════════════════════════════"
           echo "  Starting MCP Scanner"
