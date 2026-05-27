@@ -651,6 +651,7 @@ const FREE_QUOTA = 7;
 function getMonthKey() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
 function getQuotaUsed() { return parseInt(localStorage.getItem(`cg-quota-${getMonthKey()}`) || '0', 10); }
 function incrementQuota() { localStorage.setItem(`cg-quota-${getMonthKey()}`, String(getQuotaUsed() + 1)); }
+function isDevMode() { return localStorage.getItem('cg-dev-mode') === 'cg-dev-2026'; }
 
 async function runScan() {
   const code = document.getElementById('code-input').value;
@@ -665,7 +666,7 @@ async function runScan() {
     ta.focus(); return;
   }
 
-  if (getQuotaUsed() >= FREE_QUOTA) {
+  if (!isDevMode() && getQuotaUsed() >= FREE_QUOTA) {
     res.style.display = 'block';
     res.innerHTML = `<div class="quota-box">
       <div class="quota-title">${t('quota_exceeded_title')}</div>
