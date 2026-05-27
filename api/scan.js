@@ -6,12 +6,12 @@ const CONFIG = {
   ALLOWED_ORIGINS: ["*"], // replace with your real domain after deployment
   MAX_REQUESTS_PER_MINUTE: 5,
   MAX_REQUESTS_PER_HOUR:   20,
-  MAX_INPUT_SIZE_CHARS: 200000,
+  MAX_INPUT_SIZE_CHARS: 50000,
   MIN_INPUT_SIZE_CHARS: 5,
   MAX_API_CALLS_PER_DAY: 5000,
   CACHE_TTL_SECONDS: 3600,
   ANTHROPIC_TIMEOUT_MS: 25000,
-  MODEL: "claude-sonnet-4-20250514",
+  MODEL: "claude-sonnet-4-6",
   MAX_TOKENS: 1500,
 };
 
@@ -230,27 +230,6 @@ module.exports = async function handler(req, res) {
     }
 
     saveToCache(codeHash, result);
-try {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
-  if (supabaseUrl && supabaseKey) {
-    await fetch(`${supabaseUrl}/rest/v1/site_scans`, {
-      method: 'POST',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        scope: scope,
-        status: result.status,
-        threat_score: result.threat_score || 0,
-        threat_count: (result.threats || []).length
-      })
-    });
-  }
-} catch (e) {}
     return res.status(200).json(result);
 
   } catch (err) {
