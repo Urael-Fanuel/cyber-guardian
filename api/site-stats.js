@@ -42,11 +42,12 @@ module.exports = async function handler(req, res) {
 
     // Last 10 scans for recent feed
     const recent = scans.slice(0, 10).map(s => ({
-      scope:        s.scope,
-      status:       s.status,
-      threat_score: s.threat_score,
-      threat_count: s.threat_count,
-      scanned_at:   s.scanned_at
+      scope:            s.scope,
+      status:           s.status,
+      threat_score:     s.threat_score,
+      threat_count:     s.threat_count,
+      threats_summary:  s.threats_summary || '',
+      scanned_at:       s.scanned_at
     }));
 
     // Daily trend — last 7 days

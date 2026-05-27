@@ -731,12 +731,15 @@ def save_site_scan(sb: Client, scope: str, result: dict) -> None:
     """Save AI scan result to site_scans table (visible in dashboard)."""
     if not result or not result.get("status"):
         return
+    threats = result.get("threats", [])
+    threats_summary = ", ".join([t.get("family", "") for t in threats[:5] if t.get("family")])
     try:
         sb.table("site_scans").insert({
-            "scope":        scope,
-            "status":       result.get("status", "STATUS_AMBIGUOUS"),
-            "threat_score": result.get("threat_score", 0),
-            "threat_count": len(result.get("threats", [])),
+            "scope":            scope,
+            "status":           result.get("status", "STATUS_AMBIGUOUS"),
+            "threat_score":     result.get("threat_score", 0),
+            "threat_count":     len(threats),
+            "threats_summary":  threats_summary,
         }).execute()
     except Exception as e:
         log.warning(f"  [CG] Failed to save site scan: {e}")
