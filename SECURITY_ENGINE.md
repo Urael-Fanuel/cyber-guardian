@@ -1,39 +1,42 @@
 # Cyber-Guardian Security Engine
 
-Cyber-Guardian should use a hybrid detection model:
+Cyber-Guardian uses a hybrid detection model:
 
-1. Deterministic static rules for high-confidence findings.
-2. AI analysis for semantic review, explanation, and ambiguous cases.
-3. A merged verdict that never lets the AI downgrade a high-confidence static finding.
+1. A canonical 60-family threat registry.
+2. Deterministic static rules for every family.
+3. AI analysis for semantic review, explanation, and ambiguous cases.
+4. A merged verdict that never lets AI downgrade a high-confidence deterministic finding.
 
-## Current Static Rules
+## Canonical Registry
 
-The canonical 60-family registry lives in `api/scan.js` as `THREAT_FAMILIES`.
-The API prompt, output metadata, and tests use this registry as the source of truth.
+The source of truth lives in `api/scan.js`:
 
-The first high-confidence deterministic rules live in `api/scan.js` as `STATIC_RULES`:
+- `THREAT_FAMILIES`: exactly 60 canonical family names.
+- `THREAT_FAMILY_DEFINITIONS`: one definition per family.
+- `ALL_STATIC_RULES`: deterministic rule coverage for every family.
 
-- `REVERSE_SHELL`
-- `API_KEY_THEFT`
-- `DYNAMIC_EVAL`
-- `OS_COMMAND_EXECUTION`
-- `SUPPLY_CHAIN_ATTACK`
-- `FILE_SYSTEM_ATTACK`
-- `PROMPT_INJECTION`
+The automated tests enforce:
 
-These are intentionally high-signal patterns. They should produce fewer false positives
-than broad keyword matching.
+- exactly 60 families;
+- no duplicate family names;
+- every family has a definition;
+- every family has at least one static rule;
+- every static rule maps to a canonical family.
 
-Every scan response includes:
+## Response Metadata
+
+Every normalized scan response includes:
 
 - `threat_families_checked`: the full 60-family list.
+- `threat_family_definitions`: definitions for the 60 families.
 - `coverage.total_families`: currently `60`.
-- `coverage.static_families`: how many families have deterministic static rules.
-- `coverage.ai_families`: how many families are covered by AI semantic analysis.
+- `coverage.static_families`: currently `60`.
+- `coverage.ai_families`: currently `60`.
+- `coverage.static_covered_families`: list of families with static rules.
 
 ## Rule Requirements
 
-Every deterministic rule should define:
+Every deterministic rule defines:
 
 - `family`: canonical threat family name.
 - `severity`: `CRITICAL`, `HIGH`, `MEDIUM`, or `LOW`.
@@ -46,24 +49,9 @@ Every deterministic rule should define:
 The AI may add findings, improve explanation, or classify ambiguous behavior. It must not
 remove or downgrade deterministic findings.
 
-## Next Deterministic Rule Families To Add
+## Quality Notes
 
-- `SSRF_ATTEMPT`
-- `PATH_TRAVERSAL`
-- `COOKIE_THEFT`
-- `BROWSER_HIJACK`
-- `KEYLOGGER_PATTERN`
-- `SCREEN_CAPTURE`
-- `CRYPTO_MINING`
-- `RANSOMWARE_PATTERN`
-- `TYPOSQUATTING`
-- `DEPENDENCY_CONFUSION`
-- `TOOL_POISONING`
-- `TOOL_DESCRIPTION_MANIPULATION`
-- `RESOURCE_HIJACKING`
-- `CROSS_TOOL_CONFUSION`
-
-## Longer-Term Shape
-
-Move rules into a shared module or JSON/YAML registry once the rule set grows past
-20-30 rules. Keep tests for every rule with malicious and benign fixtures.
+The current deterministic rules are production seed rules. Some are high-confidence
+malware/security signatures, while some are broader indicators that should be refined with
+benign and malicious fixtures. The next maturity step is to add fixture tests per family
+and tune false positives.

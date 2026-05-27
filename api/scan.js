@@ -330,8 +330,128 @@ const THREAT_FAMILIES = [
   "SCREEN_CAPTURE",
 ];
 
+const THREAT_FAMILY_DEFINITIONS = {
+  TOOL_POISONING: "A tool is presented as benign while its name, description, schema, or behavior is designed to mislead the user or AI agent.",
+  INDIRECT_PROMPT_INJECTION: "Untrusted content is crafted to influence the AI agent indirectly through files, web pages, tool results, or retrieved context.",
+  MCP_CREDENTIAL_EXFILTRATION: "An MCP server attempts to collect, expose, or transmit credentials, tokens, API keys, or authentication material.",
+  CROSS_TOOL_CONFUSION: "A tool attempts to confuse the agent about which tool, resource, tenant, account, or permission boundary is being used.",
+  TOOL_DESCRIPTION_MANIPULATION: "Tool metadata or descriptions contain instructions that alter model behavior, hide risk, or override user intent.",
+  MCP_SESSION_HIJACKING: "Code attempts to steal, replay, or manipulate MCP session identifiers, authorization state, or transport channels.",
+  RESOURCE_HIJACKING: "Code attempts to redirect, replace, or misuse declared MCP resources for unauthorized access or execution.",
+  CONTEXT_EXFILTRATION: "Code attempts to extract conversation context, prompts, model memory, retrieved documents, or workspace context.",
+  TOOL_RESULT_INJECTION: "Tool output is crafted to inject instructions or deceptive data into the next model step.",
+  MCP_AUTH_BYPASS: "Code attempts to bypass authentication, authorization, permission prompts, or access controls in MCP flows.",
+  PROMPT_INJECTION: "Text or code contains instructions intended to override system, developer, user, or safety instructions.",
+  ROLE_CONFUSION: "Content attempts to make the model treat untrusted text as a higher-priority role or trusted authority.",
+  SYSTEM_OVERRIDE: "Content attempts to reveal, replace, or ignore the system prompt or system-level constraints.",
+  JAILBREAK: "Content attempts to bypass safety, policy, or instruction hierarchy through adversarial prompting.",
+  OS_COMMAND_EXECUTION: "Code can execute operating system commands or spawn shell/process behavior.",
+  CODE_INJECTION: "Code constructs executable code from dynamic or untrusted input.",
+  DYNAMIC_EVAL: "Code uses eval-like execution of strings, dynamic functions, or runtime compilation.",
+  SHELL_ESCAPE: "Code passes dynamic input into shell syntax, shell metacharacters, or command strings.",
+  SQL_INJECTION: "Code builds SQL queries from untrusted input without safe parameterization.",
+  PATH_TRAVERSAL: "Code accepts or constructs file paths that can escape intended directories.",
+  TEMPLATE_INJECTION: "Code renders untrusted input through template engines or expression evaluators.",
+  DESERIALIZATION: "Code deserializes untrusted data using formats or APIs capable of code execution or object injection.",
+  ENV_VAR_THEFT: "Code reads broad or sensitive environment variables that commonly store secrets.",
+  API_KEY_THEFT: "Code targets API keys or tokens by name, pattern, location, or exfiltration flow.",
+  NETWORK_CALLBACK: "Code initiates outbound network callbacks to external infrastructure.",
+  DNS_EXFILTRATION: "Code encodes or transmits data through DNS names, lookups, or TXT queries.",
+  DATA_HARVESTING: "Code enumerates or collects files, browser data, repositories, user data, or workspace content at scale.",
+  CREDENTIAL_THEFT: "Code attempts to read credential stores, password files, tokens, cookies, SSH keys, or login material.",
+  CLOUD_CREDENTIAL_THEFT: "Code targets cloud metadata services, cloud config files, or cloud access tokens.",
+  BASE64_OBFUSCATION: "Code hides payloads or commands using Base64 encoding.",
+  UNICODE_OBFUSCATION: "Code uses Unicode tricks to hide or disguise behavior.",
+  CHAR_CODE_OBFUSCATION: "Code builds strings or payloads from numeric character codes.",
+  HEX_OBFUSCATION: "Code hides payloads or strings using hexadecimal escapes or encoded blobs.",
+  ZERO_WIDTH_CHARS: "Code or text contains invisible zero-width characters that can hide instructions or alter appearance.",
+  HOMOGLYPH_ATTACK: "Code or identifiers use lookalike characters to impersonate trusted names.",
+  RESOURCE_EXHAUSTION: "Code intentionally consumes excessive CPU, memory, disk, network, or process resources.",
+  FORK_BOMB: "Code recursively spawns processes or functions to exhaust system resources.",
+  ZIP_BOMB: "Code creates, extracts, or handles archives in a way that can cause explosive decompression.",
+  MEMORY_EXHAUSTION: "Code allocates unbounded or extremely large memory structures.",
+  REVERSE_SHELL: "Code opens an outbound shell or command channel to a remote host.",
+  BIND_SHELL: "Code opens a listening shell or command service for remote access.",
+  C2_CALLBACK: "Code contacts command-and-control infrastructure for instructions or payloads.",
+  PRIVILEGE_ESCALATION: "Code attempts to gain higher privileges or alter security boundaries.",
+  SUDO_ABUSE: "Code invokes sudo or privilege prompts to perform sensitive actions.",
+  SUID_ABUSE: "Code manipulates or abuses SUID/SGID binaries or permissions.",
+  FILE_SYSTEM_ATTACK: "Code reads, writes, deletes, encrypts, or modifies sensitive or broad filesystem paths.",
+  SYMLINK_ATTACK: "Code creates or follows symlinks in ways that can redirect file operations to sensitive locations.",
+  CRYPTO_MINING: "Code downloads, configures, or runs cryptocurrency miners.",
+  RANSOMWARE_PATTERN: "Code encrypts files, changes extensions, drops ransom notes, or destroys recoverability.",
+  WIPER_PATTERN: "Code deletes, overwrites, formats, or irreversibly damages files or disks.",
+  SUPPLY_CHAIN_ATTACK: "Package metadata, install scripts, dependencies, or release behavior indicate compromise or malicious distribution.",
+  DEPENDENCY_CONFUSION: "Code or package config may pull similarly named packages from unintended public registries.",
+  TYPOSQUATTING: "Package names or imports imitate popular packages through misspelling or lookalike naming.",
+  TIME_BASED_ATTACK: "Code delays execution or activates behavior after time, date, sleep, or timer conditions.",
+  LOGIC_BOMB: "Code hides malicious behavior behind specific conditions, dates, users, hosts, or environment triggers.",
+  SSRF_ATTEMPT: "Code fetches attacker-controlled or internal URLs in a way that can reach protected network resources.",
+  REGEX_DOS: "Code uses catastrophic regular expressions or unbounded regex matching on user input.",
+  COOKIE_THEFT: "Code reads, exports, or transmits browser cookies or session storage.",
+  KEYLOGGER_PATTERN: "Code captures keystrokes, keyboard events, or input streams covertly.",
+  SCREEN_CAPTURE: "Code captures screenshots, screen recordings, window contents, or display streams.",
+};
+
+const SUPPLEMENTAL_STATIC_RULES = [
+  { family: "TOOL_POISONING", severity: "HIGH", score: 70, pattern: /(tool|function).{0,80}(description|schema).{0,120}(ignore|secretly|do not tell|hidden)/i, description: THREAT_FAMILY_DEFINITIONS.TOOL_POISONING },
+  { family: "INDIRECT_PROMPT_INJECTION", severity: "HIGH", score: 70, pattern: /(webpage|document|tool result|retrieved content).{0,120}(ignore previous|system prompt|developer message|follow these instructions)/i, description: THREAT_FAMILY_DEFINITIONS.INDIRECT_PROMPT_INJECTION },
+  { family: "MCP_CREDENTIAL_EXFILTRATION", severity: "CRITICAL", score: 90, pattern: /(mcp|tool).{0,120}(token|secret|api[_-]?key|credential).{0,120}(send|post|upload|exfiltrate)/i, description: THREAT_FAMILY_DEFINITIONS.MCP_CREDENTIAL_EXFILTRATION },
+  { family: "CROSS_TOOL_CONFUSION", severity: "MEDIUM", score: 50, pattern: /(use|call).{0,80}(different|another|previous).{0,80}(tool|tenant|account|workspace)/i, description: THREAT_FAMILY_DEFINITIONS.CROSS_TOOL_CONFUSION },
+  { family: "TOOL_DESCRIPTION_MANIPULATION", severity: "HIGH", score: 70, pattern: /(description|annotations|tool metadata).{0,120}(override|ignore|system|developer|secret instruction)/i, description: THREAT_FAMILY_DEFINITIONS.TOOL_DESCRIPTION_MANIPULATION },
+  { family: "MCP_SESSION_HIJACKING", severity: "HIGH", score: 75, pattern: /(mcp[_-]?session|session[_-]?id|authorization).{0,120}(steal|replay|hijack|reuse|capture)/i, description: THREAT_FAMILY_DEFINITIONS.MCP_SESSION_HIJACKING },
+  { family: "RESOURCE_HIJACKING", severity: "HIGH", score: 70, pattern: /(resource|uri|endpoint).{0,120}(replace|redirect|rewrite|proxy|hijack)/i, description: THREAT_FAMILY_DEFINITIONS.RESOURCE_HIJACKING },
+  { family: "CONTEXT_EXFILTRATION", severity: "HIGH", score: 80, pattern: /(conversation|context|prompt|memory|workspace).{0,120}(send|post|upload|exfiltrate|leak)/i, description: THREAT_FAMILY_DEFINITIONS.CONTEXT_EXFILTRATION },
+  { family: "TOOL_RESULT_INJECTION", severity: "HIGH", score: 70, pattern: /(tool result|observation|response).{0,120}(ignore previous|system prompt|developer message|next instruction)/i, description: THREAT_FAMILY_DEFINITIONS.TOOL_RESULT_INJECTION },
+  { family: "MCP_AUTH_BYPASS", severity: "HIGH", score: 75, pattern: /(auth|authorization|permission|consent).{0,120}(bypass|disable|skip|ignore|override)/i, description: THREAT_FAMILY_DEFINITIONS.MCP_AUTH_BYPASS },
+  { family: "ROLE_CONFUSION", severity: "MEDIUM", score: 45, pattern: /(you are now|act as|treat this as).{0,80}(system|developer|admin|root)/i, description: THREAT_FAMILY_DEFINITIONS.ROLE_CONFUSION },
+  { family: "SYSTEM_OVERRIDE", severity: "HIGH", score: 75, pattern: /(reveal|print|replace|ignore).{0,80}(system prompt|system message|system instructions)/i, description: THREAT_FAMILY_DEFINITIONS.SYSTEM_OVERRIDE },
+  { family: "JAILBREAK", severity: "HIGH", score: 70, pattern: /(jailbreak|DAN mode|developer mode|bypass safety|ignore policy)/i, description: THREAT_FAMILY_DEFINITIONS.JAILBREAK },
+  { family: "CODE_INJECTION", severity: "HIGH", score: 75, pattern: /(new Function|compile\s*\(|vm\.runIn|exec\s*\(|eval\s*\().{0,120}(input|request|query|params|user)/i, description: THREAT_FAMILY_DEFINITIONS.CODE_INJECTION },
+  { family: "SHELL_ESCAPE", severity: "HIGH", score: 75, pattern: /(exec|spawn|system|subprocess).{0,120}(\$\(|`|;|\|\||&&|\|)/i, description: THREAT_FAMILY_DEFINITIONS.SHELL_ESCAPE },
+  { family: "SQL_INJECTION", severity: "HIGH", score: 70, pattern: /(select|insert|update|delete).{0,80}(\+|`|\$\{|format\(|%s).{0,120}(req\.|request|query|params|input|user)/i, description: THREAT_FAMILY_DEFINITIONS.SQL_INJECTION },
+  { family: "PATH_TRAVERSAL", severity: "HIGH", score: 70, pattern: /(\.\.\/|\.\.\\|path\.join\s*\([^)]*(req|request|params|query|input)|sendFile\s*\([^)]*(req|request|params|query))/i, description: THREAT_FAMILY_DEFINITIONS.PATH_TRAVERSAL },
+  { family: "TEMPLATE_INJECTION", severity: "HIGH", score: 70, pattern: /(render_template_string|template\.render|jinja|handlebars|mustache|ejs\.render).{0,120}(req|request|query|params|input|user)/i, description: THREAT_FAMILY_DEFINITIONS.TEMPLATE_INJECTION },
+  { family: "DESERIALIZATION", severity: "HIGH", score: 75, pattern: /(pickle\.loads|yaml\.load\s*\(|marshal\.loads|node-serialize|unserialize|ObjectInputStream|readObject)/i, description: THREAT_FAMILY_DEFINITIONS.DESERIALIZATION },
+  { family: "ENV_VAR_THEFT", severity: "HIGH", score: 80, pattern: /(process\.env|os\.environ|env).{0,80}(forEach|Object\.keys|dump|print|send|post|upload)/i, description: THREAT_FAMILY_DEFINITIONS.ENV_VAR_THEFT },
+  { family: "NETWORK_CALLBACK", severity: "MEDIUM", score: 55, pattern: /(fetch|axios|requests|httpx|curl|wget).{0,120}(https?:\/\/|ngrok|webhook|requestbin|pipedream|interact\.sh)/i, description: THREAT_FAMILY_DEFINITIONS.NETWORK_CALLBACK },
+  { family: "DNS_EXFILTRATION", severity: "HIGH", score: 75, pattern: /(dns\.resolve|dns\.lookup|nslookup|dig\s+).{0,120}(token|secret|key|data|Buffer|btoa|base64)/i, description: THREAT_FAMILY_DEFINITIONS.DNS_EXFILTRATION },
+  { family: "DATA_HARVESTING", severity: "HIGH", score: 70, pattern: /(glob|walk|readdir|find\s+).{0,120}(\.ssh|\.aws|Documents|Desktop|source|repo|password|token|secret)/i, description: THREAT_FAMILY_DEFINITIONS.DATA_HARVESTING },
+  { family: "CREDENTIAL_THEFT", severity: "CRITICAL", score: 90, pattern: /(\.ssh\/id_rsa|\.netrc|keychain|Credential Manager|Login Data|passwords?|credentials?|cookies?).{0,120}(read|copy|send|post|upload)/i, description: THREAT_FAMILY_DEFINITIONS.CREDENTIAL_THEFT },
+  { family: "CLOUD_CREDENTIAL_THEFT", severity: "CRITICAL", score: 90, pattern: /(169\.254\.169\.254|metadata\.google\.internal|\.aws\/credentials|AZURE_CLIENT_SECRET|GOOGLE_APPLICATION_CREDENTIALS)/i, description: THREAT_FAMILY_DEFINITIONS.CLOUD_CREDENTIAL_THEFT },
+  { family: "BASE64_OBFUSCATION", severity: "MEDIUM", score: 45, pattern: /(atob\s*\(|btoa\s*\(|base64\.b64decode|Buffer\.from\s*\([^)]*base64)/i, description: THREAT_FAMILY_DEFINITIONS.BASE64_OBFUSCATION },
+  { family: "UNICODE_OBFUSCATION", severity: "MEDIUM", score: 45, pattern: /(\\u[0-9a-fA-F]{4}|\\x\{[0-9a-fA-F]+\}|String\.fromCodePoint)/i, description: THREAT_FAMILY_DEFINITIONS.UNICODE_OBFUSCATION },
+  { family: "CHAR_CODE_OBFUSCATION", severity: "MEDIUM", score: 45, pattern: /(String\.fromCharCode|chr\s*\(|charCodeAt).{0,120}(eval|exec|Function|join)/i, description: THREAT_FAMILY_DEFINITIONS.CHAR_CODE_OBFUSCATION },
+  { family: "HEX_OBFUSCATION", severity: "MEDIUM", score: 45, pattern: /(\\x[0-9a-fA-F]{2}){4,}|0x[0-9a-fA-F]{8,}/i, description: THREAT_FAMILY_DEFINITIONS.HEX_OBFUSCATION },
+  { family: "ZERO_WIDTH_CHARS", severity: "LOW", score: 25, pattern: /[\u200B-\u200D\uFEFF]/, description: THREAT_FAMILY_DEFINITIONS.ZERO_WIDTH_CHARS },
+  { family: "HOMOGLYPH_ATTACK", severity: "LOW", score: 25, pattern: /[а-яА-ЯΑ-Ωα-ω].{0,40}(paypal|google|microsoft|openai|anthropic|github|aws|token|key)/i, description: THREAT_FAMILY_DEFINITIONS.HOMOGLYPH_ATTACK },
+  { family: "RESOURCE_EXHAUSTION", severity: "MEDIUM", score: 55, pattern: /(while\s*\(\s*true\s*\)|for\s*\(\s*;\s*;\s*\)|setInterval\s*\([^,]+,\s*0|while True:)/i, description: THREAT_FAMILY_DEFINITIONS.RESOURCE_EXHAUSTION },
+  { family: "FORK_BOMB", severity: "CRITICAL", score: 90, pattern: /(:\(\)\s*\{\s*:\|:&\s*\};:|fork\s*\(\s*\).{0,80}fork|child_process\.fork.{0,80}while)/i, description: THREAT_FAMILY_DEFINITIONS.FORK_BOMB },
+  { family: "ZIP_BOMB", severity: "HIGH", score: 70, pattern: /(zipfile|tarfile|adm-zip|extractAll|unzip).{0,120}(recursive|while|forEach|extract)/i, description: THREAT_FAMILY_DEFINITIONS.ZIP_BOMB },
+  { family: "MEMORY_EXHAUSTION", severity: "HIGH", score: 70, pattern: /(Buffer\.alloc|new Array|Array\().{0,40}(1e9|1000000000|Number\.MAX_SAFE_INTEGER|Infinity)/i, description: THREAT_FAMILY_DEFINITIONS.MEMORY_EXHAUSTION },
+  { family: "BIND_SHELL", severity: "CRITICAL", score: 90, pattern: /(nc\s+-l|netcat\s+-l|server\.listen\s*\(|socket\.bind\s*\().{0,120}(sh|bash|cmd|powershell|exec)/i, description: THREAT_FAMILY_DEFINITIONS.BIND_SHELL },
+  { family: "C2_CALLBACK", severity: "CRITICAL", score: 90, pattern: /(command.?and.?control|c2|beacon|implant|payload).{0,120}(http|https|socket|poll|callback)/i, description: THREAT_FAMILY_DEFINITIONS.C2_CALLBACK },
+  { family: "PRIVILEGE_ESCALATION", severity: "HIGH", score: 80, pattern: /(chmod\s+4755|setuid|setgid|privilege escalation|uac bypass|pkexec|sudoers)/i, description: THREAT_FAMILY_DEFINITIONS.PRIVILEGE_ESCALATION },
+  { family: "SUDO_ABUSE", severity: "HIGH", score: 75, pattern: /(sudo\s+|sudoers|sudo -S|echo\s+.*\|\s*sudo)/i, description: THREAT_FAMILY_DEFINITIONS.SUDO_ABUSE },
+  { family: "SUID_ABUSE", severity: "HIGH", score: 75, pattern: /(chmod\s+u\+s|chmod\s+4755|setuid\s*\(|\/usr\/bin\/find\s+.*-exec\s+sh)/i, description: THREAT_FAMILY_DEFINITIONS.SUID_ABUSE },
+  { family: "SYMLINK_ATTACK", severity: "MEDIUM", score: 55, pattern: /(symlink|ln\s+-s|fs\.symlink|os\.symlink).{0,120}(\/etc|\.ssh|\.aws|root|home)/i, description: THREAT_FAMILY_DEFINITIONS.SYMLINK_ATTACK },
+  { family: "CRYPTO_MINING", severity: "CRITICAL", score: 90, pattern: /(xmrig|stratum\+tcp|monero|cryptonight|nicehash|minerd|coinhive)/i, description: THREAT_FAMILY_DEFINITIONS.CRYPTO_MINING },
+  { family: "RANSOMWARE_PATTERN", severity: "CRITICAL", score: 95, pattern: /(ransom|decrypt key|encryptFiles|crypto\.createCipher|Fernet).{0,160}(readdir|walk|glob|files|extension)/i, description: THREAT_FAMILY_DEFINITIONS.RANSOMWARE_PATTERN },
+  { family: "WIPER_PATTERN", severity: "CRITICAL", score: 95, pattern: /(rm\s+-rf\s+\/|format\s+[A-Z]:|del\s+\/f\s+\/s|shred\s+|sdelete|fs\.rmSync\s*\([^)]*recursive)/i, description: THREAT_FAMILY_DEFINITIONS.WIPER_PATTERN },
+  { family: "DEPENDENCY_CONFUSION", severity: "MEDIUM", score: 55, pattern: /(registry\.npmjs\.org|pypi\.org|pip install|npm install).{0,120}(internal|private|corp|company|@[^\/]+\/)/i, description: THREAT_FAMILY_DEFINITIONS.DEPENDENCY_CONFUSION },
+  { family: "TYPOSQUATTING", severity: "LOW", score: 35, pattern: /(reqeusts|requsts|expres[^s]|lodahs|reactt|djagno|flsak|openaii|anthropc|githb)/i, description: THREAT_FAMILY_DEFINITIONS.TYPOSQUATTING },
+  { family: "TIME_BASED_ATTACK", severity: "MEDIUM", score: 45, pattern: /(setTimeout|setInterval|sleep|cron|Date\.now|datetime\.now).{0,120}(payload|exec|delete|encrypt|download|shell)/i, description: THREAT_FAMILY_DEFINITIONS.TIME_BASED_ATTACK },
+  { family: "LOGIC_BOMB", severity: "HIGH", score: 70, pattern: /(if\s*\(.{0,80}(hostname|username|date|env|process\.env).{0,160}(delete|encrypt|exec|payload|shell))/i, description: THREAT_FAMILY_DEFINITIONS.LOGIC_BOMB },
+  { family: "SSRF_ATTEMPT", severity: "HIGH", score: 75, pattern: /(fetch|axios|requests|httpx|curl).{0,120}(169\.254\.169\.254|localhost|127\.0\.0\.1|metadata\.google\.internal|file:\/\/)/i, description: THREAT_FAMILY_DEFINITIONS.SSRF_ATTEMPT },
+  { family: "REGEX_DOS", severity: "MEDIUM", score: 55, pattern: /(new RegExp|\/\^?).{0,80}(\(\.\+\)\+|\(\.\*\)\+|\(\[.*\]\+\)\+|\(a\+\)\+)/i, description: THREAT_FAMILY_DEFINITIONS.REGEX_DOS },
+  { family: "COOKIE_THEFT", severity: "HIGH", score: 80, pattern: /(document\.cookie|chrome\.cookies|localStorage|sessionStorage).{0,120}(send|post|fetch|upload|exfiltrate|token)/i, description: THREAT_FAMILY_DEFINITIONS.COOKIE_THEFT },
+  { family: "KEYLOGGER_PATTERN", severity: "CRITICAL", score: 90, pattern: /(keydown|keypress|keyboard|pynput|GetAsyncKeyState|addEventListener\s*\(\s*['"]key).{0,120}(send|post|log|upload|capture)/i, description: THREAT_FAMILY_DEFINITIONS.KEYLOGGER_PATTERN },
+  { family: "SCREEN_CAPTURE", severity: "HIGH", score: 80, pattern: /(getDisplayMedia|screenshot|desktopCapturer|pyautogui\.screenshot|ImageGrab\.grab|screen\.capture)/i, description: THREAT_FAMILY_DEFINITIONS.SCREEN_CAPTURE },
+];
+
 const THREAT_FAMILY_SET = new Set(THREAT_FAMILIES);
-const STATIC_COVERED_FAMILIES = [...new Set(STATIC_RULES.map(rule => rule.family))].sort();
+const ALL_STATIC_RULES = [...STATIC_RULES, ...SUPPLEMENTAL_STATIC_RULES];
+const STATIC_COVERED_FAMILIES = [...new Set(ALL_STATIC_RULES.map(rule => rule.family))].sort();
 
 function coverageMetadata() {
   return {
@@ -352,7 +472,7 @@ function runStaticScan(code) {
   const threats = [];
   let threatScore = 0;
 
-  for (const rule of STATIC_RULES) {
+  for (const rule of ALL_STATIC_RULES) {
     const match = rule.pattern.exec(code);
     if (!match) continue;
     threatScore = Math.max(threatScore, rule.score);
@@ -400,6 +520,7 @@ function normalizeResult(result) {
   if (!Array.isArray(normalized.safe_patterns_noted)) normalized.safe_patterns_noted = [];
   normalized.safe_patterns_noted = normalized.safe_patterns_noted.slice(0, 10);
   normalized.threat_families_checked = THREAT_FAMILIES;
+  normalized.threat_family_definitions = THREAT_FAMILY_DEFINITIONS;
   normalized.coverage = coverageMetadata();
   normalized.threats = normalized.threats.map(threat => {
     if (!threat || typeof threat !== "object") return threat;
@@ -617,6 +738,8 @@ if (process.env.NODE_ENV === "test") {
     mergeStaticThreats,
     normalizeResult,
     THREAT_FAMILIES,
+    THREAT_FAMILY_DEFINITIONS,
+    ALL_STATIC_RULES,
     coverageMetadata,
   };
 }
