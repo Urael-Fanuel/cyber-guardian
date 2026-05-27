@@ -8,7 +8,10 @@ Cyber-Guardian should use a hybrid detection model:
 
 ## Current Static Rules
 
-The first production rules live in `api/scan.js` as `STATIC_RULES`:
+The canonical 60-family registry lives in `api/scan.js` as `THREAT_FAMILIES`.
+The API prompt, output metadata, and tests use this registry as the source of truth.
+
+The first high-confidence deterministic rules live in `api/scan.js` as `STATIC_RULES`:
 
 - `REVERSE_SHELL`
 - `API_KEY_THEFT`
@@ -20,6 +23,13 @@ The first production rules live in `api/scan.js` as `STATIC_RULES`:
 
 These are intentionally high-signal patterns. They should produce fewer false positives
 than broad keyword matching.
+
+Every scan response includes:
+
+- `threat_families_checked`: the full 60-family list.
+- `coverage.total_families`: currently `60`.
+- `coverage.static_families`: how many families have deterministic static rules.
+- `coverage.ai_families`: how many families are covered by AI semantic analysis.
 
 ## Rule Requirements
 
@@ -36,7 +46,7 @@ Every deterministic rule should define:
 The AI may add findings, improve explanation, or classify ambiguous behavior. It must not
 remove or downgrade deterministic findings.
 
-## Next Rule Families To Add
+## Next Deterministic Rule Families To Add
 
 - `SSRF_ATTEMPT`
 - `PATH_TRAVERSAL`
@@ -48,7 +58,7 @@ remove or downgrade deterministic findings.
 - `RANSOMWARE_PATTERN`
 - `TYPOSQUATTING`
 - `DEPENDENCY_CONFUSION`
-- `MCP_TOOL_POISONING`
+- `TOOL_POISONING`
 - `TOOL_DESCRIPTION_MANIPULATION`
 - `RESOURCE_HIJACKING`
 - `CROSS_TOOL_CONFUSION`

