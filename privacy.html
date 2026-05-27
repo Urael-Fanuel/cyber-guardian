@@ -36,7 +36,7 @@ footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1E2D3D; fon
   <h2>1. What We Collect</h2>
   <p>Cyber-Guardian AI collects the minimum data needed to provide security scan results and protect the service from abuse.</p>
   <ul>
-    <li><strong>Code submitted for scanning:</strong> processed for security analysis and sent to Anthropic's API.</li>
+    <li><strong>Code submitted for scanning:</strong> processed for security analysis and may be sent to a third-party AI provider.</li>
     <li><strong>Scan metadata:</strong> scope, status, score, threat count, short threat summaries, timestamps, and one-way hashes used for caching and quota enforcement.</li>
     <li><strong>IP-derived usage keys:</strong> IP addresses are hashed before being stored for rate limiting and quota windows.</li>
     <li><strong>Email address:</strong> collected only if you subscribe to updates.</li>
@@ -47,7 +47,7 @@ footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1E2D3D; fon
   <div class="warn">
     Do not submit code unless you have permission to analyze it. Avoid pasting production secrets, private keys, customer data, or highly confidential source code.
   </div>
-  <p>Submitted code is sent to Anthropic for AI analysis. Cyber-Guardian does not intentionally store full submitted code in the database. The server may temporarily process the code in memory and may cache a one-way hash for duplicate-scan caching.</p>
+  <p>Submitted code may be sent to a third-party AI provider for analysis. Cyber-Guardian does not intentionally store full submitted code in the database. The server may temporarily process the code in memory and may cache a one-way hash for duplicate-scan caching.</p>
 
   <h2>3. What We Do Not Do</h2>
   <div class="good">
@@ -67,7 +67,7 @@ footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1E2D3D; fon
   <h2>5. Third-Party Providers</h2>
   <p>The service currently uses:</p>
   <ul>
-    <li><strong>Anthropic:</strong> AI-powered code analysis. See <a href="https://www.anthropic.com/privacy">anthropic.com/privacy</a>.</li>
+    <li><strong>Third-party AI provider:</strong> AI-powered code analysis. The current provider may include Anthropic. See <a href="https://www.anthropic.com/privacy">anthropic.com/privacy</a>.</li>
     <li><strong>Vercel:</strong> hosting and serverless request processing.</li>
     <li><strong>Supabase:</strong> database storage for quotas, scan statistics, and dashboard data.</li>
   </ul>
