@@ -207,19 +207,36 @@ const DASH_T = {
     no_scans: 'No scans yet - be the first to scan!',
     cta_title: 'Scan your MCP Server, AI Skill or IDE Extension - free',
     cta_sub: 'Join thousands of developers who\'ve already protected their AI stack.',
-    threat_privilege: 'Privilege Escalation',
-    threat_code_injection: 'Code Injection',
-    threat_context: 'Context Manipulation',
-    threat_os_cmd: 'OS Command Execution',
-    threat_docker: 'Docker Escape',
-    threat_prompt: 'Prompt Injection',
-    threat_cred: 'Credential Theft',
-    threat_exfil: 'Data Exfiltration',
-    threat_apikey: 'API Key Theft',
-    threat_shell: 'Reverse Shell',
-    threat_crypto: 'Crypto Mining',
-    threat_tool_poison: 'Tool Poisoning',
-    threat_mcp_cred: 'MCP Credential Theft',
+    threat_privilege: 'may indicate an attempt to gain unauthorized system access',
+    threat_code_injection: 'may indicate execution of malicious code on your machine',
+    threat_context: 'may indicate manipulation of the AI context to bypass controls',
+    threat_os_cmd: 'may indicate execution of system commands without your knowledge',
+    threat_docker: 'may indicate an attempt to escape container isolation',
+    threat_prompt: 'may indicate injection of hidden instructions into the AI',
+    threat_cred: 'may indicate collection of your passwords and API keys',
+    threat_exfil: 'may indicate sending your files or data to an external server',
+    threat_apikey: 'may indicate theft of your API credentials',
+    threat_shell: 'may indicate giving an attacker remote control of your machine',
+    threat_crypto: 'may indicate using your machine for cryptocurrency mining',
+    threat_tool_poison: 'may indicate a malicious tool disguised as a legitimate one',
+    threat_mcp_cred: 'may indicate theft of your MCP credentials',
+    threat_path: 'may indicate unauthorized access to files outside permitted directories',
+    threat_dir: 'may indicate browsing restricted directories on your system',
+    threat_symlink: 'may indicate using symbolic links to access restricted files',
+    threat_resource: 'may indicate intentional exhaustion of your system resources',
+    threat_env: 'may indicate reading sensitive environment variables from your system',
+    threat_file: 'may indicate unauthorized read or write of files on your machine',
+    threat_network: 'may indicate communication with an external server without your knowledge',
+    threat_rce: 'may indicate remote execution of arbitrary code on your machine',
+    threat_sqli: 'may indicate injection of malicious SQL commands',
+    threat_ssrf: 'may indicate forged requests to internal network resources',
+    threat_backdoor: 'may indicate a hidden access point left in the system',
+    threat_keylogger: 'may indicate recording of your keystrokes',
+    threat_clipboard: 'may indicate reading content from your clipboard',
+    threat_obfuscation: 'may indicate deliberately hidden malicious code',
+    threat_c2: 'may indicate communication with a command and control server',
+    threat_supply: 'may indicate a compromised dependency or package',
+    threat_logic_bomb: 'may indicate code that activates maliciously under certain conditions',
     cta_btn: '▶ \u00a0Start Scanning',
     last_scan: 'Last scan:', just_now: 'just now', min_ago: 'm ago', hr_ago: 'h ago', day_ago: 'd ago',
     scope_mcp: 'MCP Server', scope_skill: 'AI Skill', scope_ext: 'IDE Extension',
@@ -242,19 +259,36 @@ const DASH_T = {
     no_scans: 'אין סריקות עדיין - היה הראשון!',
     cta_title: 'סרוק שרת MCP, AI Skill או הרחבת IDE - בחינם',
     cta_sub: 'הצטרף לאלפי מפתחים שכבר הגנו על ה-AI stack שלהם.',
-    threat_privilege: 'הסלמת הרשאות',
-    threat_code_injection: 'הזרקת קוד',
-    threat_context: 'מניפולציית הקשר',
-    threat_os_cmd: 'הרצת פקודות מערכת',
-    threat_docker: 'בריחה מ-Docker',
-    threat_prompt: 'הזרקת פרומפט',
-    threat_cred: 'גניבת פרטי גישה',
-    threat_exfil: 'דליפת נתונים',
-    threat_apikey: 'גניבת API Key',
-    threat_shell: 'מעטפת הפוכה',
-    threat_crypto: 'כריית מטבעות',
-    threat_tool_poison: 'הרעלת כלי',
-    threat_mcp_cred: 'גניבת פרטי MCP',
+    threat_privilege: 'עלול להצביע על ניסיון לקבל גישה לא מורשית למערכת',
+    threat_code_injection: 'עלול להצביע על הרצת קוד זדוני במחשבך',
+    threat_context: 'עלול להצביע על מניפולציה בהקשר ה-AI לעקיפת בקרות',
+    threat_os_cmd: 'עלול להצביע על הרצת פקודות מערכת ללא ידיעתך',
+    threat_docker: 'עלול להצביע על ניסיון לצאת מהבידוד של הקונטיינר',
+    threat_prompt: 'עלול להצביע על הזרקת הנחיות נסתרות ל-AI',
+    threat_cred: 'עלול להצביע על איסוף הסיסמאות ומפתחות ה-API שלך',
+    threat_exfil: 'עלול להצביע על שליחת קבצים או נתונים לשרת חיצוני',
+    threat_apikey: 'עלול להצביע על גניבת פרטי הגישה ל-API שלך',
+    threat_shell: 'עלול להצביע על מתן שליטה מרחוק על מחשבך לתוקף',
+    threat_crypto: 'עלול להצביע על שימוש במחשבך לכריית מטבעות קריפטו',
+    threat_tool_poison: 'עלול להצביע על כלי זדוני המתחזה לכלי לגיטימי',
+    threat_mcp_cred: 'עלול להצביע על גניבת פרטי הגישה ל-MCP שלך',
+    threat_path: 'עלול להצביע על גישה לקבצים מחוץ לתיקיות המורשות',
+    threat_dir: 'עלול להצביע על גלישה בספריות מוגבלות במערכת',
+    threat_symlink: 'עלול להצביע על שימוש בקישורים סמליים לגישה לקבצים מוגבלים',
+    threat_resource: 'עלול להצביע על ניצול מכוון של משאבי המערכת שלך',
+    threat_env: 'עלול להצביע על קריאת משתני סביבה רגישים מהמערכת',
+    threat_file: 'עלול להצביע על קריאה או כתיבה לא מורשית של קבצים',
+    threat_network: 'עלול להצביע על תקשורת עם שרת חיצוני ללא ידיעתך',
+    threat_rce: 'עלול להצביע על הרצת קוד שרירותי מרחוק על מחשבך',
+    threat_sqli: 'עלול להצביע על הזרקת פקודות SQL זדוניות',
+    threat_ssrf: 'עלול להצביע על זיוף בקשות למשאבי רשת פנימיים',
+    threat_backdoor: 'עלול להצביע על נקודת גישה נסתרת שהושארה במערכת',
+    threat_keylogger: 'עלול להצביע על הקלטת הקשות המקלדת שלך',
+    threat_clipboard: 'עלול להצביע על קריאת תוכן לוח הגזירה שלך',
+    threat_obfuscation: 'עלול להצביע על קוד זדוני מוסתר בכוונה',
+    threat_c2: 'עלול להצביע על תקשורת עם שרת שליטה ובקרה',
+    threat_supply: 'עלול להצביע על תלות או חבילה שנפרצה',
+    threat_logic_bomb: 'עלול להצביע על קוד המופעל באופן זדוני בתנאים מסוימים',
     cta_btn: '▶ \u00a0התחל לסרוק',
     last_scan: 'סריקה אחרונה:', just_now: 'הרגע', min_ago: 'ד׳ לפני', hr_ago: 'ש׳ לפני', day_ago: 'י׳ לפני',
     scope_mcp: 'שרת MCP', scope_skill: 'AI Skill', scope_ext: 'הרחבת IDE',
@@ -509,19 +543,38 @@ function render(d) {
                 'CRYPTO_MINING': t('threat_crypto'),
                 'TOOL_POISONING': t('threat_tool_poison'),
                 'MCP_CREDENTIAL_EXFILTRATION': t('threat_mcp_cred'),
+                'PATH_TRAVERSAL': t('threat_path'),
+                'DIRECTORY_TRAVERSAL': t('threat_dir'),
+                'SYMLINK_ATTACK': t('threat_symlink'),
+                'RESOURCE_EXHAUSTION': t('threat_resource'),
+                'ENV_VAR_THEFT': t('threat_env'),
+                'FILE_SYSTEM_ATTACK': t('threat_file'),
+                'NETWORK_CALLBACK': t('threat_network'),
+                'REMOTE_CODE_EXECUTION': t('threat_rce'),
+                'SQL_INJECTION': t('threat_sqli'),
+                'SSRF_ATTEMPT': t('threat_ssrf'),
+                'BACKDOOR': t('threat_backdoor'),
+                'KEYLOGGER_PATTERN': t('threat_keylogger'),
+                'CLIPBOARD_HIJACK': t('threat_clipboard'),
+                'C2_CALLBACK': t('threat_c2'),
+                'SUPPLY_CHAIN_ATTACK': t('threat_supply'),
+                'LOGIC_BOMB': t('threat_logic_bomb'),
               };
-              return threatMap[name] || name;
-            }).join(', ') : '';
+              const explanation = threatMap[name];
+              return explanation
+                ? `<div style="margin-top:5px"><span style="color:#7A9BB0;font-weight:600">${name}</span> - ${explanation}</div>`
+                : `<div style="margin-top:5px"><span style="color:#7A9BB0">${name.toLowerCase().replace(/_/g,' ')}</span></div>`;
+            }).join('') : '';
             const showThreats = s.threats_summary && s.status !== 'STATUS_SAFE';
             return `
-            <div class="feed-item">
-              <div class="fi-scope">${scopeEmoji(s.scope)}</div>
-              <div class="fi-status ${statusClass(s.status)}">${statusLabel(s.status)}</div>
-              <div class="fi-score">
+            <div class="feed-item" style="align-items:flex-start">
+              <div class="fi-scope" style="margin-top:4px">${scopeEmoji(s.scope)}</div>
+              <div class="fi-status ${statusClass(s.status)}" style="margin-top:4px">${statusLabel(s.status)}</div>
+              <div class="fi-score" style="flex:1">
                 ${scopeLabel(s.scope)} · ${t('score')}: ${s.threat_score}/100 · ${s.threat_count} ${s.threat_count !== 1 ? t('threats') : t('threat')}
-                ${showThreats ? `<div style="font-size:11px;color:var(--orange);margin-top:3px">⚠ ${threatNames}</div>` : ''}
+                ${showThreats ? `<div style="font-size:11px;color:var(--orange);margin-top:4px">⚠ ${threatNames}</div>` : ''}
               </div>
-              <div class="fi-time">${timeAgo(s.scanned_at)}</div>
+              <div class="fi-time" style="margin-top:4px">${timeAgo(s.scanned_at)}</div>
             </div>`;
           }).join('')}
       </div>
