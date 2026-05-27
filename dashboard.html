@@ -312,6 +312,18 @@ function buildLangSwitcher() {
 buildLangSwitcher();
 document.documentElement.dir = LANGS[currentLang].dir;
 
+// Apply translations to static elements on initial load
+(function() {
+  const heroTag = document.getElementById('hero-tag');
+  if (heroTag) heroTag.textContent = t('tag');
+  const heroTitle = document.getElementById('hero-title');
+  if (heroTitle) heroTitle.innerHTML = `${t('title1')} <span>${t('title2')}</span><br>${t('title3')}`;
+  const heroSub = document.getElementById('hero-sub');
+  if (heroSub) heroSub.textContent = t('sub');
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) backBtn.textContent = t('back');
+})();
+
 function animateCount(el, target, duration = 1500) {
   const start = 0;
   const step = target / (duration / 16);
