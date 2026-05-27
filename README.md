@@ -1,124 +1,76 @@
-\# 🛡️ Cyber-Guardian AI — MCP Security Scanner
+# Cyber-Guardian AI
 
+Security scanner for MCP servers, AI Skills, and IDE extensions.
 
+Live: https://cyber-guardian-mu.vercel.app
 
-> The first dedicated security scanner for MCP servers, AI Skills, and IDE Extensions.
+## What It Does
 
+Cyber-Guardian AI helps developers and security teams review code before installing an MCP server, AI Skill, or IDE extension.
 
+It checks for high-risk behavior such as:
 
-🔴 Live: https://cyber-guardian-mu.vercel.app
+- Tool poisoning and prompt injection
+- Credential and API key access
+- Reverse shells and OS command execution
+- Suspicious install hooks
+- Sensitive file access
+- Obfuscation and exfiltration patterns
+- Supply-chain risk indicators
 
-
-
-\---
-
-
-
-\## The Problem
-
-
-
-MCP (Model Context Protocol) lets AI assistants connect to everything — Gmail, GitHub, your file system. Over 10,000 MCP servers exist today. Zero are audited.
-
-
-
-A malicious MCP server runs on your machine with full permissions. It can steal your API keys, exfiltrate your source code, and execute commands on your system. No existing security tool scans for this. Until now.
-
-
-
-\---
-
-
-
-\## What It Does
-
-
-
-Paste any MCP server, AI Skill, or IDE extension → security verdict in seconds.
-
-
-
-\*\*Detects 60 threat families including:\*\*
-
-\- 🔴 Tool Poisoning — malicious tools disguised as legitimate
-
-\- 🔴 Indirect Prompt Injection via tool results
-
-\- 🔴 MCP Credential Exfiltration
-
-\- 🔴 API Key Theft, Reverse Shells, Supply Chain Attacks
-
-\- 🔴 Obfuscation, Crypto Mining, Data Exfiltration
-
-
-
-\---
-
-
-
-\## Tech Stack
-
-
+## Architecture
 
 | Layer | Technology |
+| --- | --- |
+| Frontend | Static HTML/CSS/JavaScript |
+| API | Vercel Serverless Functions |
+| AI analysis | Anthropic Claude |
+| Database | Supabase |
+| Rate limits | Supabase RPC plus server fallback |
+| Batch scanner | Python scanner for GitHub, npm, and MCP directories |
 
-|---|---|
+## Production Security Controls
 
-| Frontend | HTML/CSS/JS — no framework |
+- CORS allowlist via `ALLOWED_ORIGINS`
+- Server-side free quota and rate limits via Supabase
+- Global daily API cap
+- Submitted code is not executed
+- Static deterministic rules are merged with AI findings
+- AI findings cannot downgrade high-confidence static findings
+- No full submitted code is intentionally stored in Supabase
 
-| Backend | Vercel Serverless Functions (Node.js) |
+## Local Checks
 
-| AI Engine | Anthropic Claude Sonnet |
+```bash
+npm test
+npm run check
+python -m py_compile mcp_scanner.py
+```
 
-| Security | Rate limiting, prompt injection isolation, caching |
+## Required Production Environment
 
-| Languages | English, Hebrew, German, Japanese, Korean, French, Portuguese |
+See `PRODUCTION.md` for Vercel and Supabase setup.
 
+Core variables:
 
+- `ANTHROPIC_API_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_KEY`
+- `ALLOWED_ORIGINS`
+- `SCAN_USAGE_MODE=strict`
 
-\---
+## Supabase Setup
 
+Run this migration once in the Supabase SQL Editor:
 
+```text
+supabase/migrations/001_scan_usage_limits.sql
+```
 
-\## Business Model
+## Security Engine
 
+See `SECURITY_ENGINE.md` for the rule model and next detection families to add.
 
+## License
 
-| Plan | Price | Scans/month |
-
-|---|---|---|
-
-| Free | $0 | 7 |
-
-| Pro | $9/mo | 150 |
-
-| Team | $29/mo | 500 |
-
-| Business | $99/mo | 3,000 |
-
-
-
-\---
-
-
-
-\## Why Now
-
-
-
-The MCP ecosystem is growing fast — and attackers are already publishing malicious servers. Cyber-Guardian is positioned to be the security standard before attacks become mainstream.
-
-
-
-\---
-
-
-
-\## Built By
-
-
-
-Molaly Mekonen — AI Solutions Builder
-
-7 years semiconductor production (Intel) · AI Solutions Architect (HackerU)
-
+Apache 2.0

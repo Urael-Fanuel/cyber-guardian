@@ -1,1 +1,9 @@
-{"dependencies":{"@supabase/supabase-js":"^2.39.0"}} 
+{
+  "scripts": {
+    "test": "node tests/scan-security.test.js",
+    "check": "node --check api/scan.js && node --check api/mcp-scan.js && node --check api/site-stats.js && node --check api/subscribe.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

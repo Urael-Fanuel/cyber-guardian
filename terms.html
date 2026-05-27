@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terms of Service — Cyber-Guardian AI</title>
+<title>Terms of Service - Cyber-Guardian AI</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: #080C10; color: #C8D8E8; font-family: 'IBM Plex Mono', monospace; line-height: 1.7; padding: 40px 20px; min-height: 100vh; }
 .wrap { max-width: 760px; margin: 0 auto; }
 header { padding-bottom: 24px; border-bottom: 1px solid #1E2D3D; margin-bottom: 32px; }
-a.back { color: #00D4FF; text-decoration: none; font-size: 11px; letter-spacing: 1px; }
+a { color: #00D4FF; }
+a.back { text-decoration: none; font-size: 11px; letter-spacing: 1px; }
 a.back:hover { text-decoration: underline; }
 h1 { font-family: 'Syne', sans-serif; color: #fff; font-size: 32px; font-weight: 800; margin: 8px 0 16px; }
 .updated { font-size: 11px; color: #4A6070; }
@@ -26,47 +27,55 @@ footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1E2D3D; fon
 <body>
 <div class="wrap">
   <header>
-    <a href="/" class="back">← Back to scanner</a>
+    <a href="/" class="back">&lt;- Back to scanner</a>
     <h1>Terms of Service</h1>
-    <div class="updated">Last updated: 2026</div>
+    <div class="updated">Last updated: May 28, 2026</div>
   </header>
 
   <h2>1. The Service</h2>
-  <p>Cyber-Guardian AI ("Service") is a security scanning tool for AI skills, MCP servers, and similar code. The Service uses Claude AI from Anthropic and a database of threat signatures to analyze code you provide.</p>
+  <p>Cyber-Guardian AI is a security scanning tool for MCP servers, AI Skills, IDE extensions, and related code. It combines deterministic threat rules with AI-assisted analysis to provide security verdicts and recommendations.</p>
 
-  <h2>2. No Warranty</h2>
+  <h2>2. Advisory Results</h2>
   <div class="warn">
-    <strong>IMPORTANT:</strong> The Service is provided "as-is" without warranty of any kind. Scan results are <strong>advisory only</strong>. No security tool can detect 100% of threats. You are responsible for your own security decisions.
+    Scan results are advisory only. No scanner can detect every vulnerability, malicious behavior, supply-chain issue, or prompt injection. You remain responsible for installation, deployment, and security decisions.
   </div>
 
-  <h2>3. What You Agree To</h2>
+  <h2>3. Code Submission Rules</h2>
   <ul>
-    <li>You will not abuse the Service (no automated scraping, no exceeding rate limits, no reverse engineering)</li>
-    <li>You will not submit confidential third-party code without permission</li>
-    <li>You will not use the Service to test attacks against systems you don't own</li>
-    <li>You accept that scan results are educated estimates, not guarantees</li>
+    <li>You must have permission to submit the code you scan.</li>
+    <li>Do not submit secrets, private keys, credentials, customer data, or confidential third-party source code without authorization.</li>
+    <li>Submitted code may be sent to Anthropic for analysis, as described in the Privacy Policy.</li>
+    <li>You may not use the service to attack, overload, or bypass another system.</li>
   </ul>
 
-  <h2>4. Limitation of Liability</h2>
-  <p>To the maximum extent permitted by law, Cyber-Guardian AI and its operators are not liable for any damages, including but not limited to: security incidents from code that was scanned and rated SAFE, business losses, data loss, or any consequential damages.</p>
+  <h2>4. Acceptable Use</h2>
+  <ul>
+    <li>Do not exceed or bypass rate limits, quotas, CORS controls, or abuse protections.</li>
+    <li>Do not automate high-volume scans without written permission.</li>
+    <li>Do not reverse engineer, scrape, or resell the service as your own scanner.</li>
+    <li>Do not submit illegal content or code intended to harm systems you do not own or administer.</li>
+  </ul>
 
   <h2>5. Free Tier and Paid Plans</h2>
-  <p>The free tier allows 7 scans per month. Paid plans (Pro $9/mo, Team $29/mo, Business $99/mo, Enterprise custom) provide higher quotas. Payments are processed through Stripe and are non-refundable except where required by law.</p>
+  <p>The free tier currently allows 7 scans per month, enforced by server-side usage limits. Paid plan names, quotas, and prices shown on the site are subject to change before checkout is enabled. Payment processing, if enabled, will be handled by a third-party provider.</p>
 
-  <h2>6. Your Data</h2>
-  <p>Code you submit for scanning is sent to Anthropic's API for analysis. We do not store the code permanently — see our <a href="/privacy.html" style="color:#00D4FF">Privacy Policy</a> for details.</p>
+  <h2>6. Availability and Changes</h2>
+  <p>The service may be changed, paused, rate-limited, or discontinued at any time. We may update detection rules, AI models, quotas, and pricing as the product evolves.</p>
 
-  <h2>7. Changes to Service</h2>
-  <p>We may modify or discontinue the Service at any time. We will provide reasonable notice for material changes affecting paid subscribers.</p>
+  <h2>7. No Warranty</h2>
+  <p>The service is provided "as is" and "as available", without warranties of any kind, express or implied, including merchantability, fitness for a particular purpose, and non-infringement.</p>
 
-  <h2>8. Governing Law</h2>
-  <p>These terms are governed by the laws of Israel. Disputes will be resolved in the courts of Tel Aviv.</p>
+  <h2>8. Limitation of Liability</h2>
+  <p>To the maximum extent permitted by law, Cyber-Guardian AI and its operators are not liable for damages arising from scan results, missed detections, false positives, service downtime, business losses, data loss, or security incidents.</p>
 
-  <h2>9. Contact</h2>
-  <p>Questions? Contact us at <strong>legal@your-domain.com</strong></p>
+  <h2>9. Governing Law</h2>
+  <p>These terms are governed by the laws of Israel, unless mandatory local law requires otherwise.</p>
+
+  <h2>10. Contact</h2>
+  <p>For legal, privacy, or product questions, contact the project operator through the contact channel listed on the site or repository.</p>
 
   <footer>
-    Cyber-Guardian AI · Apache 2.0 License · <a href="/" style="color:#4A6070">Home</a>
+    Cyber-Guardian AI · Apache 2.0 License · <a href="/">Home</a>
   </footer>
 </div>
 </body>

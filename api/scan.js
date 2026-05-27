@@ -383,7 +383,7 @@ RETURN THIS EXACT JSON:
   "recommendation": "one clear action the user should take"
 }`;
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   const origin = getRequestOrigin(req);
   setCors(res, origin);
 
@@ -520,4 +520,14 @@ module.exports = async function handler(req, res) {
       return res.status(504).json({ error: "Scan timed out. Try again." });
     return res.status(500).json({ error: "Scan failed. Try again." });
   }
-};
+}
+
+module.exports = handler;
+
+if (process.env.NODE_ENV === "test") {
+  module.exports._test = {
+    runStaticScan,
+    mergeStaticThreats,
+    normalizeResult,
+  };
+}
