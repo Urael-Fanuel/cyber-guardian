@@ -36,6 +36,7 @@ SCAN_LIMIT     = int(os.environ.get("SCAN_LIMIT", 200))   # servers per run
 GITHUB_DELAY   = float(os.environ.get("GITHUB_DELAY", 1.2))   # seconds between API calls
 NPM_DELAY      = float(os.environ.get("NPM_DELAY", 0.5))
 CYBER_GUARDIAN_URL = os.environ.get("CYBER_GUARDIAN_URL", "https://cyber-guardian-mu.vercel.app")
+CG_MAX_INPUT_CHARS = int(os.environ.get("CG_MAX_INPUT_CHARS", "50000"))
 CG_SCAN_DELAY  = float(os.environ.get("CG_SCAN_DELAY", 15.0))  # seconds between CG API calls
 
 logging.basicConfig(
@@ -361,6 +362,9 @@ SCAN_EXTENSIONS = {
     ".yaml", ".yml",  # workflow files
 }
 MAX_FILE_SIZE = 500_000  # 500 KB — skip huge minified files
+MAX_ARCHIVE_SIZE = 20_000_000
+MAX_ARCHIVE_MEMBERS = 2000
+MAX_EXTRACTED_BYTES = 5_000_000
 
 def compute_risk_score(threats: list[Threat]) -> tuple[int, str]:
     severity_weights = {
@@ -578,21 +582,33 @@ async def fetch_npm_tarball_contents(client: httpx.AsyncClient, name: str, versi
         r = await client.get(url, timeout=30, follow_redirects=True)
         if r.status_code != 200:
             return files
+        content_length = int(r.headers.get("content-length") or 0)
+        if content_length > MAX_ARCHIVE_SIZE or len(r.content) > MAX_ARCHIVE_SIZE:
+            log.warning(f"  npm tarball too large, skipping {name}")
+            return files
 
         tgz = io.BytesIO(r.content)
         with tarfile.open(fileobj=tgz, mode="r:gz") as tar:
-            for member in tar.getmembers():
+            members = tar.getmembers()
+            if len(members) > MAX_ARCHIVE_MEMBERS:
+                log.warning(f"  npm tarball has too many files, skipping {name}")
+                return files
+            extracted_bytes = 0
+            for member in members:
                 path = member.name
                 ext  = "." + path.rsplit(".", 1)[-1] if "." in path else ""
                 if ext.lower() not in SCAN_EXTENSIONS:
                     continue
                 if member.size > MAX_FILE_SIZE:
                     continue
+                if extracted_bytes + member.size > MAX_EXTRACTED_BYTES:
+                    break
                 try:
                     f = tar.extractfile(member)
                     if f:
                         content = f.read().decode("utf-8", errors="replace")
                         files[path] = content
+                        extracted_bytes += member.size
                 except Exception:
                     pass
     except Exception as e:
@@ -712,7 +728,7 @@ async def scan_with_cyber_guardian(client: httpx.AsyncClient, code: str, scope: 
     try:
         r = await client.post(
             f"{CYBER_GUARDIAN_URL}/api/scan",
-            json={"code": code[:200000], "scope": scope},
+            json={"code": code[:CG_MAX_INPUT_CHARS], "scope": scope},
             timeout=60,
             headers={"Content-Type": "application/json"},
         )

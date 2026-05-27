@@ -6,22 +6,49 @@ const { createClient } = require('@supabase/supabase-js');
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const API_SECRET   = process.env.SCANNER_API_SECRET || '';
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173')
+  .split(',').map(s => s.trim()).filter(Boolean);
 
 function getSupabase() {
   return createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+function getOrigin(req) {
+  return req.headers.origin || '';
+}
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  return ALLOWED_ORIGINS.includes(origin);
+}
+
+function setCors(req, res) {
+  const origin = getOrigin(req);
+  if (origin && isAllowedOrigin(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Content-Type', 'application/json');
 }
 
+function rejectDisallowedOrigin(req, res) {
+  if (isAllowedOrigin(getOrigin(req))) return false;
+  res.status(403).json({ error: 'Origin not allowed' });
+  return true;
+}
+
+function clampInt(value, fallback, min, max) {
+  const parsed = parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
 async function actionStats(sb, res) {
-  const { data: runs }    = await sb.from('mcp_scan_runs').select('*').order('started_at', { ascending: false }).limit(1);
+  const { data: runs }    = await sb.from('mcp_scan_runs').select('id,started_at,completed_at,total_scanned,total_malicious,by_source,by_risk_level,by_category').order('started_at', { ascending: false }).limit(1);
   const { data: servers } = await sb.from('mcp_servers').select('risk_level, source');
-  const { data: cats }    = await sb.from('mcp_threat_category_counts').select('*');
+  const { data: cats }    = await sb.from('mcp_threat_category_counts').select('category,total');
   const { data: trend }   = await sb.from('mcp_scan_runs').select('started_at,total_scanned,total_malicious').order('started_at', { ascending: false }).limit(7);
 
   const riskCounts = {}, srcCounts = {};
@@ -42,8 +69,8 @@ async function actionStats(sb, res) {
 }
 
 async function actionServers(sb, params, res) {
-  const page    = parseInt(params.get('page') || '1', 10);
-  const perPage = Math.min(parseInt(params.get('per_page') || '50', 10), 100);
+  const page    = clampInt(params.get('page'), 1, 1, 10000);
+  const perPage = clampInt(params.get('per_page'), 50, 1, 100);
   const source  = params.get('source');
   const risk    = params.get('risk_level');
   const offset  = (page - 1) * perPage;
@@ -61,16 +88,16 @@ async function actionServers(sb, params, res) {
 }
 
 async function actionThreats(sb, params, res) {
-  const limit  = Math.min(parseInt(params.get('limit') || '50', 10), 200);
+  const limit  = clampInt(params.get('limit'), 50, 1, 200);
   const source = params.get('source');
-  let query = sb.from('mcp_threats_view').select('*').limit(limit);
+  let query = sb.from('mcp_threats_view').select('server_name,source,url,risk_level,risk_score,category,severity,title,description,file_path,line_number,scan_date').limit(limit);
   if (source) query = query.eq('source', source);
   const { data } = await query;
   res.status(200).json({ threats: data || [] });
 }
 
 async function actionHistory(sb, res) {
-  const { data } = await sb.from('mcp_scan_runs').select('*').order('started_at', { ascending: false }).limit(30);
+  const { data } = await sb.from('mcp_scan_runs').select('id,started_at,completed_at,total_scanned,total_malicious,by_source,by_risk_level,by_category').order('started_at', { ascending: false }).limit(30);
   res.status(200).json({ history: [...(data || [])].reverse() });
 }
 
@@ -83,8 +110,12 @@ async function actionTrigger(body, res) {
 }
 
 module.exports = async function handler(req, res) {
-  setCors(res);
-  if (req.method === 'OPTIONS') return res.status(204).end();
+  setCors(req, res);
+  if (req.method === 'OPTIONS') {
+    if (rejectDisallowedOrigin(req, res)) return;
+    return res.status(204).end();
+  }
+  if (rejectDisallowedOrigin(req, res)) return;
 
   if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Supabase not configured' });
 
@@ -104,6 +135,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'trigger') return await actionTrigger(req.body, res);
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    return res.status(500).json({ error: `Server error: ${err.message}` });
+    console.error('[mcp-scan]', err);
+    return res.status(500).json({ error: 'Server error' });
   }
 };

@@ -3,21 +3,51 @@ const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173')
+  .split(',').map(s => s.trim()).filter(Boolean);
 
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+function getOrigin(req) {
+  return req.headers.origin || '';
+}
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  return ALLOWED_ORIGINS.includes(origin);
+}
+
+function setCors(req, res) {
+  const origin = getOrigin(req);
+  if (origin && isAllowedOrigin(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Content-Type', 'application/json');
 }
 
+function rejectDisallowedOrigin(req, res) {
+  if (isAllowedOrigin(getOrigin(req))) return false;
+  res.status(403).json({ error: 'Origin not allowed' });
+  return true;
+}
+
 module.exports = async function handler(req, res) {
-  setCors(res);
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  setCors(req, res);
+  if (req.method === 'OPTIONS') {
+    if (rejectDisallowedOrigin(req, res)) return;
+    return res.status(200).end();
+  }
+  if (rejectDisallowedOrigin(req, res)) return;
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Not configured' });
 
   try {
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: scans } = await sb.from('site_scans').select('*').order('scanned_at', { ascending: false });
+    const { data: scans } = await sb
+      .from('site_scans')
+      .select('scope,status,threat_score,threat_count,threats_summary,scanned_at')
+      .order('scanned_at', { ascending: false })
+      .limit(5000);
 
     if (!scans || scans.length === 0) {
       return res.status(200).json({
@@ -72,6 +102,7 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    console.error('[site-stats]', err);
+    return res.status(500).json({ error: 'Server error' });
   }
 };
