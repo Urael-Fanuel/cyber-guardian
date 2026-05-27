@@ -1,4 +1,4 @@
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
   .split(",").map(s => s.trim()).filter(Boolean);
 
 const state = { ipBuckets: new Map() };

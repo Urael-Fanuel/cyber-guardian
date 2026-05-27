@@ -2,7 +2,7 @@
 
 Security scanner for MCP servers, AI Skills, and IDE extensions.
 
-Live: https://cyber-guardian-mu.vercel.app
+Live: https://cyberguardianscan.com
 
 ## What It Does
 

@@ -15,7 +15,7 @@ ANTHROPIC_TIMEOUT_MS=25000
 SUPABASE_URL=...
 SUPABASE_SERVICE_KEY=...
 
-ALLOWED_ORIGINS=https://cyber-guardian-mu.vercel.app
+ALLOWED_ORIGINS=https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app
 
 SCAN_USAGE_MODE=strict
 SCAN_MAX_REQUESTS_PER_MINUTE=5
@@ -72,7 +72,7 @@ Start low, monitor, then increase.
 - Confirm Supabase RPC works before public launch.
 - Confirm Vercel logs do not print user code, emails, API keys, or Supabase errors to users.
 - Confirm the scanner does not execute submitted code.
-- Confirm privacy/terms say whether user-submitted code may be sent to Anthropic.
+- Confirm privacy/terms say whether user-submitted code may be sent to a third-party AI provider.
 
 ## Current Known Limits
 

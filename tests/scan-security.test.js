@@ -156,8 +156,8 @@ async function testManualScanPersistsDashboardMetadata() {
   await scan({
     method: "POST",
     headers: {
-      origin: "https://cyber-guardian-mu.vercel.app",
-      host: "cyber-guardian-mu.vercel.app",
+      origin: "https://cyberguardianscan.com",
+      host: "cyberguardianscan.com",
       "x-forwarded-for": "203.0.113.44",
     },
     body: { code: 'console.log("dashboard persistence test");', scope: "skill" },

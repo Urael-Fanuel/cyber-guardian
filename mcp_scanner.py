@@ -35,7 +35,7 @@ SUPABASE_KEY   = os.environ["SUPABASE_SERVICE_KEY"]   # required (service role)
 SCAN_LIMIT     = int(os.environ.get("SCAN_LIMIT", 200))   # servers per run
 GITHUB_DELAY   = float(os.environ.get("GITHUB_DELAY", 1.2))   # seconds between API calls
 NPM_DELAY      = float(os.environ.get("NPM_DELAY", 0.5))
-CYBER_GUARDIAN_URL = os.environ.get("CYBER_GUARDIAN_URL", "https://cyber-guardian-mu.vercel.app")
+CYBER_GUARDIAN_URL = os.environ.get("CYBER_GUARDIAN_URL", "https://cyberguardianscan.com")
 CG_MAX_INPUT_CHARS = int(os.environ.get("CG_MAX_INPUT_CHARS", "50000"))
 CG_SCAN_DELAY  = float(os.environ.get("CG_SCAN_DELAY", 15.0))  # seconds between CG API calls
 
