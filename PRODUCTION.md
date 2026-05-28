@@ -16,6 +16,7 @@ SUPABASE_URL=...
 SUPABASE_SERVICE_KEY=...
 
 ALLOWED_ORIGINS=https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app
+CG_ADMIN_BYPASS_SECRET=generate-a-long-random-secret
 
 SCAN_USAGE_MODE=strict
 SCAN_MAX_REQUESTS_PER_MINUTE=5
@@ -29,6 +30,27 @@ SCAN_CACHE_TTL_SECONDS=3600
 
 Use `SCAN_USAGE_MODE=strict` in production after the Supabase SQL migration has been run.
 Use `SCAN_USAGE_MODE=fallback` only during setup or local development.
+
+## Developer Bypass
+
+`CG_ADMIN_BYPASS_SECRET` lets the site owner run unlimited scans without changing
+the public 7-scan monthly limit for normal visitors. Keep it private.
+
+After setting it in Vercel and redeploying, enable it in your own browser console:
+
+```js
+localStorage.setItem('cg-admin-secret', 'PASTE_THE_SECRET_HERE')
+```
+
+To disable it in that browser:
+
+```js
+localStorage.removeItem('cg-admin-secret')
+```
+
+For GitHub Actions or the automatic scanner, add the same value as a secret named
+`CG_ADMIN_BYPASS_SECRET`. Bypassed scans still write safe metadata to `site_scans`,
+so the dashboard continues updating normally.
 
 ## Supabase Migration
 

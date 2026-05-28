@@ -5,18 +5,23 @@ process.env.NODE_ENV = "test";
 process.env.SUPABASE_URL = "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_KEY = "service-key";
 process.env.ANTHROPIC_API_KEY = "test-anthropic-key";
+process.env.CG_ADMIN_BYPASS_SECRET = "developer-secret";
 
 const insertedRows = [];
+const rpcCalls = [];
 
 const originalLoad = Module._load;
 Module._load = function patchedLoad(request, parent, isMain) {
   if (request === "@supabase/supabase-js") {
     return {
       createClient: () => ({
-        rpc: async () => ({
+        rpc: async (...args) => {
+          rpcCalls.push(args);
+          return {
           data: [{ ok: true, quota_used: 1, quota_limit: 7 }],
           error: null,
-        }),
+          };
+        },
         from: (table) => ({
           insert: async (row) => {
             insertedRows.push({ table, row });
@@ -152,6 +157,7 @@ function testStaticMergeCannotDowngrade() {
 
 async function testManualScanPersistsDashboardMetadata() {
   insertedRows.length = 0;
+  rpcCalls.length = 0;
   const res = mockRes();
   await scan({
     method: "POST",
@@ -171,6 +177,30 @@ async function testManualScanPersistsDashboardMetadata() {
   assert.equal(insertedRows[0].row.status, "STATUS_SAFE");
   assert.equal(insertedRows[0].row.threat_score, 2);
   assert.ok(!Object.prototype.hasOwnProperty.call(insertedRows[0].row, "code"));
+  assert.equal(rpcCalls.length, 1);
+}
+
+async function testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const res = mockRes();
+  await scan({
+    method: "POST",
+    headers: {
+      origin: "https://cyberguardianscan.com",
+      host: "cyberguardianscan.com",
+      "x-forwarded-for": "203.0.113.45",
+      "x-cg-admin-secret": "developer-secret",
+    },
+    body: { code: 'console.log("admin bypass persistence test");', scope: "mcp" },
+    url: "/api/scan",
+  }, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(rpcCalls.length, 0);
+  assert.equal(insertedRows.length, 1);
+  assert.equal(insertedRows[0].table, "site_scans");
+  assert.equal(insertedRows[0].row.scope, "mcp");
 }
 
 testStaticReverseShell();
@@ -183,6 +213,7 @@ testEveryFamilyHasDefinitionAndStaticRule();
 testNormalizeAddsSixtyFamilyMetadata();
 
 testManualScanPersistsDashboardMetadata()
+  .then(testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata)
   .then(() => console.log("scan-security tests: ok"))
   .catch(err => {
     console.error(err);

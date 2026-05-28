@@ -38,6 +38,7 @@ NPM_DELAY      = float(os.environ.get("NPM_DELAY", 0.5))
 CYBER_GUARDIAN_URL = os.environ.get("CYBER_GUARDIAN_URL", "https://cyberguardianscan.com")
 CG_MAX_INPUT_CHARS = int(os.environ.get("CG_MAX_INPUT_CHARS", "50000"))
 CG_SCAN_DELAY  = float(os.environ.get("CG_SCAN_DELAY", 15.0))  # seconds between CG API calls
+CG_ADMIN_BYPASS_SECRET = os.environ.get("CG_ADMIN_BYPASS_SECRET", "")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -725,12 +726,15 @@ async def scan_with_cyber_guardian(client: httpx.AsyncClient, code: str, scope: 
     """Send code to Cyber-Guardian AI scanner and get threat analysis."""
     if not code or not code.strip():
         return {}
+    headers = {"Content-Type": "application/json"}
+    if CG_ADMIN_BYPASS_SECRET:
+        headers["X-CG-Admin-Secret"] = CG_ADMIN_BYPASS_SECRET
     try:
         r = await client.post(
             f"{CYBER_GUARDIAN_URL}/api/scan",
             json={"code": code[:CG_MAX_INPUT_CHARS], "scope": scope},
             timeout=60,
-            headers={"Content-Type": "application/json"},
+            headers=headers,
         )
         if r.status_code == 200:
             result = r.json()

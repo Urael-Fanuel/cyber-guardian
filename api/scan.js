@@ -27,6 +27,7 @@ const CONFIG = {
   MODEL: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
   MAX_TOKENS: intEnv("ANTHROPIC_MAX_TOKENS", 1500),
   USAGE_MODE: process.env.SCAN_USAGE_MODE || "fallback",
+  ADMIN_BYPASS_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || "",
 };
 
 const state = {
@@ -123,6 +124,23 @@ function getWindowKey(date, unit) {
 
 async function hashIdentifier(value) {
   return (await hashCode(value || "unknown")).slice(0, 32);
+}
+
+function getHeader(req, name) {
+  const value = req.headers?.[name] || req.headers?.[name.toLowerCase()];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+async function isAdminBypassRequest(req) {
+  const configuredSecret = CONFIG.ADMIN_BYPASS_SECRET.trim();
+  const providedSecret = String(getHeader(req, "x-cg-admin-secret") || "").trim();
+  if (!configuredSecret || !providedSecret) return false;
+
+  const [configuredHash, providedHash] = await Promise.all([
+    hashCode(configuredSecret),
+    hashCode(providedSecret),
+  ]);
+  return configuredHash === providedHash;
 }
 
 async function checkSupabaseUsage(ip) {
@@ -237,7 +255,7 @@ function setCors(res, origin) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CG-Admin-Secret");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Content-Type", "application/json");
 }
@@ -652,42 +670,46 @@ async function handler(req, res) {
   if (code.length > CONFIG.MAX_INPUT_SIZE_CHARS)
     return res.status(400).json({ error: `Input too large. Max ${CONFIG.MAX_INPUT_SIZE_CHARS} chars.` });
 
-  const usageCheck = await checkSupabaseUsage(ip);
-  usingSupabaseUsage = !usageCheck.fallback;
+  const adminBypass = await isAdminBypassRequest(req);
 
-  if (usingSupabaseUsage) {
-    if (!usageCheck.ok) {
-      if (usageCheck.reason === "usage_store_unavailable") {
+  if (!adminBypass) {
+    const usageCheck = await checkSupabaseUsage(ip);
+    usingSupabaseUsage = !usageCheck.fallback;
+
+    if (usingSupabaseUsage) {
+      if (!usageCheck.ok) {
+        if (usageCheck.reason === "usage_store_unavailable") {
+          res.setHeader("Retry-After", String(usageCheck.retryAfter));
+          return res.status(503).json({ error: "Usage limits temporarily unavailable. Try again soon." });
+        }
+        if (usageCheck.reason === "month_limit") {
+          return res.status(429).json({
+            error: "Free scan quota exceeded.",
+            quota_used: usageCheck.quotaUsed,
+            quota_limit: usageCheck.quotaLimit,
+          });
+        }
         res.setHeader("Retry-After", String(usageCheck.retryAfter));
-        return res.status(503).json({ error: "Usage limits temporarily unavailable. Try again soon." });
+        return res.status(429).json({ error: "Too many requests.", retry_after: usageCheck.retryAfter });
       }
-      if (usageCheck.reason === "month_limit") {
+    } else {
+      if (!checkDailyCap())
+        return res.status(503).json({ error: "Service at capacity. Try again tomorrow." });
+
+      const rateCheck = checkRateLimit(ip);
+      if (!rateCheck.ok) {
+        res.setHeader("Retry-After", String(rateCheck.retryAfter));
+        return res.status(429).json({ error: "Too many requests.", retry_after: rateCheck.retryAfter });
+      }
+
+      const quotaCheck = checkMonthlyQuota(ip);
+      if (!quotaCheck.ok) {
         return res.status(429).json({
           error: "Free scan quota exceeded.",
-          quota_used: usageCheck.quotaUsed,
-          quota_limit: usageCheck.quotaLimit,
+          quota_used: quotaCheck.used,
+          quota_limit: quotaCheck.limit,
         });
       }
-      res.setHeader("Retry-After", String(usageCheck.retryAfter));
-      return res.status(429).json({ error: "Too many requests.", retry_after: usageCheck.retryAfter });
-    }
-  } else {
-    if (!checkDailyCap())
-      return res.status(503).json({ error: "Service at capacity. Try again tomorrow." });
-
-    const rateCheck = checkRateLimit(ip);
-    if (!rateCheck.ok) {
-      res.setHeader("Retry-After", String(rateCheck.retryAfter));
-      return res.status(429).json({ error: "Too many requests.", retry_after: rateCheck.retryAfter });
-    }
-
-    const quotaCheck = checkMonthlyQuota(ip);
-    if (!quotaCheck.ok) {
-      return res.status(429).json({
-        error: "Free scan quota exceeded.",
-        quota_used: quotaCheck.used,
-        quota_limit: quotaCheck.limit,
-      });
     }
   }
 
@@ -745,7 +767,7 @@ async function handler(req, res) {
     }
     result = mergeStaticThreats(result, staticResult);
 
-    if (!usingSupabaseUsage) incrementMonthlyQuota(ip);
+    if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     await saveSiteScan(scope, result);
     saveToCache(codeHash, result);
     return res.status(200).json(result);
@@ -769,5 +791,6 @@ if (process.env.NODE_ENV === "test") {
     THREAT_FAMILY_DEFINITIONS,
     ALL_STATIC_RULES,
     coverageMetadata,
+    isAdminBypassRequest,
   };
 }
