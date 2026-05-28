@@ -96,6 +96,17 @@ For GitHub Actions or the automatic scanner, add the same value as a secret name
 `CG_ADMIN_BYPASS_SECRET`. Bypassed scans still write safe metadata to `site_scans`,
 so the dashboard continues updating normally.
 
+## Automatic Scanner Scope
+
+The scheduled GitHub Actions scanner uses conservative launch defaults:
+
+- `SCAN_LIMIT=30`
+- `SCAN_SCOPES=mcp,skill,extension`
+
+That means a normal run scans about 10 MCP servers, 10 AI Skills, and 10 IDE
+extensions. All three scopes write safe dashboard metadata to Supabase
+`site_scans`.
+
 ## Editing Public Text
 
 Open `/content-admin.html`, paste the same `CG_ADMIN_BYPASS_SECRET`, choose the

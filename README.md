@@ -27,7 +27,7 @@ It checks 60 canonical threat families before a user decides whether to install 
 | AI analysis | Anthropic Claude |
 | Database | Supabase |
 | Rate limits | Supabase RPC plus server fallback |
-| Batch scanner | Python scanner for GitHub, npm, and MCP directories |
+| Batch scanner | Python scanner for GitHub, npm, MCP directories, Skills, and IDE extensions |
 
 ## Production Security Controls
 
@@ -49,6 +49,10 @@ npm test
 npm run check
 python -m py_compile mcp_scanner.py
 ```
+
+## Batch Scan Defaults
+
+The GitHub Actions scanner defaults to `SCAN_LIMIT=30` and `SCAN_SCOPES=mcp,skill,extension`, so a normal run scans about 10 MCP servers, 10 AI Skills, and 10 IDE extensions. Results are saved to Supabase `site_scans` and appear on the public dashboard.
 
 ## Required Production Environment
 

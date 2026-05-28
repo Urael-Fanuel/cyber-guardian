@@ -32,13 +32,20 @@ from supabase import create_client, Client
 GITHUB_TOKEN   = os.environ["GITHUB_TOKEN"]          # required
 SUPABASE_URL   = os.environ["SUPABASE_URL"]           # required
 SUPABASE_KEY   = os.environ["SUPABASE_SERVICE_KEY"]   # required (service role)
-SCAN_LIMIT     = int(os.environ.get("SCAN_LIMIT", 200))   # servers per run
+SCAN_LIMIT     = int(os.environ.get("SCAN_LIMIT", 30))   # total items per run
+SCAN_SCOPES    = [
+    scope.strip().lower()
+    for scope in os.environ.get("SCAN_SCOPES", "mcp,skill,extension").split(",")
+    if scope.strip().lower() in {"mcp", "skill", "extension"}
+]
 GITHUB_DELAY   = float(os.environ.get("GITHUB_DELAY", 1.2))   # seconds between API calls
 NPM_DELAY      = float(os.environ.get("NPM_DELAY", 0.5))
 CYBER_GUARDIAN_URL = os.environ.get("CYBER_GUARDIAN_URL", "https://cyberguardianscan.com")
 CG_MAX_INPUT_CHARS = int(os.environ.get("CG_MAX_INPUT_CHARS", "50000"))
 CG_SCAN_DELAY  = float(os.environ.get("CG_SCAN_DELAY", 15.0))  # seconds between CG API calls
 CG_ADMIN_BYPASS_SECRET = os.environ.get("CG_ADMIN_BYPASS_SECRET", "")
+if not SCAN_SCOPES:
+    SCAN_SCOPES = ["mcp"]
 
 logging.basicConfig(
     level=logging.INFO,
@@ -428,7 +435,29 @@ GITHUB_SEARCH_QUERIES = [
     "mcp_server in:name",
 ]
 
-async def fetch_github_servers(client: httpx.AsyncClient, limit: int) -> list[dict]:
+GITHUB_SKILL_SEARCH_QUERIES = [
+    "\"Claude Skill\" language:markdown",
+    "\"Claude Skills\" language:markdown",
+    "\"Cursor Skill\" language:markdown",
+    "\"AI Skill\" \"SKILL.md\"",
+    "\"SKILL.md\" \"description:\"",
+]
+
+GITHUB_EXTENSION_SEARCH_QUERIES = [
+    "topic:vscode-extension language:typescript",
+    "\"vscode\" \"activationEvents\" \"package.json\"",
+    "\"contributes\" \"commands\" \"activationEvents\" \"package.json\"",
+    "topic:cursor-extension language:typescript",
+    "\"jetbrains\" \"plugin.xml\" language:kotlin",
+]
+
+GITHUB_QUERIES_BY_SCOPE = {
+    "mcp": GITHUB_SEARCH_QUERIES,
+    "skill": GITHUB_SKILL_SEARCH_QUERIES,
+    "extension": GITHUB_EXTENSION_SEARCH_QUERIES,
+}
+
+async def fetch_github_repositories(client: httpx.AsyncClient, limit: int, queries: list[str]) -> list[dict]:
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
@@ -436,7 +465,7 @@ async def fetch_github_servers(client: httpx.AsyncClient, limit: int) -> list[di
     }
     results: dict[str, dict] = {}   # full_name → repo dict
 
-    for query in GITHUB_SEARCH_QUERIES:
+    for query in queries:
         if len(results) >= limit:
             break
         url = "https://api.github.com/search/repositories"
@@ -451,6 +480,15 @@ async def fetch_github_servers(client: httpx.AsyncClient, limit: int) -> list[di
         await asyncio.sleep(GITHUB_DELAY)
 
     return list(results.values())[:limit]
+
+
+async def fetch_github_servers(client: httpx.AsyncClient, limit: int) -> list[dict]:
+    return await fetch_github_repositories(client, limit, GITHUB_SEARCH_QUERIES)
+
+
+async def fetch_github_scope(client: httpx.AsyncClient, scope: str, limit: int) -> list[dict]:
+    queries = GITHUB_QUERIES_BY_SCOPE.get(scope, GITHUB_SEARCH_QUERIES)
+    return await fetch_github_repositories(client, limit, queries)
 
 
 async def fetch_github_code(client: httpx.AsyncClient, full_name: str) -> dict[str, str]:
@@ -549,10 +587,32 @@ NPM_SEARCH_TERMS = [
     "mcp-tool",
 ]
 
-async def fetch_npm_servers(client: httpx.AsyncClient, limit: int) -> list[dict]:
+NPM_SKILL_SEARCH_TERMS = [
+    "claude skill",
+    "cursor skill",
+    "ai skill",
+    "prompt injection skill",
+    "agent skill",
+]
+
+NPM_EXTENSION_SEARCH_TERMS = [
+    "vscode extension",
+    "cursor extension",
+    "jetbrains plugin",
+    "code extension",
+    "ide extension",
+]
+
+NPM_TERMS_BY_SCOPE = {
+    "mcp": NPM_SEARCH_TERMS,
+    "skill": NPM_SKILL_SEARCH_TERMS,
+    "extension": NPM_EXTENSION_SEARCH_TERMS,
+}
+
+async def fetch_npm_packages(client: httpx.AsyncClient, limit: int, terms: list[str]) -> list[dict]:
     results: dict[str, dict] = {}
 
-    for term in NPM_SEARCH_TERMS:
+    for term in terms:
         if len(results) >= limit:
             break
         try:
@@ -570,6 +630,15 @@ async def fetch_npm_servers(client: httpx.AsyncClient, limit: int) -> list[dict]
         await asyncio.sleep(NPM_DELAY)
 
     return list(results.values())[:limit]
+
+
+async def fetch_npm_servers(client: httpx.AsyncClient, limit: int) -> list[dict]:
+    return await fetch_npm_packages(client, limit, NPM_SEARCH_TERMS)
+
+
+async def fetch_npm_scope(client: httpx.AsyncClient, scope: str, limit: int) -> list[dict]:
+    terms = NPM_TERMS_BY_SCOPE.get(scope, NPM_SEARCH_TERMS)
+    return await fetch_npm_packages(client, limit, terms)
 
 
 async def fetch_npm_tarball_contents(client: httpx.AsyncClient, name: str, version: str) -> dict[str, str]:
@@ -831,7 +900,7 @@ def save_server(sb: Client, server: ScannedServer, run_id: str) -> Optional[str]
 #  MAIN ORCHESTRATOR
 # ─────────────────────────────────────────────
 
-async def run_scan():
+async def run_mcp_only_scan():
     run_id     = hashlib.md5(str(time.time()).encode()).hexdigest()[:12]
     started_at = datetime.now(timezone.utc).isoformat()
     start_time = time.time()
@@ -949,6 +1018,143 @@ async def run_scan():
     log.info(f"║  By risk level  : {json.dumps(by_risk_level)}")
     log.info(f"║  By category    : {json.dumps(by_category)}")
     log.info("╚═════════════════════════════════════════════════╝")
+    return stats
+
+
+async def run_scan():
+    run_id = hashlib.md5(str(time.time()).encode()).hexdigest()[:12]
+    started_at = datetime.now(timezone.utc).isoformat()
+    start_time = time.time()
+    max_runtime = int(os.environ.get("MAX_RUNTIME_MINUTES", "270")) * 60
+
+    log.info(f"Cyber-Guardian batch scan START run_id={run_id}")
+    log.info(f"Scopes: {', '.join(SCAN_SCOPES)} | total limit: {SCAN_LIMIT}")
+
+    def should_stop() -> bool:
+        remaining = max_runtime - (time.time() - start_time)
+        if remaining < 600:
+            log.warning(f"Time budget nearly exhausted ({remaining:.0f}s left); stopping gracefully")
+            return True
+        return False
+
+    def scope_limit(index: int) -> int:
+        base = SCAN_LIMIT // len(SCAN_SCOPES)
+        remainder = SCAN_LIMIT % len(SCAN_SCOPES)
+        return base + (1 if index < remainder else 0)
+
+    async def scan_cg_and_save(scope: str, source_code: str):
+        if not source_code:
+            return
+        cg_result = await scan_with_cyber_guardian(client, source_code, scope)
+        if cg_result:
+            save_site_scan(sb, scope, cg_result)
+        await asyncio.sleep(CG_SCAN_DELAY)
+
+    async def scan_github_items(scope: str, repos: list[dict], save_mcp_rows: bool):
+        for repo in repos:
+            if should_stop():
+                break
+            try:
+                server = await scan_github_server(client, repo)
+                server.source = "github" if scope == "mcp" else f"github_{scope}"
+                all_servers.append(server)
+                if save_mcp_rows:
+                    save_server(sb, server, run_id)
+                await scan_cg_and_save(scope, server.source_code)
+            except Exception as e:
+                log.error(f"  Error scanning {scope} repo {repo.get('full_name')}: {e}")
+
+    async def scan_npm_items(scope: str, packages: list[dict], save_mcp_rows: bool):
+        for pkg in packages:
+            if should_stop():
+                break
+            try:
+                server = await scan_npm_server(client, pkg)
+                server.source = "npm" if scope == "mcp" else f"npm_{scope}"
+                all_servers.append(server)
+                if save_mcp_rows:
+                    save_server(sb, server, run_id)
+                await scan_cg_and_save(scope, server.source_code)
+            except Exception as e:
+                log.error(f"  Error scanning {scope} npm package {pkg.get('name')}: {e}")
+
+    sb = get_supabase()
+    all_servers: list[ScannedServer] = []
+
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        for index, scope in enumerate(SCAN_SCOPES):
+            limit = scope_limit(index)
+            if limit <= 0 or should_stop():
+                continue
+            log.info(f"Scope {scope}: limit={limit}")
+
+            if scope == "mcp":
+                github_limit = max(1, limit // 3)
+                npm_limit = max(1, limit // 3)
+                mcpso_limit = max(0, limit - github_limit - npm_limit)
+
+                github_repos = await fetch_github_servers(client, github_limit)
+                npm_pkgs = await fetch_npm_servers(client, npm_limit)
+                mcpso_items = await fetch_mcpso_servers(client, mcpso_limit) if mcpso_limit else []
+
+                log.info(f"  MCP discovered: github={len(github_repos)} npm={len(npm_pkgs)} mcp.so={len(mcpso_items)}")
+                await scan_github_items("mcp", github_repos, True)
+                await scan_npm_items("mcp", npm_pkgs, True)
+
+                for item in mcpso_items:
+                    if should_stop():
+                        break
+                    try:
+                        server = await scan_mcpso_server(client, item)
+                        if server:
+                            server.source = "mcpso"
+                            all_servers.append(server)
+                            save_server(sb, server, run_id)
+                            await scan_cg_and_save("mcp", server.source_code)
+                    except Exception as e:
+                        log.error(f"  Error scanning mcp.so item: {e}")
+            else:
+                github_limit = max(1, limit // 2)
+                npm_limit = max(0, limit - github_limit)
+                github_repos = await fetch_github_scope(client, scope, github_limit)
+                npm_pkgs = await fetch_npm_scope(client, scope, npm_limit) if npm_limit else []
+
+                log.info(f"  {scope} discovered: github={len(github_repos)} npm={len(npm_pkgs)}")
+                await scan_github_items(scope, github_repos, False)
+                await scan_npm_items(scope, npm_pkgs, False)
+
+    by_source: dict[str, int] = {}
+    by_risk_level: dict[str, int] = {}
+    by_category: dict[str, int] = {}
+    total_malicious = 0
+
+    for s in all_servers:
+        by_source[s.source] = by_source.get(s.source, 0) + 1
+        by_risk_level[s.risk_level] = by_risk_level.get(s.risk_level, 0) + 1
+        if s.risk_level in ("high", "critical"):
+            total_malicious += 1
+        for t in s.threats:
+            key = t.category.value
+            by_category[key] = by_category.get(key, 0) + 1
+
+    completed_at = datetime.now(timezone.utc).isoformat()
+    stats = {
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "total_scanned": len(all_servers),
+        "total_malicious": total_malicious,
+        "by_source": by_source,
+        "by_risk_level": by_risk_level,
+        "by_category": by_category,
+    }
+    save_scan_run(sb, run_id, stats)
+
+    log.info("SCAN COMPLETE")
+    log.info(f"  Total scanned  : {len(all_servers)}")
+    log.info(f"  Malicious (H/C): {total_malicious}")
+    log.info(f"  By source      : {json.dumps(by_source)}")
+    log.info(f"  By risk level  : {json.dumps(by_risk_level)}")
+    log.info(f"  By category    : {json.dumps(by_category)}")
     return stats
 
 
