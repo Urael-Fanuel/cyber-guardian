@@ -503,7 +503,7 @@ footer a:hover { color: var(--cyan); }
         <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
         <li data-i18n="plan_feat_support">Email support</li>
       </ul>
-      <button class="plan-btn" data-i18n="btn_subscribe" onclick="alert('Stripe: add your link')">Subscribe</button>
+      <button class="plan-btn" data-i18n="btn_subscribe" onclick="startCheckout('pro')">Subscribe</button>
     </div>
     <div class="plan">
       <div class="plan-name" data-i18n="plan_team_name">Team</div>
@@ -516,7 +516,7 @@ footer a:hover { color: var(--cyan); }
         <li data-i18n="plan_feat_api">API access</li>
         <li data-i18n="plan_feat_priority">Priority scanning</li>
       </ul>
-      <button class="plan-btn" data-i18n="btn_subscribe" onclick="alert('Stripe: add your link')">Subscribe</button>
+      <button class="plan-btn" data-i18n="btn_subscribe" onclick="startCheckout('team')">Subscribe</button>
     </div>
     <div class="plan">
       <div class="plan-name" data-i18n="plan_business_name">Business</div>
@@ -530,7 +530,7 @@ footer a:hover { color: var(--cyan); }
         <li data-i18n="plan_feat_priority">Priority scanning</li>
         <li data-i18n="plan_feat_support">Email support</li>
       </ul>
-      <button class="plan-btn" data-i18n="btn_subscribe" onclick="alert('Stripe: add your link')">Subscribe</button>
+      <button class="plan-btn" data-i18n="btn_subscribe" onclick="startCheckout('business')">Subscribe</button>
     </div>
     <div class="plan">
       <div class="plan-name" data-i18n="plan_enterprise_name">Enterprise</div>
@@ -542,7 +542,7 @@ footer a:hover { color: var(--cyan); }
         <li data-i18n="plan_feat_sla">99.9% SLA + dedicated support</li>
         <li data-i18n="plan_feat_custom">Custom MCP integrations</li>
       </ul>
-      <button class="plan-btn" data-i18n="btn_contact_us" onclick="window.location='mailto:sales@your-domain.com'">Contact Us</button>
+      <button class="plan-btn" data-i18n="btn_contact_us" onclick="window.location='mailto:sales@cyberguardianscan.com'">Contact Us</button>
     </div>
   </div>
 </section>
@@ -654,6 +654,21 @@ function incrementQuota() { localStorage.setItem(`cg-quota-${getMonthKey()}`, St
 function isDevMode() { return localStorage.getItem('cg-dev-mode') === 'cg-dev-2026'; }
 function getAdminBypassSecret() { return localStorage.getItem('cg-admin-secret') || ''; }
 function hasAdminBypass() { return Boolean(getAdminBypassSecret().trim()); }
+
+async function startCheckout(plan) {
+  try {
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.url) throw new Error(data.error || 'Checkout is unavailable.');
+    window.location.href = data.url;
+  } catch (err) {
+    alert(err.message || 'Checkout is unavailable.');
+  }
+}
 
 async function runScan() {
   const code = document.getElementById('code-input').value;

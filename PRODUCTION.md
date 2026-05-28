@@ -17,6 +17,12 @@ SUPABASE_SERVICE_KEY=...
 
 ALLOWED_ORIGINS=https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app
 CG_ADMIN_BYPASS_SECRET=generate-a-long-random-secret
+SITE_URL=https://cyberguardianscan.com
+
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_PRICE_PRO=price_...
+STRIPE_PRICE_TEAM=price_...
+STRIPE_PRICE_BUSINESS=price_...
 
 SCAN_USAGE_MODE=strict
 SCAN_MAX_REQUESTS_PER_MINUTE=5
@@ -30,6 +36,18 @@ SCAN_CACHE_TTL_SECONDS=3600
 
 Use `SCAN_USAGE_MODE=strict` in production after the Supabase SQL migration has been run.
 Use `SCAN_USAGE_MODE=fallback` only during setup or local development.
+
+## Payments
+
+Create three recurring monthly prices in Stripe and copy their price IDs into:
+
+- `STRIPE_PRICE_PRO`
+- `STRIPE_PRICE_TEAM`
+- `STRIPE_PRICE_BUSINESS`
+
+The pricing buttons call `/api/create-checkout-session`, which creates a Stripe
+Checkout subscription session on the server and redirects the visitor to Stripe.
+Keep `STRIPE_SECRET_KEY` server-side only in Vercel environment variables.
 
 ## Developer Bypass
 
