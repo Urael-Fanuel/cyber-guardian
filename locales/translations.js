@@ -906,24 +906,45 @@ function detectLang() {
   return TRANSLATIONS[browser] ? browser : 'en';
 }
 
-function setLang(code) {
+const CONTENT_OVERRIDES = {};
+
+async function loadContentOverrides(surface, code) {
+  const cacheKey = `${surface}:${code}`;
+  if (CONTENT_OVERRIDES[cacheKey]) return CONTENT_OVERRIDES[cacheKey];
+  try {
+    const response = await fetch(`/api/content?surface=${encodeURIComponent(surface)}&lang=${encodeURIComponent(code)}`);
+    if (!response.ok) throw new Error('content unavailable');
+    const data = await response.json();
+    CONTENT_OVERRIDES[cacheKey] = data.entries || {};
+  } catch {
+    CONTENT_OVERRIDES[cacheKey] = {};
+  }
+  return CONTENT_OVERRIDES[cacheKey];
+}
+
+function translateContent(surface, code, key) {
+  const overrides = CONTENT_OVERRIDES[`${surface}:${code}`] || {};
+  return overrides[key] || TRANSLATIONS[code]?.[key] || TRANSLATIONS.en[key] || key;
+}
+
+async function setLang(code) {
   if (!TRANSLATIONS[code]) return;
+  await loadContentOverrides('site', code);
   localStorage.setItem('cg-lang', code);
-  const t = TRANSLATIONS[code];
   document.documentElement.lang = code;
   document.documentElement.dir = LANGS[code].dir;
 
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (t[key]) el.textContent = t[key];
+    el.textContent = translateContent('site', code, key);
   });
   document.querySelectorAll('[data-i18n-html]').forEach(el => {
     const key = el.getAttribute('data-i18n-html');
-    if (t[key]) el.innerHTML = t[key];
+    el.innerHTML = translateContent('site', code, key);
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
-    if (t[key]) el.placeholder = t[key];
+    el.placeholder = translateContent('site', code, key);
   });
 
   document.querySelectorAll('.lang-btn').forEach(b => {
@@ -933,5 +954,10 @@ function setLang(code) {
 
 window.t = (key) => {
   const code = localStorage.getItem('cg-lang') || detectLang();
-  return TRANSLATIONS[code]?.[key] || TRANSLATIONS.en[key] || key;
+  return translateContent('site', code, key);
 };
+
+window.TRANSLATIONS = TRANSLATIONS;
+window.LANGS = LANGS;
+window.loadContentOverrides = loadContentOverrides;
+window.translateContent = translateContent;

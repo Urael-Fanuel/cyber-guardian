@@ -52,18 +52,29 @@ For GitHub Actions or the automatic scanner, add the same value as a secret name
 `CG_ADMIN_BYPASS_SECRET`. Bypassed scans still write safe metadata to `site_scans`,
 so the dashboard continues updating normally.
 
+## Editing Public Text
+
+Open `/content-admin.html`, paste the same `CG_ADMIN_BYPASS_SECRET`, choose the
+area, language, and text key, then save the replacement text. Saved values are
+stored in Supabase `site_content_overrides`.
+
+Public visitors can read those text overrides through `/api/content`, but only
+requests with the admin secret can write changes.
+
 ## Supabase Migration
 
 Run this SQL once in Supabase SQL Editor:
 
 ```text
 supabase/migrations/001_scan_usage_limits.sql
+supabase/migrations/002_site_content_overrides.sql
 ```
 
 This creates:
 
 - `public.cg_scan_usage_windows`
 - `public.cg_consume_scan_usage(...)`
+- `public.site_content_overrides`
 
 The API calls this RPC before calling Anthropic. If the request exceeds minute, hour,
 day, or monthly quota, the request stops before any model cost is incurred.

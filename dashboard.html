@@ -407,9 +407,24 @@ function getLang() {
 }
 
 let currentLang = getLang();
+const DASH_CONTENT_OVERRIDES = {};
 
-function applyLang(code) {
+async function loadDashContentOverrides(code) {
+  if (DASH_CONTENT_OVERRIDES[code]) return DASH_CONTENT_OVERRIDES[code];
+  try {
+    const response = await fetch(`/api/content?surface=dashboard&lang=${encodeURIComponent(code)}`);
+    if (!response.ok) throw new Error('content unavailable');
+    const data = await response.json();
+    DASH_CONTENT_OVERRIDES[code] = data.entries || {};
+  } catch {
+    DASH_CONTENT_OVERRIDES[code] = {};
+  }
+  return DASH_CONTENT_OVERRIDES[code];
+}
+
+async function applyLang(code) {
   currentLang = code;
+  await loadDashContentOverrides(code);
   localStorage.setItem('cg-lang', code);
   document.documentElement.lang = code;
   document.documentElement.dir = LANGS[code].dir;
@@ -427,7 +442,9 @@ function applyLang(code) {
   if (window._dashData) render(window._dashData);
 }
 
-function t(key) { return DASH_T[currentLang]?.[key] || DASH_T.en[key] || key; }
+function t(key) {
+  return DASH_CONTENT_OVERRIDES[currentLang]?.[key] || DASH_T[currentLang]?.[key] || DASH_T.en[key] || key;
+}
 
 function buildLangSwitcher() {
   const container = document.getElementById('lang-switcher');
@@ -446,6 +463,7 @@ function buildLangSwitcher() {
 
 buildLangSwitcher();
 document.documentElement.dir = LANGS[currentLang].dir;
+loadDashContentOverrides(currentLang).then(() => applyLang(currentLang));
 
 // Apply translations to static elements on initial load
 (function() {
