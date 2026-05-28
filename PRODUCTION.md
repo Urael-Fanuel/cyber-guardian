@@ -26,6 +26,8 @@ STRIPE_PRICE_BUSINESS=price_...
 
 RESEND_API_KEY=re_...
 SUBSCRIBE_NOTIFY_TO=sales@cyberguardianscan.com
+CONTACT_SALES_TO=sales@cyberguardianscan.com
+CONTACT_SUPPORT_TO=support@cyberguardianscan.com
 EMAIL_FROM=Cyber-Guardian <notifications@cyberguardianscan.com>
 
 SCAN_USAGE_MODE=strict
@@ -62,6 +64,16 @@ notification is sent to `SUBSCRIBE_NOTIFY_TO` (default:
 
 Resend requires an API key and a verified sending domain before production email
 delivery. Keep `RESEND_API_KEY` server-side only in Vercel environment variables.
+
+## Contact Form
+
+The contact buttons link to `/contact.html` instead of `mailto:` links, so visitors
+stay inside the site instead of opening Outlook/Microsoft Mail. The form posts to
+`/api/contact`, saves messages in Supabase `contact_messages`, and sends email
+notifications through Resend.
+
+Sales and enterprise requests go to `CONTACT_SALES_TO`; support and security
+requests go to `CONTACT_SUPPORT_TO`.
 
 ## Developer Bypass
 
@@ -101,6 +113,7 @@ Run this SQL once in Supabase SQL Editor:
 supabase/migrations/001_scan_usage_limits.sql
 supabase/migrations/002_site_content_overrides.sql
 supabase/migrations/003_email_subscribers.sql
+supabase/migrations/004_contact_messages.sql
 ```
 
 This creates:
@@ -109,6 +122,7 @@ This creates:
 - `public.cg_consume_scan_usage(...)`
 - `public.site_content_overrides`
 - `public.email_subscribers`
+- `public.contact_messages`
 
 The API calls this RPC before calling Anthropic. If the request exceeds minute, hour,
 day, or monthly quota, the request stops before any model cost is incurred.

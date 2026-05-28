@@ -279,8 +279,9 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .email-msg.error { color: var(--red); }
 .email-disclaimer { font-size: 9px; color: var(--text-dim); }
 .sales-note { max-width: 760px; margin: 18px auto 0; padding: 14px 16px; border: 1px solid var(--border); background: var(--bg2); color: var(--text-dim); font-size: 12px; line-height: 1.7; text-align: center; }
-.sales-note a, footer a.contact-link { color: var(--cyan); text-decoration: none; }
-.sales-note a:hover, footer a.contact-link:hover { color: #fff; }
+.inline-contact { display: inline-block; margin-left: 8px; border: 1px solid var(--border2); background: transparent; color: var(--cyan); font: inherit; font-size: 11px; padding: 6px 10px; border-radius: 2px; cursor: pointer; }
+.inline-contact:hover, footer a.contact-link:hover { color: #fff; border-color: var(--cyan); }
+footer a.contact-link { color: var(--cyan); text-decoration: none; }
 
 /* ── FAMILIES ── */
 .families { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; }
@@ -545,12 +546,12 @@ footer a:hover { color: var(--cyan); }
         <li data-i18n="plan_feat_sla">99.9% SLA + dedicated support</li>
         <li data-i18n="plan_feat_custom">Custom MCP integrations</li>
       </ul>
-      <button class="plan-btn" data-i18n="btn_contact_us" onclick="window.location='mailto:sales@cyberguardianscan.com'">Contact Us</button>
+      <button class="plan-btn" data-i18n="btn_contact_us" onclick="openContact('enterprise')">Contact Us</button>
     </div>
   </div>
   <div class="sales-note">
     <span data-i18n="sales_note">Need a custom package, invoice, procurement approval, or higher scan volume?</span>
-    <a href="mailto:sales@cyberguardianscan.com">sales@cyberguardianscan.com</a>
+    <button type="button" class="inline-contact" onclick="openContact('sales')">Contact Sales</button>
   </div>
 </section>
 
@@ -626,9 +627,9 @@ footer a:hover { color: var(--cyan); }
     &nbsp;·&nbsp;
     <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a>
     &nbsp;Â·&nbsp;
-    <a class="contact-link" href="mailto:support@cyberguardianscan.com">support@cyberguardianscan.com</a>
+    <a class="contact-link" href="/contact.html?type=support">support@cyberguardianscan.com</a>
     &nbsp;Â·&nbsp;
-    <a class="contact-link" href="mailto:sales@cyberguardianscan.com">sales@cyberguardianscan.com</a>
+    <a class="contact-link" href="/contact.html?type=sales">sales@cyberguardianscan.com</a>
   </div>
 </footer>
 
@@ -665,6 +666,10 @@ function incrementQuota() { localStorage.setItem(`cg-quota-${getMonthKey()}`, St
 function isDevMode() { return localStorage.getItem('cg-dev-mode') === 'cg-dev-2026'; }
 function getAdminBypassSecret() { return localStorage.getItem('cg-admin-secret') || ''; }
 function hasAdminBypass() { return Boolean(getAdminBypassSecret().trim()); }
+
+function openContact(type = 'sales') {
+  window.location.href = `/contact.html?type=${encodeURIComponent(type)}`;
+}
 
 async function startCheckout(plan) {
   try {
