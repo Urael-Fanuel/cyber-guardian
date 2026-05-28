@@ -140,7 +140,9 @@ canvas { max-height: 200px; }
 .cta-band { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 60px; background: var(--cyan2); border: 1px solid rgba(0,212,255,0.25); padding: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
 .cta-text h3 { font-family: var(--sans); font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px; }
 .cta-text p { font-size: 14px; color: var(--text); opacity: 0.8; }
+.cta-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
 .cta-btn { background: var(--cyan); color: #000; font-family: var(--sans); font-weight: 700; font-size: 13px; letter-spacing: 1px; padding: 12px 28px; border-radius: 2px; text-decoration: none; transition: all 0.15s; white-space: nowrap; }
+.cta-btn.secondary { background: transparent; color: var(--cyan); border: 1px solid rgba(0,212,255,0.45); }
 .cta-btn:hover { background: #fff; box-shadow: 0 0 20px rgba(0,212,255,0.4); }
 
 /* FOOTER */
@@ -154,6 +156,7 @@ footer { position: relative; z-index: 2; border-top: 1px solid var(--border); pa
   .hero { padding: 36px 16px 28px; }
   .wrap { padding: 0 12px; }
   .cta-band { flex-direction: column; text-align: center; }
+  .cta-actions { justify-content: center; }
 }
 </style>
 </head>
@@ -206,7 +209,8 @@ const DASH_T = {
     recent_hdr: '// recent_scans',
     no_scans: 'No scans yet - be the first to scan!',
     cta_title: 'Scan your MCP Server, AI Skill or IDE Extension - free',
-    cta_sub: 'Join thousands of developers who\'ve already protected their AI stack.',
+    cta_sub: 'Need custom volume, a business package, or procurement help? Contact sales@cyberguardianscan.com.',
+    cta_sales_btn: 'Contact Sales',
     threat_privilege: 'may indicate an attempt to gain unauthorized system access',
     threat_code_injection: 'may indicate execution of malicious code on your machine',
     threat_context: 'may indicate manipulation of the AI context to bypass controls',
@@ -676,7 +680,10 @@ function render(d) {
         <h3>${t('cta_title')}</h3>
         <p>${t('cta_sub')}</p>
       </div>
-      <a href="/" class="cta-btn">${t('cta_btn')}</a>
+      <div class="cta-actions">
+        <a href="/" class="cta-btn">${t('cta_btn')}</a>
+        <a href="mailto:sales@cyberguardianscan.com" class="cta-btn secondary">${t('cta_sales_btn')}</a>
+      </div>
     </div>
   `;
 
