@@ -11,6 +11,10 @@ body { min-height: 100vh; background: var(--bg); color: var(--text); font-family
 body::before { content:''; position: fixed; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px); background-size: 40px 40px; }
 nav { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; padding: 18px 28px; border-bottom: 1px solid var(--border); }
 .logo { font-family: var(--sans); font-weight: 800; color: #fff; text-decoration: none; }
+.nav-r { display:flex; align-items:center; gap:12px; }
+.static-lang-switcher { display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; }
+.static-lang-btn { width:auto; border:1px solid var(--border2); background:transparent; color:var(--dim); padding:5px 7px; font-size:11px; border-radius:2px; cursor:pointer; }
+.static-lang-btn.active { color:#001018; background:var(--cyan); border-color:var(--cyan); }
 .back { color: var(--cyan); text-decoration: none; font-size: 12px; border: 1px solid var(--border2); padding: 7px 12px; }
 main { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 54px 18px 70px; }
 .eyebrow { color: var(--cyan); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
@@ -36,51 +40,55 @@ button:disabled { opacity: 0.55; cursor: wait; }
 <body>
 <nav>
   <a class="logo" href="/">Cyber-Guardian</a>
-  <a class="back" href="/">Back to scanner</a>
+  <div class="nav-r">
+    <div class="static-lang-switcher" id="static-lang-switcher"></div>
+    <a class="back" href="/" data-static-i18n="back_scanner">Back to scanner</a>
+  </div>
 </nav>
 
 <main>
-  <div class="eyebrow">// contact</div>
-  <h1>Talk to Cyber-Guardian</h1>
-  <p class="sub">Use this form for custom packages, enterprise pricing, procurement, support, or security questions. Your message stays inside the site and goes to the right inbox.</p>
+  <div class="eyebrow" data-static-i18n="contact">// contact</div>
+  <h1 data-static-i18n="contact_title">Talk to Cyber-Guardian</h1>
+  <p class="sub" data-static-i18n="contact_sub">Use this form for custom packages, enterprise pricing, procurement, support, or security questions. Your message stays inside the site and goes to the right inbox.</p>
 
   <form class="panel" id="contact-form">
     <div class="row">
       <div class="field">
-        <label for="kind">Request type</label>
+        <label for="kind" data-static-i18n="request_type">Request type</label>
         <select id="kind" name="kind">
-          <option value="sales">Sales / custom package</option>
-          <option value="enterprise">Enterprise / procurement</option>
-          <option value="support">Support</option>
-          <option value="security">Security issue</option>
+          <option value="sales" data-static-i18n="opt_sales">Sales / custom package</option>
+          <option value="enterprise" data-static-i18n="opt_enterprise">Enterprise / procurement</option>
+          <option value="support" data-static-i18n="opt_support">Support</option>
+          <option value="security" data-static-i18n="opt_security">Security issue</option>
         </select>
       </div>
       <div class="field">
-        <label for="email">Work email</label>
+        <label for="email" data-static-i18n="work_email">Work email</label>
         <input id="email" name="email" type="email" autocomplete="email" required>
       </div>
     </div>
     <div class="row">
       <div class="field">
-        <label for="name">Name</label>
+        <label for="name" data-static-i18n="name">Name</label>
         <input id="name" name="name" autocomplete="name">
       </div>
       <div class="field">
-        <label for="company">Company</label>
+        <label for="company" data-static-i18n="company">Company</label>
         <input id="company" name="company" autocomplete="organization">
       </div>
     </div>
     <div class="field">
-      <label for="message">Message</label>
-      <textarea id="message" name="message" required placeholder="Tell us what you need: scan volume, package type, security question, or support issue."></textarea>
+      <label for="message" data-static-i18n="message">Message</label>
+      <textarea id="message" name="message" required data-static-placeholder="contact_placeholder" placeholder="Tell us what you need: scan volume, package type, security question, or support issue."></textarea>
     </div>
-    <button id="send-btn" type="submit">Send Message</button>
+    <button id="send-btn" type="submit" data-static-i18n="send_message">Send Message</button>
     <div class="msg" id="contact-msg"></div>
   </form>
 
-  <p class="direct">Business and pricing messages are routed to <span>sales@cyberguardianscan.com</span>. Support and security messages are routed to <span>support@cyberguardianscan.com</span>.</p>
+  <p class="direct" data-static-i18n="contact_direct">Business and pricing messages are routed to sales@cyberguardianscan.com. Support and security messages are routed to support@cyberguardianscan.com.</p>
 </main>
 
+<script src="/locales/static-pages.js"></script>
 <script>
 const params = new URLSearchParams(window.location.search);
 const initialType = params.get('type') || params.get('kind');
@@ -101,7 +109,7 @@ document.getElementById('contact-form').addEventListener('submit', async (event)
   };
 
   btn.disabled = true;
-  btn.textContent = 'Sending...';
+  btn.textContent = staticText('sending');
   msg.className = 'msg';
   msg.textContent = '';
 
@@ -112,19 +120,22 @@ document.getElementById('contact-form').addEventListener('submit', async (event)
       body: JSON.stringify(payload),
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || 'Could not send message.');
+    if (!response.ok) throw new Error(data.error || staticText('contact_failed'));
     msg.className = 'msg success';
-    msg.textContent = data.message || 'Thanks. We received your message.';
+    msg.textContent = staticText('contact_success');
     event.target.reset();
     if (['sales','enterprise','support','security'].includes(initialType)) {
       document.getElementById('kind').value = initialType;
     }
   } catch (error) {
     msg.className = 'msg error';
-    msg.textContent = error.message || 'Could not send message.';
+    const rawMessage = error.message || '';
+    if (rawMessage.includes('valid email')) msg.textContent = staticText('invalid_email');
+    else if (rawMessage.includes('short message')) msg.textContent = staticText('short_message');
+    else msg.textContent = rawMessage || staticText('contact_failed');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Send Message';
+    btn.textContent = staticText('send_message');
   }
 });
 </script>
