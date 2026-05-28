@@ -24,6 +24,10 @@ STRIPE_PRICE_PRO=price_...
 STRIPE_PRICE_TEAM=price_...
 STRIPE_PRICE_BUSINESS=price_...
 
+RESEND_API_KEY=re_...
+SUBSCRIBE_NOTIFY_TO=sales@cyberguardianscan.com
+EMAIL_FROM=Cyber-Guardian <notifications@cyberguardianscan.com>
+
 SCAN_USAGE_MODE=strict
 SCAN_MAX_REQUESTS_PER_MINUTE=5
 SCAN_MAX_REQUESTS_PER_HOUR=20
@@ -48,6 +52,16 @@ Create three recurring monthly prices in Stripe and copy their price IDs into:
 The pricing buttons call `/api/create-checkout-session`, which creates a Stripe
 Checkout subscription session on the server and redirects the visitor to Stripe.
 Keep `STRIPE_SECRET_KEY` server-side only in Vercel environment variables.
+
+## Email Lead Notifications
+
+The threat-alert signup form posts to `/api/subscribe`. Each valid email is saved
+to Supabase `email_subscribers` and, when `RESEND_API_KEY` is configured, a lead
+notification is sent to `SUBSCRIBE_NOTIFY_TO` (default:
+`sales@cyberguardianscan.com`).
+
+Resend requires an API key and a verified sending domain before production email
+delivery. Keep `RESEND_API_KEY` server-side only in Vercel environment variables.
 
 ## Developer Bypass
 
@@ -86,6 +100,7 @@ Run this SQL once in Supabase SQL Editor:
 ```text
 supabase/migrations/001_scan_usage_limits.sql
 supabase/migrations/002_site_content_overrides.sql
+supabase/migrations/003_email_subscribers.sql
 ```
 
 This creates:
@@ -93,6 +108,7 @@ This creates:
 - `public.cg_scan_usage_windows`
 - `public.cg_consume_scan_usage(...)`
 - `public.site_content_overrides`
+- `public.email_subscribers`
 
 The API calls this RPC before calling Anthropic. If the request exceeds minute, hour,
 day, or monthly quota, the request stops before any model cost is incurred.
