@@ -143,6 +143,9 @@ canvas { max-height: 200px; }
 .threat-name { color: #fff; font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: 0.3px; margin-bottom: 4px; overflow-wrap: anywhere; }
 .threat-desc { color: var(--text); font-size: 12px; line-height: 1.55; opacity: 0.92; }
 .threat-action { color: var(--cyan); font-size: 11px; line-height: 1.5; margin-top: 4px; font-weight: 700; }
+.threat-fix { color: var(--green); font-size: 11px; line-height: 1.5; margin-top: 4px; }
+.threat-row.do-not-use { border-color: rgba(255,61,61,0.35); background: rgba(255,61,61,0.06); }
+.threat-row.do-not-use .threat-fix { color: var(--red); font-weight: 700; }
 .safe-note { color: var(--green); font-size: 12px; line-height: 1.6; margin-top: 4px; }
 
 /* LOADING */
@@ -478,6 +481,8 @@ const DECISION_COPY = {
     safe_detail: 'No threat family was detected in this scan. Keep normal caution for updates and new versions.',
     what_found: 'What was found',
     action: 'What to do now',
+    fix: 'Safe remediation',
+    do_not_repair: 'Do not try to repair and use this package. Choose a different trusted source or ask the maintainer for a clean release.',
     action_block: 'Block this package or code until the finding is removed and rescanned clean.',
     action_review: 'Treat this as suspicious. Read the code, ask for a fix, and rescan before installing.',
     action_safe: 'You can proceed if the source is trusted and the code matches what you expected.',
@@ -489,6 +494,8 @@ const DECISION_COPY = {
     safe_detail: 'לא זוהתה משפחת איום בסריקה הזו. עדיין כדאי לוודא שהמקור אמין ושהגרסה צפויה.',
     what_found: 'מה נמצא',
     action: 'מה לעשות עכשיו',
+    fix: 'תיקון בטוח',
+    do_not_repair: 'לא מומלץ לנסות לתקן ולהשתמש בחבילה הזו. עדיף לבחור מקור אמין אחר או לבקש מהמתחזק גרסה נקייה.',
     action_block: 'חסום את החבילה או הקוד עד שהממצא יוסר וסריקה חוזרת תצא נקייה.',
     action_review: 'התייחס לזה כחשוד. קרא את הקוד, בקש תיקון, וסרוק שוב לפני התקנה.',
     action_safe: 'אפשר להמשיך אם המקור אמין והקוד תואם למה שציפית.',
@@ -500,6 +507,8 @@ const DECISION_COPY = {
     safe_detail: 'Keine Bedrohungsfamilie wurde erkannt. Quelle und Version trotzdem normal pruefen.',
     what_found: 'Gefunden',
     action: 'Naechster Schritt',
+    fix: 'Sichere Behebung',
+    do_not_repair: 'Nicht reparieren und weiterverwenden. Waehlen Sie eine andere vertrauenswuerdige Quelle oder verlangen Sie ein sauberes Release.',
     action_block: 'Paket oder Code blockieren, bis der Fund entfernt und sauber erneut gescannt wurde.',
     action_review: 'Als verdaechtig behandeln. Code lesen, Fix verlangen und vor Installation erneut scannen.',
     action_safe: 'Fortfahren, wenn die Quelle vertrauenswuerdig ist und der Code erwartet aussieht.',
@@ -511,6 +520,8 @@ const DECISION_COPY = {
     safe_detail: 'このスキャンでは脅威ファミリーは検出されませんでした。入手元とバージョンは通常通り確認してください。',
     what_found: '検出内容',
     action: '次に行うこと',
+    fix: '安全な修正',
+    do_not_repair: 'このパッケージを修正して使うことは推奨しません。別の信頼できる入手元を選ぶか、保守者にクリーンなリリースを依頼してください。',
     action_block: '検出内容が削除され、再スキャンで安全になるまでブロックしてください。',
     action_review: '疑わしいものとして扱い、コードを確認し、修正後に再スキャンしてください。',
     action_safe: '入手元が信頼でき、内容が想定通りなら進められます。',
@@ -522,6 +533,8 @@ const DECISION_COPY = {
     safe_detail: '이 스캔에서는 위협 패밀리가 감지되지 않았습니다. 출처와 버전은 계속 확인하세요.',
     what_found: '발견 내용',
     action: '다음 조치',
+    fix: '안전한 수정',
+    do_not_repair: '이 패키지를 직접 고쳐서 사용하는 것은 권장하지 않습니다. 다른 신뢰 가능한 출처를 선택하거나 유지관리자에게 깨끗한 릴리스를 요청하세요.',
     action_block: '문제가 제거되고 재스캔이 깨끗할 때까지 차단하세요.',
     action_review: '의심 항목으로 다루고 코드를 읽은 뒤 수정 후 재스캔하세요.',
     action_safe: '출처가 신뢰 가능하고 코드가 예상과 일치하면 진행할 수 있습니다.',
@@ -533,6 +546,8 @@ const DECISION_COPY = {
     safe_detail: 'Aucune famille de menace détectée. Vérifiez tout de même la source et la version.',
     what_found: 'Ce qui a été trouvé',
     action: 'Que faire maintenant',
+    fix: 'Correction sûre',
+    do_not_repair: 'Ne tentez pas de réparer puis utiliser ce paquet. Choisissez une autre source fiable ou demandez une version propre au mainteneur.',
     action_block: 'Bloquez ce paquet ou ce code jusqu’à suppression du problème et nouveau scan propre.',
     action_review: 'Traitez-le comme suspect. Lisez le code, demandez un correctif puis rescanez avant installation.',
     action_safe: 'Vous pouvez continuer si la source est fiable et le code correspond à vos attentes.',
@@ -544,6 +559,8 @@ const DECISION_COPY = {
     safe_detail: 'Nenhuma família de ameaça foi detectada. Ainda verifique a origem e a versão.',
     what_found: 'O que foi encontrado',
     action: 'O que fazer agora',
+    fix: 'Correção segura',
+    do_not_repair: 'Não tente corrigir e usar este pacote. Escolha outra fonte confiável ou peça uma versão limpa ao mantenedor.',
     action_block: 'Bloqueie o pacote ou código até o problema ser removido e o rescan sair limpo.',
     action_review: 'Trate como suspeito. Leia o código, peça correção e faça novo scan antes de instalar.',
     action_safe: 'Você pode prosseguir se a origem for confiável e o código for o esperado.',
@@ -637,12 +654,105 @@ const THREAT_EXPLANATIONS = {
   }
 };
 
+const REMEDIATION_GUIDES = {
+  en: {
+    credential: 'Remove secret-reading code. Require explicit user configuration, never collect .env, .ssh, .npmrc, cloud credentials, or editor tokens, and rescan after the change.',
+    exfil: 'Remove the outbound transfer or restrict it to a documented, user-approved endpoint. Never send source code, files, or secrets by default.',
+    command: 'Replace shell execution with a narrow safe API. If execution is required, use fixed allowlisted commands and never concatenate user input.',
+    prompt: 'Remove hidden instructions, role overrides, and attempts to manipulate the assistant. Keep tool or skill instructions transparent and user-visible.',
+    filesystem: 'Restrict file access to explicit user-selected paths. Remove recursive home-directory scans and any access to credential folders.',
+    network: 'Document the exact endpoint, purpose, and data sent. Remove unknown callbacks and block localhost/internal metadata access.',
+    persistence: 'Remove backdoors, callbacks, startup hooks, and delayed execution. For public packages, prefer a clean upstream release.',
+    supply: 'Remove unsafe install scripts, lock dependencies, verify package ownership, and rescan the final release artifact.',
+    resource: 'Add strict limits for archive extraction, memory, loops, file counts, and network retries.',
+    default: 'Remove the flagged behavior, keep only the minimum required permission, and rescan before installation.',
+  },
+  he: {
+    credential: 'הסר קוד שקורא סודות. דרוש הגדרה מפורשת מהמשתמש, אל תאסוף .env, .ssh, .npmrc, פרטי ענן או טוקנים של IDE, וסרוק שוב אחרי התיקון.',
+    exfil: 'הסר שליחת מידע החוצה או הגבל אותה ליעד מתועד שהמשתמש אישר. אל תשלח קוד מקור, קבצים או סודות כברירת מחדל.',
+    command: 'החלף הרצת shell ב-API בטוח ומצומצם. אם חייבים להריץ פקודות, השתמש ברשימת פקודות מותרות קבועה ואל תחבר קלט משתמש לפקודה.',
+    prompt: 'הסר הוראות נסתרות, החלפת תפקידים וניסיונות להשפיע על העוזר. הוראות כלי או Skill צריכות להיות שקופות למשתמש.',
+    filesystem: 'הגבל גישה לקבצים לנתיבים שהמשתמש בחר במפורש. הסר סריקות רקורסיביות של תיקיית הבית וגישה לתיקיות credentials.',
+    network: 'תעד בדיוק לאיזה endpoint נשלח מידע, למה, ומה נשלח. הסר callbacks לא מוכרים וחסום גישה ל-localhost או metadata פנימי.',
+    persistence: 'הסר backdoors, callbacks, hooks בהפעלה וקוד שמתעורר מאוחר יותר. בחבילות ציבוריות עדיף להשתמש בגרסת upstream נקייה.',
+    supply: 'הסר install scripts מסוכנים, נעל dependencies, אמת בעלות על package, וסרוק שוב את artifact הסופי.',
+    resource: 'הוסף גבולות קשיחים לחילוץ ארכיונים, זיכרון, לולאות, מספר קבצים וניסיונות רשת.',
+    default: 'הסר את ההתנהגות שסומנה, השאר רק הרשאה מינימלית שנדרשת באמת, וסרוק שוב לפני התקנה.',
+  },
+  de: {
+    credential: 'Entfernen Sie Code, der Secrets liest. Nutzen Sie explizite Nutzer-Konfiguration und sammeln Sie nie .env, .ssh, .npmrc, Cloud-Credentials oder IDE-Tokens.',
+    exfil: 'Entfernen Sie den ausgehenden Transfer oder beschraenken Sie ihn auf einen dokumentierten, vom Nutzer genehmigten Endpunkt.',
+    command: 'Ersetzen Sie Shell-Ausfuehrung durch eine enge sichere API. Wenn noetig, nur feste Allowlist-Befehle und keine Nutzer-Eingaben konkatenieren.',
+    prompt: 'Entfernen Sie versteckte Anweisungen, Rollenwechsel und Manipulationsversuche. Tool- oder Skill-Anweisungen muessen transparent sein.',
+    filesystem: 'Beschraenken Sie Dateizugriff auf vom Nutzer gewaehlte Pfade. Entfernen Sie Home-Scans und Zugriff auf Credential-Ordner.',
+    network: 'Dokumentieren Sie Endpunkt, Zweck und gesendete Daten. Entfernen Sie unbekannte Callbacks und blockieren Sie localhost/Metadata-Zugriff.',
+    persistence: 'Entfernen Sie Backdoors, Callbacks, Startup-Hooks und spaetere Ausfuehrung. Nutzen Sie bevorzugt ein sauberes Upstream-Release.',
+    supply: 'Entfernen Sie unsichere Install-Skripte, pinnen Sie Dependencies, pruefen Sie Paketbesitz und scannen Sie das finale Artefakt erneut.',
+    resource: 'Fuegen Sie harte Grenzen fuer Archiv-Extraktion, Speicher, Schleifen, Dateianzahl und Netzwerk-Retries hinzu.',
+    default: 'Entfernen Sie das markierte Verhalten, behalten Sie nur minimale Berechtigungen und scannen Sie erneut.',
+  },
+  ja: {
+    credential: '秘密情報を読むコードを削除してください。.env、.ssh、.npmrc、クラウド認証情報、IDEトークンを収集せず、明示設定にしてください。',
+    exfil: '外部送信を削除するか、文書化されユーザーが承認した送信先だけに制限してください。',
+    command: 'shell実行を安全な限定APIに置き換えてください。必要な場合も固定allowlistコマンドだけを使い、ユーザー入力を連結しないでください。',
+    prompt: '隠し指示、ロール上書き、AI操作の試みを削除してください。Skillやtoolの指示は透明にしてください。',
+    filesystem: 'ファイルアクセスをユーザーが明示選択したパスだけに制限してください。ホーム全体の再帰スキャンや認証情報フォルダへのアクセスを削除してください。',
+    network: '送信先、目的、送信データを明記してください。不明なcallbackやlocalhost/internal metadataアクセスを削除してください。',
+    persistence: 'backdoor、callback、起動hook、遅延実行を削除してください。公開パッケージではクリーンなupstreamリリースを選んでください。',
+    supply: '危険なinstall scriptを削除し、依存関係を固定し、パッケージ所有者を確認し、最終成果物を再スキャンしてください。',
+    resource: 'アーカイブ展開、メモリ、ループ、ファイル数、ネットワークリトライに厳しい上限を追加してください。',
+    default: '検出された動作を削除し、必要最小限の権限だけにして、インストール前に再スキャンしてください。',
+  },
+  ko: {
+    credential: '비밀값을 읽는 코드를 제거하세요. .env, .ssh, .npmrc, 클라우드 자격 증명, IDE 토큰을 수집하지 말고 명시적 사용자 설정만 사용하세요.',
+    exfil: '외부 전송을 제거하거나 문서화되고 사용자가 승인한 endpoint로 제한하세요.',
+    command: 'shell 실행을 좁고 안전한 API로 바꾸세요. 필요한 경우 고정 allowlist 명령만 사용하고 사용자 입력을 연결하지 마세요.',
+    prompt: '숨겨진 지시, 역할 덮어쓰기, AI 조작 시도를 제거하세요. tool/skill 지시는 투명해야 합니다.',
+    filesystem: '파일 접근을 사용자가 명시적으로 선택한 경로로 제한하세요. 홈 디렉터리 재귀 스캔과 credential 폴더 접근을 제거하세요.',
+    network: 'endpoint, 목적, 전송 데이터를 문서화하세요. 알 수 없는 callback과 localhost/internal metadata 접근을 제거하세요.',
+    persistence: 'backdoor, callback, startup hook, 지연 실행을 제거하세요. 공개 패키지는 깨끗한 upstream release를 사용하세요.',
+    supply: '위험한 install script를 제거하고 dependencies를 고정하며 package 소유권을 확인한 뒤 최종 artifact를 재스캔하세요.',
+    resource: 'archive 추출, 메모리, loop, 파일 수, network retry에 엄격한 제한을 추가하세요.',
+    default: '표시된 동작을 제거하고 최소 권한만 남긴 뒤 설치 전에 다시 스캔하세요.',
+  },
+  fr: {
+    credential: 'Supprimez le code qui lit les secrets. Utilisez une configuration explicite et ne collectez jamais .env, .ssh, .npmrc, identifiants cloud ou tokens IDE.',
+    exfil: 'Supprimez le transfert sortant ou limitez-le à un endpoint documenté et approuvé par l’utilisateur.',
+    command: 'Remplacez l’exécution shell par une API sûre et limitée. Si nécessaire, utilisez une allowlist fixe et jamais de concaténation d’entrée utilisateur.',
+    prompt: 'Supprimez instructions cachées, changements de rôle et tentatives de manipulation de l’assistant.',
+    filesystem: 'Limitez l’accès fichiers aux chemins choisis par l’utilisateur. Supprimez scans récursifs du home et accès aux dossiers credentials.',
+    network: 'Documentez endpoint, objectif et données envoyées. Supprimez callbacks inconnus et accès localhost/metadata interne.',
+    persistence: 'Supprimez backdoors, callbacks, hooks de démarrage et exécution différée. Préférez une release upstream propre.',
+    supply: 'Supprimez scripts d’installation dangereux, verrouillez les dépendances, vérifiez le propriétaire et rescanez l’artefact final.',
+    resource: 'Ajoutez des limites strictes pour extraction d’archives, mémoire, boucles, nombre de fichiers et retries réseau.',
+    default: 'Supprimez le comportement signalé, gardez les permissions minimales, puis rescanez avant installation.',
+  },
+  pt: {
+    credential: 'Remova código que lê segredos. Use configuração explícita do usuário e nunca colete .env, .ssh, .npmrc, credenciais cloud ou tokens de IDE.',
+    exfil: 'Remova a transferência externa ou limite-a a um endpoint documentado e aprovado pelo usuário.',
+    command: 'Troque execução shell por uma API segura e limitada. Se for necessário, use comandos fixos em allowlist e nunca concatene entrada do usuário.',
+    prompt: 'Remova instruções ocultas, troca de papéis e tentativas de manipular o assistente.',
+    filesystem: 'Restrinja acesso a arquivos a caminhos escolhidos pelo usuário. Remova scans recursivos da home e acesso a pastas de credenciais.',
+    network: 'Documente endpoint, finalidade e dados enviados. Remova callbacks desconhecidos e acesso a localhost/metadata interno.',
+    persistence: 'Remova backdoors, callbacks, hooks de inicialização e execução atrasada. Prefira uma release upstream limpa.',
+    supply: 'Remova scripts de instalação perigosos, fixe dependências, verifique o dono do pacote e faça rescan do artefato final.',
+    resource: 'Adicione limites rígidos para extração de arquivos, memória, loops, número de arquivos e retries de rede.',
+    default: 'Remova o comportamento sinalizado, mantenha apenas permissões mínimas e faça rescan antes de instalar.',
+  }
+};
+
+const NON_REPAIRABLE_CATEGORIES = new Set(['credential', 'exfil', 'command', 'persistence']);
+
 function copySet() {
   return DECISION_COPY[currentLang] || DECISION_COPY.en;
 }
 
 function explanationSet() {
   return THREAT_EXPLANATIONS[currentLang] || THREAT_EXPLANATIONS.en;
+}
+
+function remediationSet() {
+  return REMEDIATION_GUIDES[currentLang] || REMEDIATION_GUIDES.en;
 }
 
 function escapeHtml(value) {
@@ -677,15 +787,19 @@ function threatDetailsHtml(scan) {
     return `<div class="safe-note">${escapeHtml(c.safe_detail)}</div>`;
   }
   const explanations = explanationSet();
+  const remediations = remediationSet();
   const decision = scanDecision(scan.status);
   return `<div class="threat-list">${scan.threats_summary.split(', ').filter(Boolean).map(rawName => {
     const name = rawName.trim().toUpperCase();
     const category = threatCategory(name);
     const desc = explanations[category] || explanations.default;
-    return `<div class="threat-row">
+    const shouldReplace = scan.status === 'STATUS_CRITICAL' && NON_REPAIRABLE_CATEGORIES.has(category);
+    const fix = shouldReplace ? c.do_not_repair : (remediations[category] || remediations.default);
+    return `<div class="threat-row ${shouldReplace ? 'do-not-use' : ''}">
       <div class="threat-name">${escapeHtml(name)}</div>
       <div class="threat-desc"><strong>${escapeHtml(c.what_found)}:</strong> ${escapeHtml(desc)}</div>
       <div class="threat-action">${escapeHtml(c.action)}: ${escapeHtml(decision.action)}</div>
+      <div class="threat-fix">${escapeHtml(c.fix)}: ${escapeHtml(fix)}</div>
     </div>`;
   }).join('')}</div>`;
 }
