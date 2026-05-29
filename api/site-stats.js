@@ -31,6 +31,35 @@ function rejectDisallowedOrigin(req, res) {
   return true;
 }
 
+const BLOCKING_THREAT_FAMILIES = new Set([
+  'REVERSE_SHELL',
+  'BACKDOOR',
+  'CREDENTIAL_THEFT',
+  'API_KEY_THEFT',
+  'MCP_CREDENTIAL_EXFILTRATION',
+  'DATA_EXFILTRATION',
+  'C2_CALLBACK',
+  'KEYLOGGER_PATTERN',
+  'CLIPBOARD_HIJACK',
+  'CRYPTO_MINING',
+  'PRIVILEGE_ESCALATION',
+  'LOGIC_BOMB'
+]);
+
+function threatFamilies(summary) {
+  return String(summary || '')
+    .split(',')
+    .map(name => name.trim().toUpperCase())
+    .filter(Boolean);
+}
+
+function classifyScan(scan) {
+  if (!scan || scan.status === 'STATUS_SAFE') return 'safe';
+  const families = threatFamilies(scan.threats_summary);
+  if (families.some(name => BLOCKING_THREAT_FAMILIES.has(name))) return 'blocked';
+  return 'review';
+}
+
 module.exports = async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') {
@@ -52,17 +81,23 @@ module.exports = async function handler(req, res) {
     if (!scans || scans.length === 0) {
       return res.status(200).json({
         total: 0, safe: 0, moderate: 0, critical: 0,
-        detection_rate: 0, avg_threat_score: 0,
+        review: 0, blocked: 0,
+        detection_rate: 0, attention_rate: 0, blocked_rate: 0, avg_threat_score: 0,
         by_scope: { mcp: 0, skill: 0, extension: 0 },
         recent: [], trend: []
       });
     }
 
     const total     = scans.length;
-    const safe      = scans.filter(s => s.status === 'STATUS_SAFE').length;
-    const moderate  = scans.filter(s => s.status === 'STATUS_MODERATE').length;
-    const critical  = scans.filter(s => s.status === 'STATUS_CRITICAL').length;
-    const detection_rate = total > 0 ? Math.round(((moderate + critical) / total) * 100) : 0;
+    const decisions = scans.map(s => ({ scan: s, decision: classifyScan(s) }));
+    const safe      = decisions.filter(s => s.decision === 'safe').length;
+    const review    = decisions.filter(s => s.decision === 'review').length;
+    const blocked   = decisions.filter(s => s.decision === 'blocked').length;
+    const moderate  = review;
+    const critical  = blocked;
+    const attention_rate = total > 0 ? Math.round(((review + blocked) / total) * 100) : 0;
+    const blocked_rate = total > 0 ? Math.round((blocked / total) * 100) : 0;
+    const detection_rate = attention_rate;
     const avg_threat_score = total > 0 ? Math.round(scans.reduce((a, s) => a + (s.threat_score || 0), 0) / total) : 0;
 
     const by_scope = { mcp: 0, skill: 0, extension: 0 };
@@ -74,6 +109,8 @@ module.exports = async function handler(req, res) {
     const recent = scans.slice(0, 10).map(s => ({
       scope:            s.scope,
       status:           s.status,
+      raw_status:       s.status,
+      decision:         classifyScan(s),
       threat_score:     s.threat_score,
       threat_count:     s.threat_count,
       threats_summary:  s.threats_summary || '',
@@ -87,16 +124,19 @@ module.exports = async function handler(req, res) {
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
       const dayScans = scans.filter(s => s.scanned_at && s.scanned_at.startsWith(dateStr));
+      const dayDecisions = dayScans.map(s => classifyScan(s));
       trend.push({
         date:     dateStr,
         total:    dayScans.length,
-        threats:  dayScans.filter(s => s.status !== 'STATUS_SAFE').length
+        threats:  dayDecisions.filter(d => d === 'blocked').length,
+        blocked:  dayDecisions.filter(d => d === 'blocked').length,
+        review:   dayDecisions.filter(d => d === 'review').length
       });
     }
 
     return res.status(200).json({
-      total, safe, moderate, critical,
-      detection_rate, avg_threat_score,
+      total, safe, moderate, critical, review, blocked,
+      detection_rate, attention_rate, blocked_rate, avg_threat_score,
       by_scope, recent, trend,
       last_scan: scans[0]?.scanned_at || null
     });

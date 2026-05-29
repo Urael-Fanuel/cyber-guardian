@@ -138,6 +138,7 @@ canvas { max-height: 200px; }
 .decision-line strong { color: var(--green); }
 .feed-item.risk-mod .decision-line strong { color: var(--orange); }
 .feed-item.risk-crit .decision-line strong { color: var(--red); }
+.decision-note { border: 1px solid rgba(0,212,255,0.2); background: rgba(0,212,255,0.06); color: var(--text); font-size: 12px; line-height: 1.7; padding: 12px 14px; margin-bottom: 14px; }
 .threat-list { display: grid; gap: 7px; margin-top: 8px; }
 .threat-row { border: 1px solid var(--border); background: rgba(8,18,30,0.62); padding: 9px 11px; }
 .threat-name { color: #fff; font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: 0.3px; margin-bottom: 4px; overflow-wrap: anywhere; }
@@ -420,6 +421,76 @@ const DASH_T = {
   },
 };
 
+const DASH_LABEL_OVERRIDES = {
+  en: {
+    kpi_threats: 'Do Not Install', kpi_mod: 'Security Review', kpi_mod_sub: 'Weaknesses or unsafe design',
+    detection_rate: 'needs attention', risk_label: 'INSTALLATION DECISION BREAKDOWN',
+    safe_lbl: 'OK TO INSTALL', review_lbl: 'SECURITY REVIEW', crit_lbl: 'DO NOT INSTALL',
+    threat: 'finding', threats: 'findings',
+    decision_note: 'Important: the red number is not every finding. It counts only scans with direct malicious or high-impact behavior. Other weaknesses are shown as Security Review so users can inspect, ask for fixes, and rescan.'
+  },
+  he: {
+    kpi_threats: 'לא להתקנה', kpi_mod: 'בדיקת אבטחה', kpi_mod_sub: 'חולשות או תכנון לא בטוח',
+    detection_rate: 'דורשים תשומת לב', risk_label: 'התפלגות החלטות התקנה',
+    safe_lbl: 'אפשר להתקין', review_lbl: 'בדיקת אבטחה', crit_lbl: 'לא להתקנה',
+    threat: 'ממצא', threats: 'ממצאים',
+    decision_note: 'חשוב: המספר האדום אינו כל ממצא. הוא סופר רק סריקות עם התנהגות זדונית ישירה או מסוכנת במיוחד. חולשות אחרות מוצגות כבדיקת אבטחה כדי לאפשר בדיקה, בקשת תיקון וסריקה חוזרת.'
+  },
+  de: {
+    kpi_threats: 'Nicht installieren', kpi_mod: 'Security Review', kpi_mod_sub: 'Schwachstellen oder unsicheres Design',
+    detection_rate: 'brauchen Aufmerksamkeit', risk_label: 'INSTALLATIONSENTSCHEIDUNGEN',
+    safe_lbl: 'INSTALLIERBAR', review_lbl: 'SECURITY REVIEW', crit_lbl: 'NICHT INSTALLIEREN',
+    threat: 'Fund', threats: 'Funde',
+    decision_note: 'Wichtig: Die rote Zahl ist nicht jeder Fund. Sie zaehlt nur Scans mit direktem schaedlichem oder besonders riskantem Verhalten. Andere Schwachstellen erscheinen als Security Review.'
+  },
+  ja: {
+    kpi_threats: 'インストール不可', kpi_mod: 'セキュリティ確認', kpi_mod_sub: '脆弱性または安全でない設計',
+    detection_rate: '確認が必要', risk_label: 'インストール判断の内訳',
+    safe_lbl: 'インストール可', review_lbl: 'セキュリティ確認', crit_lbl: 'インストール不可',
+    threat: '検出項目', threats: '検出項目',
+    decision_note: '重要: 赤い数値はすべての検出項目ではありません。直接的な悪意ある動作または高リスク動作のみを数えます。その他の弱点はセキュリティ確認として表示されます。'
+  },
+  ko: {
+    kpi_threats: '설치 금지', kpi_mod: '보안 검토', kpi_mod_sub: '취약점 또는 안전하지 않은 설계',
+    detection_rate: '주의 필요', risk_label: '설치 결정 분포',
+    safe_lbl: '설치 가능', review_lbl: '보안 검토', crit_lbl: '설치 금지',
+    threat: '발견 항목', threats: '발견 항목',
+    decision_note: '중요: 빨간 숫자는 모든 발견 항목이 아닙니다. 직접적인 악성 동작 또는 고위험 동작만 계산합니다. 다른 약점은 보안 검토로 표시됩니다.'
+  },
+  fr: {
+    kpi_threats: 'Ne pas installer', kpi_mod: 'Revue sécurité', kpi_mod_sub: 'Faiblesses ou conception risquée',
+    detection_rate: 'à traiter', risk_label: 'RÉPARTITION DES DÉCISIONS',
+    safe_lbl: 'INSTALLABLE', review_lbl: 'REVUE SÉCURITÉ', crit_lbl: 'NE PAS INSTALLER',
+    threat: 'élément', threats: 'éléments',
+    decision_note: 'Important : le nombre rouge ne correspond pas à tous les éléments détectés. Il compte seulement les comportements malveillants directs ou à fort impact. Les autres faiblesses sont classées en revue sécurité.'
+  },
+  pt: {
+    kpi_threats: 'Não instalar', kpi_mod: 'Revisão de segurança', kpi_mod_sub: 'Falhas ou design inseguro',
+    detection_rate: 'precisam de atenção', risk_label: 'DISTRIBUIÇÃO DA DECISÃO',
+    safe_lbl: 'PODE INSTALAR', review_lbl: 'REVISÃO DE SEGURANÇA', crit_lbl: 'NÃO INSTALAR',
+    threat: 'achado', threats: 'achados',
+    decision_note: 'Importante: o número vermelho não representa todos os achados. Ele conta apenas comportamento malicioso direto ou de alto impacto. Outras falhas aparecem como revisão de segurança.'
+  }
+};
+
+Object.entries(DASH_LABEL_OVERRIDES).forEach(([lang, labels]) => {
+  DASH_T[lang] = { ...(DASH_T[lang] || {}), ...labels };
+});
+
+const DECISION_LABEL_KEYS = new Set([
+  'kpi_threats',
+  'kpi_mod',
+  'kpi_mod_sub',
+  'risk_label',
+  'safe_lbl',
+  'review_lbl',
+  'crit_lbl',
+  'threat',
+  'threats',
+  'decision_note',
+  'detection_rate'
+]);
+
 const LANGS = {
   en:{flag:'EN',dir:'ltr'}, he:{flag:'IL',dir:'rtl'},
   de:{flag:'DE',dir:'ltr'}, ja:{flag:'JP',dir:'ltr'},
@@ -470,6 +541,7 @@ async function applyLang(code) {
 }
 
 function t(key) {
+  if (DECISION_LABEL_KEYS.has(key)) return DASH_T[currentLang]?.[key] || DASH_T.en[key] || key;
   return DASH_CONTENT_OVERRIDES[currentLang]?.[key] || DASH_T[currentLang]?.[key] || DASH_T.en[key] || key;
 }
 
@@ -742,6 +814,32 @@ const REMEDIATION_GUIDES = {
 };
 
 const NON_REPAIRABLE_CATEGORIES = new Set(['credential', 'exfil', 'command', 'persistence']);
+const BLOCKING_THREAT_FAMILIES = new Set([
+  'REVERSE_SHELL',
+  'BACKDOOR',
+  'CREDENTIAL_THEFT',
+  'API_KEY_THEFT',
+  'MCP_CREDENTIAL_EXFILTRATION',
+  'DATA_EXFILTRATION',
+  'C2_CALLBACK',
+  'KEYLOGGER_PATTERN',
+  'CLIPBOARD_HIJACK',
+  'CRYPTO_MINING',
+  'PRIVILEGE_ESCALATION',
+  'LOGIC_BOMB'
+]);
+
+function scanDecisionValue(scan) {
+  if (!scan || scan.status === 'STATUS_SAFE') return 'safe';
+  if (['safe', 'review', 'blocked'].includes(scan.decision)) return scan.decision;
+  const families = String(scan.threats_summary || '')
+    .split(',')
+    .map(name => name.trim().toUpperCase())
+    .filter(Boolean);
+  if (families.some(name => BLOCKING_THREAT_FAMILIES.has(name))) return 'blocked';
+  if (scan.status === 'STATUS_MODERATE' || scan.status === 'STATUS_CRITICAL') return 'review';
+  return 'safe';
+}
 
 function copySet() {
   return DECISION_COPY[currentLang] || DECISION_COPY.en;
@@ -774,26 +872,30 @@ function threatCategory(name) {
   return 'default';
 }
 
-function scanDecision(status) {
+function scanDecision(scanOrStatus, decisionOverride) {
   const c = copySet();
-  if (status === 'STATUS_CRITICAL') return { className: 'risk-crit', text: c.block, action: c.action_block };
-  if (status === 'STATUS_MODERATE') return { className: 'risk-mod', text: c.review, action: c.action_review };
-  return { className: 'risk-safe', text: c.install_ok, action: c.action_safe };
+  const scan = typeof scanOrStatus === 'object'
+    ? scanOrStatus
+    : { status: scanOrStatus, decision: decisionOverride };
+  const value = scanDecisionValue(scan);
+  if (value === 'blocked') return { value, className: 'risk-crit', text: c.block, action: c.action_block };
+  if (value === 'review') return { value, className: 'risk-mod', text: c.review, action: c.action_review };
+  return { value, className: 'risk-safe', text: c.install_ok, action: c.action_safe };
 }
 
 function threatDetailsHtml(scan) {
   const c = copySet();
-  if (!scan.threats_summary || scan.status === 'STATUS_SAFE') {
+  const decision = scanDecision(scan);
+  if (!scan.threats_summary || decision.value === 'safe') {
     return `<div class="safe-note">${escapeHtml(c.safe_detail)}</div>`;
   }
   const explanations = explanationSet();
   const remediations = remediationSet();
-  const decision = scanDecision(scan.status);
   return `<div class="threat-list">${scan.threats_summary.split(', ').filter(Boolean).map(rawName => {
     const name = rawName.trim().toUpperCase();
     const category = threatCategory(name);
     const desc = explanations[category] || explanations.default;
-    const shouldReplace = scan.status === 'STATUS_CRITICAL' && NON_REPAIRABLE_CATEGORIES.has(category);
+    const shouldReplace = decision.value === 'blocked' && NON_REPAIRABLE_CATEGORIES.has(category);
     const fix = shouldReplace ? c.do_not_repair : (remediations[category] || remediations.default);
     return `<div class="threat-row ${shouldReplace ? 'do-not-use' : ''}">
       <div class="threat-name">${escapeHtml(name)}</div>
@@ -858,11 +960,23 @@ function timeAgo(dateStr) {
 }
 
 function statusClass(status) {
+  if (typeof status === 'object') {
+    const value = scanDecisionValue(status);
+    if (value === 'safe') return 'safe';
+    if (value === 'blocked') return 'crit';
+    return 'mod';
+  }
   if (status === 'STATUS_SAFE') return 'safe';
   if (status === 'STATUS_CRITICAL') return 'crit';
   return 'mod';
 }
 function statusLabel(status) {
+  if (typeof status === 'object') {
+    const value = scanDecisionValue(status);
+    if (value === 'safe') return t('safe_lbl');
+    if (value === 'blocked') return t('crit_lbl');
+    return t('review_lbl');
+  }
   if (status === 'STATUS_SAFE') return '✅ SAFE';
   if (status === 'STATUS_CRITICAL') return '🚨 CRITICAL';
   if (status === 'STATUS_MODERATE') return '⚠️ REVIEW';
@@ -880,11 +994,11 @@ function scopeLabel(scope) {
 }
 
 function renderRecentScan(s) {
-  const decision = scanDecision(s.status);
+  const decision = scanDecision(s);
   return `
     <div class="feed-item detailed ${decision.className}">
       <div class="fi-scope" style="margin-top:4px">${scopeEmoji(s.scope)}</div>
-      <div class="fi-status ${statusClass(s.status)}" style="margin-top:4px">${statusLabel(s.status)}</div>
+      <div class="fi-status ${statusClass(s)}" style="margin-top:4px">${statusLabel(s)}</div>
       <div class="feed-main">
         <div class="feed-top">
           <span>${scopeLabel(s.scope)}</span>
@@ -901,10 +1015,12 @@ function renderRecentScan(s) {
 // ── Render ───────────────────────────────────────────────────────────
 function render(d) {
   window._dashData = d;
-  const detRate = d.detection_rate || 0;
+  const blocked = d.blocked ?? d.critical ?? 0;
+  const review = d.review ?? d.moderate ?? 0;
+  const detRate = d.attention_rate ?? d.detection_rate ?? 0;
   const safeP   = d.total > 0 ? Math.round((d.safe   / d.total) * 100) : 0;
-  const modP    = d.total > 0 ? Math.round((d.moderate / d.total) * 100) : 0;
-  const critP   = d.total > 0 ? Math.round((d.critical / d.total) * 100) : 0;
+  const modP    = d.total > 0 ? Math.round((review / d.total) * 100) : 0;
+  const critP   = d.total > 0 ? Math.round((blocked / d.total) * 100) : 0;
 
   document.getElementById('last-update').textContent =
     d.last_scan ? `${t('last_scan')} ${timeAgo(d.last_scan)}` : '';
@@ -991,6 +1107,7 @@ function render(d) {
     <!-- RECENT FEED -->
     <div class="recent">
       <div class="section-hdr">${t('recent_hdr')}</div>
+      <div class="decision-note">${escapeHtml(t('decision_note'))}</div>
       <div class="feed" id="feed">
         ${d.recent.length === 0
           ? `<div class="feed-item" style="justify-content:center;color:var(--dim)">${t('no_scans')}</div>`
@@ -1064,8 +1181,8 @@ function render(d) {
 
   // Animate counters
   animateCount(document.getElementById('n-total'),  d.total);
-  animateCount(document.getElementById('n-threats'), d.critical);
-  animateCount(document.getElementById('n-mod'),     d.moderate);
+  animateCount(document.getElementById('n-threats'), blocked);
+  animateCount(document.getElementById('n-mod'),     review);
   animateCount(document.getElementById('n-safe'),    d.safe);
   animateCount(document.getElementById('n-mcp'),     d.by_scope.mcp || 0);
   animateCount(document.getElementById('n-skill'),   d.by_scope.skill || 0);
@@ -1088,9 +1205,9 @@ function render(d) {
   new Chart(document.getElementById('chart-verdict'), {
     type: 'doughnut',
     data: {
-      labels: ['SAFE', 'REVIEW', 'CRITICAL'],
+      labels: [t('safe_lbl'), t('review_lbl'), t('crit_lbl')],
       datasets: [{
-        data: [d.safe || 0, d.moderate || 0, d.critical || 0],
+        data: [d.safe || 0, review || 0, blocked || 0],
         backgroundColor: ['#00E676', '#FF9100', '#FF3D3D'],
         borderColor: '#0B1117', borderWidth: 3
       }]
@@ -1125,8 +1242,8 @@ function render(d) {
           tension: 0.4, fill: true, pointRadius: 3
         },
         {
-          label: 'Threats',
-          data: (d.trend || []).map(t => t.threats),
+          label: t('crit_lbl'),
+          data: (d.trend || []).map(t => t.blocked ?? t.threats ?? 0),
           borderColor: '#FF3D3D', backgroundColor: 'rgba(255,61,61,0.08)',
           tension: 0.4, fill: true, pointRadius: 3
         }
