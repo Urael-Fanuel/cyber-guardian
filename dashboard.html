@@ -195,7 +195,7 @@ footer { position: relative; z-index: 2; border-top: 1px solid var(--border); pa
 </nav>
 
 <div class="hero">
-  <div class="page-tag" id="hero-tag">// threat_intelligence_dashboard</div>
+  <div class="page-tag" id="hero-tag">Threat intelligence dashboard</div>
   <h1 class="page-title" id="hero-title">Real threats. <span>Real numbers.</span><br>Real protection.</h1>
   <p class="page-sub" id="hero-sub">Every scan performed on Cyber-Guardian is tracked here. See exactly how many MCP servers, AI Skills, and IDE extensions contain malicious code - and what we found.</p>
 </div>
@@ -425,6 +425,7 @@ const DASH_LABEL_OVERRIDES = {
   en: {
     kpi_threats: 'Do Not Install', kpi_mod: 'Security Review', kpi_mod_sub: 'Weaknesses or unsafe design',
     detection_rate: 'needs attention', risk_label: 'INSTALLATION DECISION BREAKDOWN',
+    chart1: 'Verdict breakdown', chart2: 'Scan type breakdown', chart3: '7-day trend', recent_hdr: 'Recent scans',
     safe_lbl: 'OK TO INSTALL', review_lbl: 'SECURITY REVIEW', crit_lbl: 'DO NOT INSTALL',
     threat: 'finding', threats: 'findings',
     decision_note: 'Important: the red number is not every finding. It counts only scans with direct malicious or high-impact behavior. Other weaknesses are shown as Security Review so users can inspect, ask for fixes, and rescan.'
@@ -432,6 +433,7 @@ const DASH_LABEL_OVERRIDES = {
   he: {
     kpi_threats: 'לא להתקנה', kpi_mod: 'בדיקת אבטחה', kpi_mod_sub: 'חולשות או תכנון לא בטוח',
     detection_rate: 'דורשים תשומת לב', risk_label: 'התפלגות החלטות התקנה',
+    chart1: 'התפלגות החלטות', chart2: 'סוגי סריקות', chart3: 'מגמת 7 ימים', recent_hdr: 'סריקות אחרונות',
     safe_lbl: 'אפשר להתקין', review_lbl: 'בדיקת אבטחה', crit_lbl: 'לא להתקנה',
     threat: 'ממצא', threats: 'ממצאים',
     decision_note: 'חשוב: המספר האדום אינו כל ממצא. הוא סופר רק סריקות עם התנהגות זדונית ישירה או מסוכנת במיוחד. חולשות אחרות מוצגות כבדיקת אבטחה כדי לאפשר בדיקה, בקשת תיקון וסריקה חוזרת.'
@@ -439,6 +441,7 @@ const DASH_LABEL_OVERRIDES = {
   de: {
     kpi_threats: 'Nicht installieren', kpi_mod: 'Security Review', kpi_mod_sub: 'Schwachstellen oder unsicheres Design',
     detection_rate: 'brauchen Aufmerksamkeit', risk_label: 'INSTALLATIONSENTSCHEIDUNGEN',
+    chart1: 'Ergebnisverteilung', chart2: 'Scan-Typen', chart3: '7-Tage-Trend', recent_hdr: 'Letzte Scans',
     safe_lbl: 'INSTALLIERBAR', review_lbl: 'SECURITY REVIEW', crit_lbl: 'NICHT INSTALLIEREN',
     threat: 'Fund', threats: 'Funde',
     decision_note: 'Wichtig: Die rote Zahl ist nicht jeder Fund. Sie zaehlt nur Scans mit direktem schaedlichem oder besonders riskantem Verhalten. Andere Schwachstellen erscheinen als Security Review.'
@@ -446,6 +449,7 @@ const DASH_LABEL_OVERRIDES = {
   ja: {
     kpi_threats: 'インストール不可', kpi_mod: 'セキュリティ確認', kpi_mod_sub: '脆弱性または安全でない設計',
     detection_rate: '確認が必要', risk_label: 'インストール判断の内訳',
+    chart1: '判定の内訳', chart2: 'スキャン種別', chart3: '7日間の推移', recent_hdr: '最近のスキャン',
     safe_lbl: 'インストール可', review_lbl: 'セキュリティ確認', crit_lbl: 'インストール不可',
     threat: '検出項目', threats: '検出項目',
     decision_note: '重要: 赤い数値はすべての検出項目ではありません。直接的な悪意ある動作または高リスク動作のみを数えます。その他の弱点はセキュリティ確認として表示されます。'
@@ -453,6 +457,7 @@ const DASH_LABEL_OVERRIDES = {
   ko: {
     kpi_threats: '설치 금지', kpi_mod: '보안 검토', kpi_mod_sub: '취약점 또는 안전하지 않은 설계',
     detection_rate: '주의 필요', risk_label: '설치 결정 분포',
+    chart1: '판정 분포', chart2: '스캔 유형', chart3: '7일 추세', recent_hdr: '최근 스캔',
     safe_lbl: '설치 가능', review_lbl: '보안 검토', crit_lbl: '설치 금지',
     threat: '발견 항목', threats: '발견 항목',
     decision_note: '중요: 빨간 숫자는 모든 발견 항목이 아닙니다. 직접적인 악성 동작 또는 고위험 동작만 계산합니다. 다른 약점은 보안 검토로 표시됩니다.'
@@ -460,6 +465,7 @@ const DASH_LABEL_OVERRIDES = {
   fr: {
     kpi_threats: 'Ne pas installer', kpi_mod: 'Revue sécurité', kpi_mod_sub: 'Faiblesses ou conception risquée',
     detection_rate: 'à traiter', risk_label: 'RÉPARTITION DES DÉCISIONS',
+    chart1: 'Répartition des verdicts', chart2: 'Types de scans', chart3: 'Tendance 7 jours', recent_hdr: 'Scans récents',
     safe_lbl: 'INSTALLABLE', review_lbl: 'REVUE SÉCURITÉ', crit_lbl: 'NE PAS INSTALLER',
     threat: 'élément', threats: 'éléments',
     decision_note: 'Important : le nombre rouge ne correspond pas à tous les éléments détectés. Il compte seulement les comportements malveillants directs ou à fort impact. Les autres faiblesses sont classées en revue sécurité.'
@@ -467,6 +473,7 @@ const DASH_LABEL_OVERRIDES = {
   pt: {
     kpi_threats: 'Não instalar', kpi_mod: 'Revisão de segurança', kpi_mod_sub: 'Falhas ou design inseguro',
     detection_rate: 'precisam de atenção', risk_label: 'DISTRIBUIÇÃO DA DECISÃO',
+    chart1: 'Distribuição dos veredictos', chart2: 'Tipos de scan', chart3: 'Tendência de 7 dias', recent_hdr: 'Scans recentes',
     safe_lbl: 'PODE INSTALAR', review_lbl: 'REVISÃO DE SEGURANÇA', crit_lbl: 'NÃO INSTALAR',
     threat: 'achado', threats: 'achados',
     decision_note: 'Importante: o número vermelho não representa todos os achados. Ele conta apenas comportamento malicioso direto ou de alto impacto. Outras falhas aparecem como revisão de segurança.'
@@ -488,7 +495,11 @@ const DECISION_LABEL_KEYS = new Set([
   'threat',
   'threats',
   'decision_note',
-  'detection_rate'
+  'detection_rate',
+  'chart1',
+  'chart2',
+  'chart3',
+  'recent_hdr'
 ]);
 
 const LANGS = {

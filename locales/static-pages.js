@@ -175,7 +175,7 @@ function getStaticLang() {
 
 function staticText(key) {
   const lang = getStaticLang();
-  return STATIC_T[lang]?.[key] || STATIC_T.en[key] || key;
+  return String(STATIC_T[lang]?.[key] || STATIC_T.en[key] || key).replace(/^\/\/\s*/, "");
 }
 
 function setStaticLang(code) {
