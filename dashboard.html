@@ -960,6 +960,7 @@ function alternativesHtml(scan) {
     <div class="alt-title">${escapeHtml(decisionText('safer_alternatives', 'Similar lower-risk scans'))}</div>
     ${items.map(item => {
       const label = item.source_name || item.code_purpose || scopeLabel(scan.scope);
+      const sourceUrl = /^https?:\/\//i.test(String(item.source_url || '')) ? item.source_url : '';
       const meta = [
         item.decision === 'safe' ? t('safe_lbl') : t('review_lbl'),
         `${t('score')}: ${item.threat_score}/100`,
@@ -968,7 +969,7 @@ function alternativesHtml(scan) {
       return `<div class="alt-item">
         <div class="alt-name">${escapeHtml(label)}</div>
         <div class="alt-meta">${escapeHtml(meta)}</div>
-        ${item.source_url ? `<a class="alt-link" href="${escapeHtml(item.source_url)}" target="_blank" rel="noopener noreferrer">Open source</a>` : ''}
+        ${sourceUrl ? `<a class="alt-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open source</a>` : ''}
       </div>`;
     }).join('')}
     <div class="alt-meta">${escapeHtml(decisionText('alt_note', 'Not a guarantee. Review the source and rescan before installing.'))}</div>

@@ -82,12 +82,33 @@ function similarityScore(a, b) {
   return overlap;
 }
 
+function normalizedUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  try {
+    const url = new URL(raw);
+    url.hash = '';
+    url.search = '';
+    return url.toString().replace(/\/$/, '').toLowerCase();
+  } catch {
+    return raw.replace(/\/$/, '').toLowerCase();
+  }
+}
+
 function saferAlternatives(scan, scans) {
   const decision = classifyScan(scan);
   if (decision === 'safe') return [];
-  return scans
+  const currentUrl = normalizedUrl(scan.source_url);
+  const seenUrls = new Set();
+  const ranked = scans
     .filter(candidate => candidate !== scan)
     .filter(candidate => candidate.scope === scan.scope)
+    .filter(candidate => {
+      const candidateUrl = normalizedUrl(candidate.source_url);
+      if (!candidateUrl) return false;
+      if (currentUrl && candidateUrl === currentUrl) return false;
+      return true;
+    })
     .filter(candidate => ['safe', 'review'].includes(classifyScan(candidate)))
     .map(candidate => ({ candidate, score: similarityScore(scan, candidate) }))
     .filter(item => item.score > 0)
@@ -97,17 +118,23 @@ function saferAlternatives(scan, scans) {
       if (b.score !== a.score) return b.score - a.score;
       return (a.candidate.threat_score || 0) - (b.candidate.threat_score || 0);
     })
-    .slice(0, 3)
-    .map(({ candidate }) => ({
-      source_name: candidate.source_name || '',
-      source_url: candidate.source_url || '',
-      code_purpose: candidate.code_purpose || '',
-      component_type: candidate.component_type || '',
-      capabilities: arrayValue(candidate.capabilities).slice(0, 4),
-      decision: classifyScan(candidate),
-      threat_score: candidate.threat_score || 0,
-      scanned_at: candidate.scanned_at,
-    }));
+    .filter(({ candidate }) => {
+      const candidateUrl = normalizedUrl(candidate.source_url);
+      if (seenUrls.has(candidateUrl)) return false;
+      seenUrls.add(candidateUrl);
+      return true;
+    });
+
+  return ranked.slice(0, 3).map(({ candidate }) => ({
+    source_name: candidate.source_name || '',
+    source_url: candidate.source_url || '',
+    code_purpose: candidate.code_purpose || '',
+    component_type: candidate.component_type || '',
+    capabilities: arrayValue(candidate.capabilities).slice(0, 4),
+    decision: classifyScan(candidate),
+    threat_score: candidate.threat_score || 0,
+    scanned_at: candidate.scanned_at,
+  }));
 }
 
 module.exports = async function handler(req, res) {
