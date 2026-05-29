@@ -16,14 +16,33 @@ on:
         description: "Max total items to scan"
         required: false
         default: "30"
-      scan_scopes:
-        description: "Comma-separated scopes to scan"
+      scan_skills:
+        description: "Scan AI Skills"
+        type: boolean
         required: false
-        default: "mcp,extension,skill"
-      scope_limits:
-        description: "Per-scope limits, for example mcp:5,extension:10,skill:15"
+        default: true
+      skill_limit:
+        description: "Max AI Skills to scan"
         required: false
-        default: "mcp:5,extension:10,skill:15"
+        default: "15"
+      scan_mcp:
+        description: "Scan MCP servers"
+        type: boolean
+        required: false
+        default: true
+      mcp_limit:
+        description: "Max MCP servers to scan"
+        required: false
+        default: "10"
+      scan_ide_extensions:
+        description: "Scan IDE extensions"
+        type: boolean
+        required: false
+        default: true
+      ide_extension_limit:
+        description: "Max IDE extensions to scan"
+        required: false
+        default: "5"
       dry_run:
         description: "Dry run (no Supabase writes)"
         type: boolean
@@ -56,15 +75,60 @@ jobs:
             supabase \
             python-dotenv
 
+      - name: Resolve scan plan
+        run: |
+          set -euo pipefail
+
+          EVENT_NAME="${{ github.event_name }}"
+          SCAN_LIMIT="${{ github.event.inputs.scan_limit || '30' }}"
+
+          SCAN_SKILLS="${{ github.event.inputs.scan_skills || 'true' }}"
+          SKILL_LIMIT="${{ github.event.inputs.skill_limit || '15' }}"
+          SCAN_MCP="${{ github.event.inputs.scan_mcp || 'true' }}"
+          MCP_LIMIT="${{ github.event.inputs.mcp_limit || '10' }}"
+          SCAN_IDE_EXTENSIONS="${{ github.event.inputs.scan_ide_extensions || 'true' }}"
+          IDE_EXTENSION_LIMIT="${{ github.event.inputs.ide_extension_limit || '5' }}"
+
+          SCOPES=""
+          LIMITS=""
+
+          add_scope() {
+            local scope="$1"
+            local limit="$2"
+            if [ -z "$SCOPES" ]; then
+              SCOPES="$scope"
+              LIMITS="$scope:$limit"
+            else
+              SCOPES="$SCOPES,$scope"
+              LIMITS="$LIMITS,$scope:$limit"
+            fi
+          }
+
+          if [ "$EVENT_NAME" != "workflow_dispatch" ] || [ "$SCAN_SKILLS" = "true" ]; then
+            add_scope "skill" "$SKILL_LIMIT"
+          fi
+          if [ "$EVENT_NAME" != "workflow_dispatch" ] || [ "$SCAN_MCP" = "true" ]; then
+            add_scope "mcp" "$MCP_LIMIT"
+          fi
+          if [ "$EVENT_NAME" != "workflow_dispatch" ] || [ "$SCAN_IDE_EXTENSIONS" = "true" ]; then
+            add_scope "extension" "$IDE_EXTENSION_LIMIT"
+          fi
+
+          if [ -z "$SCOPES" ]; then
+            echo "::error::At least one scan type must be selected."
+            exit 1
+          fi
+
+          echo "SCAN_LIMIT=$SCAN_LIMIT" >> "$GITHUB_ENV"
+          echo "SCAN_SCOPES=$SCOPES" >> "$GITHUB_ENV"
+          echo "SCAN_SCOPE_LIMITS=$LIMITS" >> "$GITHUB_ENV"
+
       # ── Run scanner ──────────────────────────────────────────
       - name: Run Cyber-Guardian Security Scanner
         env:
           GITHUB_TOKEN:         ${{ secrets.SCANNER_GITHUB_TOKEN }}
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          SCAN_LIMIT:           ${{ github.event.inputs.scan_limit || '30' }}
-          SCAN_SCOPES:          ${{ github.event.inputs.scan_scopes || 'mcp,extension,skill' }}
-          SCAN_SCOPE_LIMITS:    ${{ github.event.inputs.scope_limits || 'mcp:5,extension:10,skill:15' }}
           DRY_RUN:              ${{ github.event.inputs.dry_run || 'false' }}
           CYBER_GUARDIAN_URL:   https://cyberguardianscan.com
           CG_ADMIN_BYPASS_SECRET: ${{ secrets.CG_ADMIN_BYPASS_SECRET }}

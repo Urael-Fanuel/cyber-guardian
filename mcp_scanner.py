@@ -35,10 +35,10 @@ SUPABASE_KEY   = os.environ["SUPABASE_SERVICE_KEY"]   # required (service role)
 SCAN_LIMIT     = int(os.environ.get("SCAN_LIMIT", 30))   # total items per run
 SCAN_SCOPES    = [
     scope.strip().lower()
-    for scope in os.environ.get("SCAN_SCOPES", "mcp,extension,skill").split(",")
+    for scope in os.environ.get("SCAN_SCOPES", "skill,mcp,extension").split(",")
     if scope.strip().lower() in {"mcp", "skill", "extension"}
 ]
-SCAN_SCOPE_LIMITS_RAW = os.environ.get("SCAN_SCOPE_LIMITS", "mcp:5,extension:10,skill:15")
+SCAN_SCOPE_LIMITS_RAW = os.environ.get("SCAN_SCOPE_LIMITS", "skill:15,mcp:10,extension:5")
 GITHUB_DELAY   = float(os.environ.get("GITHUB_DELAY", 1.2))   # seconds between API calls
 NPM_DELAY      = float(os.environ.get("NPM_DELAY", 0.5))
 CYBER_GUARDIAN_URL = os.environ.get("CYBER_GUARDIAN_URL", "https://cyberguardianscan.com")

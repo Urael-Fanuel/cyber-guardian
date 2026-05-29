@@ -52,7 +52,7 @@ python -m py_compile mcp_scanner.py
 
 ## Batch Scan Defaults
 
-The GitHub Actions scanner runs daily with `SCAN_LIMIT=30`, `SCAN_SCOPES=mcp,extension,skill`, and `SCAN_SCOPE_LIMITS=mcp:5,extension:10,skill:15`. A normal run scans up to 5 MCP servers, 10 IDE extensions, and 15 AI Skills. Each successful scan is saved immediately to Supabase `site_scans` and appears on the public dashboard without waiting for the whole batch to finish.
+The GitHub Actions scanner runs daily with `SCAN_LIMIT=30`, `SCAN_SCOPES=skill,mcp,extension`, and `SCAN_SCOPE_LIMITS=skill:15,mcp:10,extension:5`. A normal run prioritizes AI Skills, then MCP servers, then IDE extensions. Manual GitHub Actions runs expose separate toggles and limits for each scan type. Each successful scan is saved immediately to Supabase `site_scans` and appears on the public dashboard without waiting for the whole batch to finish.
 
 ## Required Production Environment
 
