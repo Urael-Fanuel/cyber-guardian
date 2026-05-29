@@ -117,6 +117,11 @@ extensions. Manual GitHub Actions runs expose separate toggles and limits for
 each scan type. Each successful scan writes safe dashboard metadata to Supabase
 `site_scans` immediately, so the public dashboard can update during the batch.
 
+Run `supabase/migrations/005_site_scan_intelligence.sql` to enrich `site_scans`
+with purpose, capabilities, source metadata, and use-case tags. These fields power
+the dashboard explanation of what each scanned component does and enable similar
+lower-risk recommendations.
+
 ## Editing Public Text
 
 Open `/content-admin.html`, paste the same `CG_ADMIN_BYPASS_SECRET`, choose the

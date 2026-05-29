@@ -92,6 +92,11 @@ The scan engine currently enforces:
 
 Every normalized scan response includes `threat_families_checked`, `threat_family_definitions`, and `coverage` metadata.
 
+New scans also store scan intelligence for future recommendations: component type,
+plain-English purpose, capabilities, use-case tags, source name/URL, and a code
+hash. Run `supabase/migrations/005_site_scan_intelligence.sql` once so these
+fields populate and the dashboard can show similar lower-risk alternatives.
+
 ## License
 
 Apache 2.0

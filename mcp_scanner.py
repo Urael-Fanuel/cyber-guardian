@@ -839,28 +839,73 @@ async def scan_with_cyber_guardian(client: httpx.AsyncClient, code: str, scope: 
     return {}
 
 
-def save_site_scan(sb: Client, scope: str, result: dict) -> bool:
-    """Save AI scan result to site_scans table (visible in dashboard)."""
-    if not result or not result.get("status"):
-        return False
+def _clean_text(value, max_len=240):
+    return str(value or "").strip()[:max_len]
+
+
+def _clean_list(value, max_items=8):
+    if not isinstance(value, list):
+        return []
+    seen = []
+    for item in value:
+        cleaned = _clean_text(item, 48).lower()
+        if cleaned and cleaned not in seen:
+            seen.append(cleaned)
+        if len(seen) >= max_items:
+            break
+    return seen
+
+
+def _site_scan_row(scope: str, result: dict, server=None) -> dict:
     status = result.get("status", "STATUS_AMBIGUOUS")
     threats = result.get("threats", [])
-    # Only save threat names if status is not SAFE
     threats_summary = ""
     if status != "STATUS_SAFE":
         threats_summary = ", ".join([t.get("family", "") for t in threats[:5] if t.get("family")])
+
+    profile = result.get("code_profile") if isinstance(result.get("code_profile"), dict) else {}
+    row = {
+        "scope":            scope,
+        "status":           status,
+        "threat_score":     result.get("threat_score", 0),
+        "threat_count":     len(threats),
+        "threats_summary":  threats_summary,
+        "code_purpose":     _clean_text(profile.get("purpose") or profile.get("summary"), 280),
+        "component_type":   _clean_text(profile.get("component_type") or scope, 48).lower(),
+        "capabilities":     _clean_list(profile.get("capabilities"), 8),
+        "use_case_tags":    _clean_list(profile.get("use_case_tags") or profile.get("keywords"), 10),
+    }
+    if server:
+        row.update({
+            "source_name":  _clean_text(getattr(server, "name", ""), 160),
+            "source_url":   _clean_text(getattr(server, "url", ""), 500),
+            "source_owner": _clean_text(getattr(server, "owner", ""), 120),
+            "code_hash":    _clean_text(getattr(server, "content_hash", ""), 80),
+        })
+    return row
+
+
+def save_site_scan(sb: Client, scope: str, result: dict, server=None) -> bool:
+    """Save AI scan result to site_scans table (visible in dashboard)."""
+    if not result or not result.get("status"):
+        return False
+    row = _site_scan_row(scope, result, server)
     try:
-        sb.table("site_scans").insert({
-            "scope":            scope,
-            "status":           status,
-            "threat_score":     result.get("threat_score", 0),
-            "threat_count":     len(threats),
-            "threats_summary":  threats_summary,
-        }).execute()
-        log.info(f"  [CG] saved site_scan scope={scope} status={status}")
+        sb.table("site_scans").insert(row).execute()
+        log.info(f"  [CG] saved site_scan scope={scope} status={row.get('status')}")
         return True
     except Exception as e:
-        log.warning(f"  [CG] Failed to save site scan: {e}")
+        legacy_markers = ("schema cache", "column", "could not find")
+        if any(marker in str(e).lower() for marker in legacy_markers):
+            try:
+                legacy = {key: row[key] for key in ("scope", "status", "threat_score", "threat_count", "threats_summary")}
+                sb.table("site_scans").insert(legacy).execute()
+                log.warning("  [CG] saved legacy site_scan; run migration 005 for enriched metadata")
+                return True
+            except Exception as retry_error:
+                log.warning(f"  [CG] Failed to save legacy site scan: {retry_error}")
+        else:
+            log.warning(f"  [CG] Failed to save site scan: {e}")
         return False
 
 
@@ -973,7 +1018,7 @@ async def run_mcp_only_scan():
                 if server.source_code:
                     cg_result = await scan_with_cyber_guardian(client, server.source_code, "mcp")
                     if cg_result:
-                        save_site_scan(sb, "mcp", cg_result)
+                        save_site_scan(sb, "mcp", cg_result, server)
                     await asyncio.sleep(CG_SCAN_DELAY)
             except Exception as e:
                 log.error(f"  Error scanning {repo.get('full_name')}: {e}")
@@ -989,7 +1034,7 @@ async def run_mcp_only_scan():
                 if server.source_code:
                     cg_result = await scan_with_cyber_guardian(client, server.source_code, "mcp")
                     if cg_result:
-                        save_site_scan(sb, "mcp", cg_result)
+                        save_site_scan(sb, "mcp", cg_result, server)
                     await asyncio.sleep(CG_SCAN_DELAY)
             except Exception as e:
                 log.error(f"  Error scanning {pkg.get('name')}: {e}")
@@ -1006,7 +1051,7 @@ async def run_mcp_only_scan():
                     if server.source_code:
                         cg_result = await scan_with_cyber_guardian(client, server.source_code, "mcp")
                         if cg_result:
-                            save_site_scan(sb, "mcp", cg_result)
+                            save_site_scan(sb, "mcp", cg_result, server)
                         await asyncio.sleep(CG_SCAN_DELAY)
             except Exception as e:
                 log.error(f"  Error scanning mcp.so item: {e}")
@@ -1075,12 +1120,12 @@ async def run_scan():
             return SCAN_SCOPE_LIMITS.get(scope, 0)
         return fallback_scope_limit(index)
 
-    async def scan_cg_and_save(scope: str, source_code: str):
+    async def scan_cg_and_save(scope: str, source_code: str, server=None):
         if not source_code:
             return
         cg_result = await scan_with_cyber_guardian(client, source_code, scope)
         if cg_result:
-            save_site_scan(sb, scope, cg_result)
+            save_site_scan(sb, scope, cg_result, server)
         await asyncio.sleep(CG_SCAN_DELAY)
 
     async def scan_github_items(scope: str, repos: list[dict], save_mcp_rows: bool):
@@ -1093,7 +1138,7 @@ async def run_scan():
                 all_servers.append(server)
                 if save_mcp_rows:
                     save_server(sb, server, run_id)
-                await scan_cg_and_save(scope, server.source_code)
+                await scan_cg_and_save(scope, server.source_code, server)
             except Exception as e:
                 log.error(f"  Error scanning {scope} repo {repo.get('full_name')}: {e}")
 
@@ -1107,7 +1152,7 @@ async def run_scan():
                 all_servers.append(server)
                 if save_mcp_rows:
                     save_server(sb, server, run_id)
-                await scan_cg_and_save(scope, server.source_code)
+                await scan_cg_and_save(scope, server.source_code, server)
             except Exception as e:
                 log.error(f"  Error scanning {scope} npm package {pkg.get('name')}: {e}")
 
@@ -1146,7 +1191,7 @@ async def run_scan():
                             server.source = "mcpso"
                             all_servers.append(server)
                             save_server(sb, server, run_id)
-                            await scan_cg_and_save("mcp", server.source_code)
+                            await scan_cg_and_save("mcp", server.source_code, server)
                     except Exception as e:
                         log.error(f"  Error scanning mcp.so item: {e}")
             else:

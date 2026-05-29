@@ -71,25 +71,78 @@ function summarizeThreats(threats) {
     .join(", ");
 }
 
-async function saveSiteScan(scope, result) {
+function cleanText(value, maxLen = 240) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLen);
+}
+
+function cleanList(value, maxItems = 8) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map(item => cleanText(item, 48).toLowerCase())
+    .filter(Boolean)
+    .filter((item, index, arr) => arr.indexOf(item) === index)
+    .slice(0, maxItems);
+}
+
+function normalizeCodeProfile(profile, scope) {
+  const source = profile && typeof profile === "object" ? profile : {};
+  return {
+    code_purpose: cleanText(source.purpose || source.summary || "", 280),
+    component_type: cleanText(source.component_type || scope, 48).toLowerCase() || scope,
+    capabilities: cleanList(source.capabilities, 8),
+    use_case_tags: cleanList(source.use_case_tags || source.keywords, 10),
+  };
+}
+
+async function insertSiteScanWithFallback(sb, row) {
+  const { error } = await sb.from("site_scans").insert(row);
+  if (!error) return true;
+
+  const missingColumn = /column .* does not exist|schema cache|Could not find/i.test(error.message || "");
+  if (!missingColumn) {
+    console.error("[site-scan-save]", error.message);
+    return false;
+  }
+
+  const legacyRow = {
+    scope: row.scope,
+    status: row.status,
+    threat_score: row.threat_score,
+    threat_count: row.threat_count,
+    threats_summary: row.threats_summary,
+  };
+  const retry = await sb.from("site_scans").insert(legacyRow);
+  if (retry.error) {
+    console.error("[site-scan-save]", retry.error.message);
+    return false;
+  }
+  console.warn("[site-scan-save] saved legacy row; run supabase/migrations/005_site_scan_intelligence.sql for enriched metadata");
+  return true;
+}
+
+async function saveSiteScan(scope, result, context = {}) {
   const sb = getSupabase();
   if (!sb || !result?.status) return false;
 
   const threats = Array.isArray(result.threats) ? result.threats : [];
+  const profile = normalizeCodeProfile(result.code_profile, scope);
   const row = {
     scope,
     status: result.status,
     threat_score: result.threat_score || 0,
     threat_count: threats.length,
     threats_summary: result.status === "STATUS_SAFE" ? "" : summarizeThreats(threats),
+    source_name: cleanText(context.source_name || "", 160),
+    source_url: cleanText(context.source_url || "", 500),
+    source_owner: cleanText(context.source_owner || "", 120),
+    code_hash: cleanText(context.code_hash || "", 80),
+    ...profile,
   };
 
-  const { error } = await sb.from("site_scans").insert(row);
-  if (error) {
-    console.error("[site-scan-save]", error.message);
-    return false;
-  }
-  return true;
+  return insertSiteScanWithFallback(sb, row);
 }
 
 function checkRateLimit(ip) {
@@ -568,6 +621,7 @@ function normalizeResult(result) {
   normalized.threats = normalized.threats.slice(0, 25);
   if (!Array.isArray(normalized.safe_patterns_noted)) normalized.safe_patterns_noted = [];
   normalized.safe_patterns_noted = normalized.safe_patterns_noted.slice(0, 10);
+  normalized.code_profile = normalizeCodeProfile(normalized.code_profile, "unknown");
   normalized.threat_families_checked = THREAT_FAMILIES;
   normalized.threat_family_definitions = THREAT_FAMILY_DEFINITIONS;
   normalized.coverage = coverageMetadata();
@@ -637,6 +691,12 @@ RETURN THIS EXACT JSON:
     }
   ],
   "safe_patterns_noted": ["good security practices found, if any"],
+  "code_profile": {
+    "purpose": "plain English explanation of what the code/package appears to do",
+    "component_type": "mcp | skill | extension | library | cli | other",
+    "capabilities": ["short capability labels, for example github access, file search, browser automation"],
+    "use_case_tags": ["searchable intent tags, for example git, browser, docs, database"]
+  },
   "recommendation": "one clear action the user should take"
 }`;
 
@@ -722,7 +782,7 @@ async function handler(req, res) {
   const cacheKey = `${scope}:${codeHash}`;
   const cached   = getFromCache(cacheKey);
   if (cached) {
-    if (!skipPersist) await saveSiteScan(scope, cached);
+    if (!skipPersist) await saveSiteScan(scope, cached, { code_hash: codeHash });
     return res.status(200).json({ ...cached, _from_cache: true });
   }
   const staticResult = runStaticScan(code);
@@ -777,7 +837,7 @@ async function handler(req, res) {
     result = mergeStaticThreats(result, staticResult);
 
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
-    if (!skipPersist) await saveSiteScan(scope, result);
+    if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
     saveToCache(cacheKey, result);
     return res.status(200).json(result);
 

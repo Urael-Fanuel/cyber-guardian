@@ -60,6 +60,56 @@ function classifyScan(scan) {
   return 'review';
 }
 
+function arrayValue(value) {
+  return Array.isArray(value) ? value.filter(Boolean) : [];
+}
+
+function tagSet(scan) {
+  return new Set([
+    ...arrayValue(scan.use_case_tags),
+    ...arrayValue(scan.capabilities),
+    scan.component_type,
+  ].map(v => String(v || '').toLowerCase()).filter(Boolean));
+}
+
+function similarityScore(a, b) {
+  if (!a || !b || a.scope !== b.scope) return 0;
+  const aTags = tagSet(a);
+  const bTags = tagSet(b);
+  if (aTags.size === 0 || bTags.size === 0) return 0;
+  let overlap = 0;
+  for (const tag of aTags) if (bTags.has(tag)) overlap++;
+  return overlap;
+}
+
+function saferAlternatives(scan, scans) {
+  const decision = classifyScan(scan);
+  if (decision === 'safe') return [];
+  return scans
+    .filter(candidate => candidate !== scan)
+    .filter(candidate => candidate.scope === scan.scope)
+    .filter(candidate => ['safe', 'review'].includes(classifyScan(candidate)))
+    .map(candidate => ({ candidate, score: similarityScore(scan, candidate) }))
+    .filter(item => item.score > 0)
+    .sort((a, b) => {
+      const decisionDelta = (classifyScan(a.candidate) === 'safe' ? 0 : 1) - (classifyScan(b.candidate) === 'safe' ? 0 : 1);
+      if (decisionDelta) return decisionDelta;
+      if (b.score !== a.score) return b.score - a.score;
+      return (a.candidate.threat_score || 0) - (b.candidate.threat_score || 0);
+    })
+    .slice(0, 3)
+    .map(({ candidate }) => ({
+      source_name: candidate.source_name || '',
+      source_url: candidate.source_url || '',
+      code_purpose: candidate.code_purpose || '',
+      component_type: candidate.component_type || '',
+      capabilities: arrayValue(candidate.capabilities).slice(0, 4),
+      decision: classifyScan(candidate),
+      threat_score: candidate.threat_score || 0,
+      scanned_at: candidate.scanned_at,
+    }));
+}
+
 module.exports = async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') {
@@ -72,11 +122,22 @@ module.exports = async function handler(req, res) {
 
   try {
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: scans } = await sb
+    let { data: scans, error } = await sb
       .from('site_scans')
-      .select('scope,status,threat_score,threat_count,threats_summary,scanned_at')
+      .select('scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags')
       .order('scanned_at', { ascending: false })
       .limit(5000);
+
+    if (error && /column .* does not exist|schema cache|Could not find/i.test(error.message || '')) {
+      const legacy = await sb
+        .from('site_scans')
+        .select('scope,status,threat_score,threat_count,threats_summary,scanned_at')
+        .order('scanned_at', { ascending: false })
+        .limit(5000);
+      scans = legacy.data;
+      error = legacy.error;
+    }
+    if (error) throw error;
 
     if (!scans || scans.length === 0) {
       return res.status(200).json({
@@ -114,7 +175,15 @@ module.exports = async function handler(req, res) {
       threat_score:     s.threat_score,
       threat_count:     s.threat_count,
       threats_summary:  s.threats_summary || '',
-      scanned_at:       s.scanned_at
+      scanned_at:       s.scanned_at,
+      source_name:      s.source_name || '',
+      source_url:       s.source_url || '',
+      source_owner:     s.source_owner || '',
+      code_purpose:     s.code_purpose || '',
+      component_type:   s.component_type || s.scope || '',
+      capabilities:     arrayValue(s.capabilities),
+      use_case_tags:    arrayValue(s.use_case_tags),
+      alternatives:     saferAlternatives(s, scans),
     }));
 
     // Daily trend — last 7 days

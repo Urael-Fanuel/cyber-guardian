@@ -732,6 +732,16 @@ function renderResult(r) {
 
   if (r.summary) html += `<div class="summary-box"><strong>${t('summary_label')}</strong> ${escHtml(r.summary)}</div>`;
 
+  const profile = r.code_profile || {};
+  const purpose = String(profile.purpose || '').trim();
+  const capabilities = Array.isArray(profile.capabilities) ? profile.capabilities.filter(Boolean).slice(0, 6) : [];
+  if (purpose || capabilities.length) {
+    html += `<div class="summary-box">
+      ${purpose ? `<div><strong>${t('code_purpose_label')}</strong> ${escHtml(purpose)}</div>` : ''}
+      ${capabilities.length ? `<div style="margin-top:8px"><strong>${t('capabilities_label')}</strong> ${capabilities.map(cap => `<span class="sp-item">${escHtml(cap)}</span>`).join(' ')}</div>` : ''}
+    </div>`;
+  }
+
   if (threats.length === 0) {
     html += `<div class="clean-box">
       <div class="clean-icon">✅</div>

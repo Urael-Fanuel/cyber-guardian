@@ -148,6 +148,16 @@ canvas { max-height: 200px; }
 .threat-row.do-not-use { border-color: rgba(255,61,61,0.35); background: rgba(255,61,61,0.06); }
 .threat-row.do-not-use .threat-fix { color: var(--red); font-weight: 700; }
 .safe-note { color: var(--green); font-size: 12px; line-height: 1.6; margin-top: 4px; }
+.purpose-box { border: 1px solid rgba(0,212,255,0.18); background: rgba(0,212,255,0.045); padding: 10px 12px; margin: 8px 0 10px; color: var(--text); font-size: 12px; line-height: 1.6; }
+.purpose-title, .alt-title { color: var(--cyan); font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 4px; }
+.cap-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+.cap-tag { border: 1px solid rgba(0,230,118,0.18); background: rgba(0,230,118,0.055); color: var(--green); padding: 3px 7px; font-family: var(--mono); font-size: 10px; }
+.alternatives-box { border: 1px solid rgba(0,230,118,0.18); background: rgba(0,230,118,0.035); padding: 10px 12px; margin-top: 10px; }
+.alt-item { padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+.alt-item:first-of-type { border-top: none; }
+.alt-name { color: #fff; font-weight: 800; font-size: 12px; overflow-wrap: anywhere; }
+.alt-meta { color: var(--dim); font-size: 11px; line-height: 1.5; margin-top: 3px; }
+.alt-link { color: var(--cyan); text-decoration: none; font-size: 11px; font-weight: 700; }
 
 /* LOADING */
 .loading { text-align: center; padding: 80px 20px; }
@@ -577,6 +587,9 @@ const DECISION_COPY = {
     action_block: 'Block this package or code until the finding is removed and rescanned clean.',
     action_review: 'Treat this as suspicious. Read the code, ask for a fix, and rescan before installing.',
     action_safe: 'You can proceed if the source is trusted and the code matches what you expected.',
+    purpose: 'What this code appears to do',
+    safer_alternatives: 'Similar lower-risk scans',
+    alt_note: 'Not a guarantee. Review the source and rescan before installing.',
   },
   he: {
     install_ok: 'החלטת התקנה: אפשר להתקין לפי הסריקה הזו.',
@@ -872,6 +885,10 @@ function remediationSet() {
   return REMEDIATION_GUIDES[currentLang] || REMEDIATION_GUIDES.en;
 }
 
+function decisionText(key, fallback) {
+  return DECISION_COPY[currentLang]?.[key] || DECISION_COPY.en[key] || fallback || key;
+}
+
 function escapeHtml(value) {
   return String(value || '').replace(/[&<>"']/g, ch => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -923,6 +940,39 @@ function threatDetailsHtml(scan) {
       <div class="threat-fix">${escapeHtml(c.fix)}: ${escapeHtml(fix)}</div>
     </div>`;
   }).join('')}</div>`;
+}
+
+function purposeHtml(scan) {
+  const purpose = String(scan.code_purpose || '').trim();
+  const caps = Array.isArray(scan.capabilities) ? scan.capabilities.filter(Boolean).slice(0, 5) : [];
+  if (!purpose && caps.length === 0) return '';
+  return `<div class="purpose-box">
+    <div class="purpose-title">${escapeHtml(decisionText('purpose', 'What this code appears to do'))}</div>
+    ${purpose ? `<div>${escapeHtml(purpose)}</div>` : ''}
+    ${caps.length ? `<div class="cap-tags">${caps.map(cap => `<span class="cap-tag">${escapeHtml(cap)}</span>`).join('')}</div>` : ''}
+  </div>`;
+}
+
+function alternativesHtml(scan) {
+  const items = Array.isArray(scan.alternatives) ? scan.alternatives : [];
+  if (!items.length) return '';
+  return `<div class="alternatives-box">
+    <div class="alt-title">${escapeHtml(decisionText('safer_alternatives', 'Similar lower-risk scans'))}</div>
+    ${items.map(item => {
+      const label = item.source_name || item.code_purpose || scopeLabel(scan.scope);
+      const meta = [
+        item.decision === 'safe' ? t('safe_lbl') : t('review_lbl'),
+        `${t('score')}: ${item.threat_score}/100`,
+        item.code_purpose,
+      ].filter(Boolean).join(' · ');
+      return `<div class="alt-item">
+        <div class="alt-name">${escapeHtml(label)}</div>
+        <div class="alt-meta">${escapeHtml(meta)}</div>
+        ${item.source_url ? `<a class="alt-link" href="${escapeHtml(item.source_url)}" target="_blank" rel="noopener noreferrer">Open source</a>` : ''}
+      </div>`;
+    }).join('')}
+    <div class="alt-meta">${escapeHtml(decisionText('alt_note', 'Not a guarantee. Review the source and rescan before installing.'))}</div>
+  </div>`;
 }
 
 function buildLangSwitcher() {
@@ -1025,8 +1075,10 @@ function renderRecentScan(s) {
           <span class="feed-meta">${s.threat_count} ${s.threat_count !== 1 ? t('threats') : t('threat')}</span>
           <span class="feed-meta">${timeAgo(s.scanned_at)}</span>
         </div>
+        ${purposeHtml(s)}
         <div class="decision-line"><strong>${escapeHtml(decision.text)}</strong></div>
         ${threatDetailsHtml(s)}
+        ${alternativesHtml(s)}
       </div>
     </div>`;
 }

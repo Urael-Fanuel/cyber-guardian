@@ -1100,6 +1100,20 @@ Object.entries(ACCESS_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const PROFILE_COPY = {
+  en: { code_purpose_label: "What this code appears to do:", capabilities_label: "Capabilities:" },
+  de: { code_purpose_label: "Was dieser Code vermutlich macht:", capabilities_label: "Faehigkeiten:" },
+  ja: { code_purpose_label: "このコードが行うこと:", capabilities_label: "機能:" },
+  ko: { code_purpose_label: "이 코드가 하는 일:", capabilities_label: "기능:" },
+  fr: { code_purpose_label: "Ce que ce code semble faire :", capabilities_label: "Capacites :" },
+  pt: { code_purpose_label: "O que este codigo parece fazer:", capabilities_label: "Capacidades:" },
+  he: { code_purpose_label: "מה הקוד הזה כנראה עושה:", capabilities_label: "יכולות:" }
+};
+
+Object.entries(PROFILE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const LANGS = {
   en: { name: "English",    flag: "🇺🇸", dir: "ltr" },
   de: { name: "Deutsch",    flag: "🇩🇪", dir: "ltr" },
