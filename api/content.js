@@ -1,8 +1,10 @@
 const { createClient } = require("@supabase/supabase-js");
+const crypto = require("crypto");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const ADMIN_BYPASS_SECRET = process.env.CG_ADMIN_BYPASS_SECRET || "";
+const ADMIN_TOKEN_SECRET = process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "";
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
   .split(",").map(s => s.trim()).filter(Boolean);
 
@@ -20,7 +22,7 @@ function setCors(req, res) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CG-Admin-Secret");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CG-Admin-Secret, X-CG-Admin-Token");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Content-Type", "application/json");
 }
@@ -37,7 +39,25 @@ function isAllowedOrigin(req) {
 
 function isAdmin(req) {
   const provided = String(getHeader(req, "x-cg-admin-secret") || "").trim();
-  return Boolean(ADMIN_BYPASS_SECRET.trim() && provided && provided === ADMIN_BYPASS_SECRET.trim());
+  if (ADMIN_BYPASS_SECRET.trim() && provided && provided === ADMIN_BYPASS_SECRET.trim()) return true;
+  return isAdminToken(req);
+}
+
+function isAdminToken(req) {
+  const token = String(getHeader(req, "x-cg-admin-token") || "").trim();
+  if (!token || !ADMIN_TOKEN_SECRET) return false;
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature) return false;
+  const expected = crypto.createHmac("sha256", ADMIN_TOKEN_SECRET).update(payload).digest("base64url");
+  const left = Buffer.from(signature);
+  const right = Buffer.from(expected);
+  if (left.length !== right.length || !crypto.timingSafeEqual(left, right)) return false;
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return parsed.role === "admin" && Number(parsed.exp || 0) > Math.floor(Date.now() / 1000);
+  } catch {
+    return false;
+  }
 }
 
 function cleanSurface(surface) {

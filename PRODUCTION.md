@@ -17,6 +17,8 @@ SUPABASE_SERVICE_KEY=...
 
 ALLOWED_ORIGINS=https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app
 CG_ADMIN_BYPASS_SECRET=generate-a-long-random-secret
+CG_ADMIN_USERNAME=admin
+CG_ADMIN_PASSWORD=generate-a-different-long-password
 SITE_URL=https://cyberguardianscan.com
 
 # Optional later, when payment is enabled:
@@ -84,8 +86,15 @@ requests go to `CONTACT_SUPPORT_TO`.
 
 ## Developer Bypass
 
-`CG_ADMIN_BYPASS_SECRET` lets the site owner run unlimited scans without changing
-the public 10-scan monthly limit for normal visitors. Keep it private.
+`/content-admin.html` provides a username/password login for the site owner.
+Set `CG_ADMIN_USERNAME` and `CG_ADMIN_PASSWORD` in Vercel. The password is
+exchanged for a signed 12-hour admin token and is not stored in the browser.
+
+The same signed admin token lets the site owner run unlimited scans without
+changing the public 10-scan monthly limit for normal visitors.
+
+`CG_ADMIN_BYPASS_SECRET` is still supported for GitHub Actions and emergency
+manual bypasses. Keep it private.
 
 After setting it in Vercel and redeploying, enable it in your own browser console:
 

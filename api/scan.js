@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 const { createClient } = require("@supabase/supabase-js");
+const crypto = require("crypto");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -32,6 +33,7 @@ const CONFIG = {
   MAX_TOKENS: intEnv("ANTHROPIC_MAX_TOKENS", 1500),
   USAGE_MODE: process.env.SCAN_USAGE_MODE || "fallback",
   ADMIN_BYPASS_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || "",
+  ADMIN_TOKEN_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "",
 };
 
 const state = {
@@ -195,17 +197,34 @@ function getHeader(req, name) {
 async function isAdminBypassRequest(req) {
   const configuredSecret = CONFIG.ADMIN_BYPASS_SECRET.trim();
   const providedSecret = String(getHeader(req, "x-cg-admin-secret") || "").trim();
-  if (!configuredSecret || !providedSecret) return false;
+  if (!configuredSecret || !providedSecret) return isAdminToken(req);
 
   const [configuredHash, providedHash] = await Promise.all([
     hashCode(configuredSecret),
     hashCode(providedSecret),
   ]);
-  return configuredHash === providedHash;
+  return configuredHash === providedHash || isAdminToken(req);
 }
 
 function hasAdminBypassHeader(req) {
-  return Boolean(String(getHeader(req, "x-cg-admin-secret") || "").trim());
+  return Boolean(String(getHeader(req, "x-cg-admin-secret") || "").trim() || String(getHeader(req, "x-cg-admin-token") || "").trim());
+}
+
+function isAdminToken(req) {
+  const token = String(getHeader(req, "x-cg-admin-token") || "").trim();
+  if (!token || !CONFIG.ADMIN_TOKEN_SECRET) return false;
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature) return false;
+  const expected = crypto.createHmac("sha256", CONFIG.ADMIN_TOKEN_SECRET).update(payload).digest("base64url");
+  const left = Buffer.from(signature);
+  const right = Buffer.from(expected);
+  if (left.length !== right.length || !crypto.timingSafeEqual(left, right)) return false;
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return parsed.role === "admin" && Number(parsed.exp || 0) > Math.floor(Date.now() / 1000);
+  } catch {
+    return false;
+  }
 }
 
 async function checkSupabaseUsage(ip) {
@@ -747,7 +766,7 @@ async function handler(req, res) {
 
   if (!adminBypass && hasAdminBypassHeader(req)) {
     return res.status(401).json({
-      error: "Admin bypass secret was not accepted. Check CG_ADMIN_BYPASS_SECRET in Vercel and localStorage cg-admin-secret in your browser.",
+      error: "Admin login was not accepted. Sign in again at /content-admin.html or check CG_ADMIN_BYPASS_SECRET in Vercel.",
     });
   }
 

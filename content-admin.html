@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cyber-Guardian Content Admin</title>
+<title>Cyber-Guardian Admin</title>
 <style>
 body { margin:0; background:#080f17; color:#dbeafe; font-family:Inter,Arial,sans-serif; }
 .wrap { max-width:980px; margin:0 auto; padding:28px 18px 60px; }
 h1 { margin:0 0 8px; font-size:28px; }
-p { color:#8fa8bd; }
-.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:22px; }
+p { color:#8fa8bd; line-height:1.6; }
+.panel { border:1px solid #203449; background:#0b1520; border-radius:8px; padding:18px; margin-top:18px; }
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:16px; }
 label { display:block; margin-bottom:6px; color:#8fa8bd; font-size:13px; }
 input, select, textarea { width:100%; box-sizing:border-box; background:#0d1824; color:#e5f2ff; border:1px solid #203449; border-radius:6px; padding:11px; font:inherit; }
 textarea { min-height:180px; resize:vertical; }
@@ -17,65 +18,91 @@ textarea { min-height:180px; resize:vertical; }
 .actions { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
 button { border:0; border-radius:6px; padding:11px 16px; background:#00d4ff; color:#031019; font-weight:700; cursor:pointer; }
 button.secondary { background:#172435; color:#dbeafe; border:1px solid #2a4158; }
+button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
 .status { margin-top:14px; color:#6ee7b7; min-height:22px; }
+.error { color:#fca5a5; }
 .muted { font-size:13px; color:#7890a5; }
+.hidden { display:none; }
 @media (max-width:720px) { .grid { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
 <main class="wrap">
-  <h1>Content Admin</h1>
-  <p>Edit public text overrides for the main site and dashboard. Changes are saved in Supabase and appear after refresh.</p>
+  <h1>Cyber-Guardian Admin</h1>
+  <p>Sign in to edit public text on the site and dashboard. Your password is not stored in the browser.</p>
 
-  <div class="grid">
-    <div class="full">
-      <label for="secret">Admin secret</label>
-      <input id="secret" type="password" autocomplete="off" placeholder="CG_ADMIN_BYPASS_SECRET">
-      <div class="muted">Stored only in this browser as <code>cg-admin-secret</code>.</div>
+  <section class="panel" id="login-panel">
+    <h2>Sign in</h2>
+    <div class="grid">
+      <div>
+        <label for="username">Username</label>
+        <input id="username" autocomplete="username" placeholder="admin">
+      </div>
+      <div>
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password">
+      </div>
     </div>
-    <div>
-      <label for="surface">Area</label>
-      <select id="surface">
-        <option value="site">Main site</option>
-        <option value="dashboard">Dashboard</option>
-      </select>
+    <div class="actions">
+      <button id="login">Sign In</button>
     </div>
-    <div>
-      <label for="lang">Language</label>
-      <select id="lang">
-        <option value="en">English</option>
-        <option value="he">Hebrew</option>
-        <option value="de">German</option>
-        <option value="ja">Japanese</option>
-        <option value="ko">Korean</option>
-        <option value="fr">French</option>
-        <option value="pt">Portuguese</option>
-      </select>
-    </div>
-    <div class="full">
-      <label for="key">Text key</label>
-      <input id="key" list="keys" placeholder="Example: hero_title_1">
-      <datalist id="keys"></datalist>
-    </div>
-    <div class="full">
-      <label for="value">New text</label>
-      <textarea id="value" placeholder="Write the replacement text here"></textarea>
-      <div class="muted" id="fallback"></div>
-    </div>
-  </div>
+    <div class="status" id="login-status"></div>
+  </section>
 
-  <div class="actions">
-    <button id="save">Save Text</button>
-    <button id="load" class="secondary">Load Current</button>
-    <button id="open-site" class="secondary">Open Site</button>
-    <button id="open-dashboard" class="secondary">Open Dashboard</button>
-  </div>
-  <div class="status" id="status"></div>
+  <section class="panel hidden" id="admin-panel">
+    <h2>Content editor</h2>
+    <p class="muted">Changes are saved in Supabase and appear after refresh.</p>
+
+    <div class="grid">
+      <div>
+        <label for="surface">Area</label>
+        <select id="surface">
+          <option value="site">Main site</option>
+          <option value="dashboard">Dashboard</option>
+        </select>
+      </div>
+      <div>
+        <label for="lang">Language</label>
+        <select id="lang">
+          <option value="en">English</option>
+          <option value="he">Hebrew</option>
+          <option value="de">German</option>
+          <option value="ja">Japanese</option>
+          <option value="ko">Korean</option>
+          <option value="fr">French</option>
+          <option value="pt">Portuguese</option>
+        </select>
+      </div>
+      <div class="full">
+        <label for="key">Text key</label>
+        <input id="key" list="keys" placeholder="Example: hero_title_1">
+        <datalist id="keys"></datalist>
+      </div>
+      <div class="full">
+        <label for="value">New text</label>
+        <textarea id="value" placeholder="Write the replacement text here"></textarea>
+        <div class="muted" id="fallback"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="save">Save Text</button>
+      <button id="load" class="secondary">Load Current</button>
+      <button id="open-site" class="secondary">Open Site</button>
+      <button id="open-dashboard" class="secondary">Open Dashboard</button>
+      <button id="logout" class="danger">Sign Out</button>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
 </main>
 
 <script src="/locales/translations.js"></script>
 <script>
-const secretEl = document.getElementById('secret');
+const loginPanel = document.getElementById('login-panel');
+const adminPanel = document.getElementById('admin-panel');
+const usernameEl = document.getElementById('username');
+const passwordEl = document.getElementById('password');
+const loginStatusEl = document.getElementById('login-status');
 const surfaceEl = document.getElementById('surface');
 const langEl = document.getElementById('lang');
 const keyEl = document.getElementById('key');
@@ -85,8 +112,44 @@ const statusEl = document.getElementById('status');
 const keysEl = document.getElementById('keys');
 let dashboardKeys = [];
 
-secretEl.value = localStorage.getItem('cg-admin-secret') || '';
-secretEl.addEventListener('change', () => localStorage.setItem('cg-admin-secret', secretEl.value.trim()));
+function getToken() { return localStorage.getItem('cg-admin-token') || ''; }
+function setToken(token) { localStorage.setItem('cg-admin-token', token); }
+function clearToken() {
+  localStorage.removeItem('cg-admin-token');
+  localStorage.removeItem('cg-admin-secret');
+}
+function updateAuthView() {
+  const signedIn = Boolean(getToken());
+  loginPanel.classList.toggle('hidden', signedIn);
+  adminPanel.classList.toggle('hidden', !signedIn);
+}
+
+async function login() {
+  loginStatusEl.textContent = '';
+  loginStatusEl.className = 'status';
+  const username = usernameEl.value.trim();
+  const password = passwordEl.value;
+  if (!username || !password) {
+    loginStatusEl.textContent = 'Username and password are required.';
+    loginStatusEl.className = 'status error';
+    return;
+  }
+  const response = await fetch('/api/admin-auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.token) {
+    loginStatusEl.textContent = data.error || 'Login failed.';
+    loginStatusEl.className = 'status error';
+    return;
+  }
+  setToken(data.token);
+  passwordEl.value = '';
+  updateAuthView();
+  populateKeys();
+}
 
 async function getDashboardKeys() {
   if (dashboardKeys.length) return dashboardKeys;
@@ -105,7 +168,6 @@ async function populateKeys() {
 }
 
 async function loadCurrent() {
-  localStorage.setItem('cg-admin-secret', secretEl.value.trim());
   const surface = surfaceEl.value;
   const lang = langEl.value;
   const key = keyEl.value.trim();
@@ -120,22 +182,29 @@ async function loadCurrent() {
 }
 
 async function saveText() {
-  const secret = secretEl.value.trim();
+  const token = getToken();
   const surface = surfaceEl.value;
   const lang = langEl.value;
   const key = keyEl.value.trim();
   const value = valueEl.value;
-  if (!secret || !key || !value.trim()) {
-    statusEl.textContent = 'Secret, key, and text are required.';
+  if (!token || !key || !value.trim()) {
+    statusEl.textContent = 'Login, key, and text are required.';
     return;
   }
-  localStorage.setItem('cg-admin-secret', secret);
   const response = await fetch('/api/content', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CG-Admin-Secret': secret },
+    headers: { 'Content-Type': 'application/json', 'X-CG-Admin-Token': token },
     body: JSON.stringify({ surface, lang, entries: { [key]: value } })
   });
   const data = await response.json().catch(() => ({}));
+  if (response.status === 401) {
+    clearToken();
+    updateAuthView();
+    statusEl.textContent = '';
+    loginStatusEl.textContent = 'Session expired. Sign in again.';
+    loginStatusEl.className = 'status error';
+    return;
+  }
   if (!response.ok) {
     statusEl.textContent = data.error || 'Save failed.';
     return;
@@ -143,6 +212,8 @@ async function saveText() {
   statusEl.textContent = `Saved ${key}.`;
 }
 
+document.getElementById('login').onclick = login;
+passwordEl.addEventListener('keydown', event => { if (event.key === 'Enter') login(); });
 surfaceEl.onchange = populateKeys;
 langEl.onchange = populateKeys;
 keyEl.onchange = loadCurrent;
@@ -150,7 +221,9 @@ document.getElementById('load').onclick = loadCurrent;
 document.getElementById('save').onclick = saveText;
 document.getElementById('open-site').onclick = () => window.open('/', '_blank');
 document.getElementById('open-dashboard').onclick = () => window.open('/dashboard.html', '_blank');
-populateKeys();
+document.getElementById('logout').onclick = () => { clearToken(); updateAuthView(); };
+updateAuthView();
+if (getToken()) populateKeys();
 </script>
 </body>
 </html>
