@@ -818,6 +818,7 @@ async def scan_with_cyber_guardian(client: httpx.AsyncClient, code: str, scope: 
     if not code or not code.strip():
         return {}
     headers = {"Content-Type": "application/json"}
+    headers["X-CG-Skip-Persist"] = "1"
     if CG_ADMIN_BYPASS_SECRET:
         headers["X-CG-Admin-Secret"] = CG_ADMIN_BYPASS_SECRET
     try:
@@ -838,10 +839,10 @@ async def scan_with_cyber_guardian(client: httpx.AsyncClient, code: str, scope: 
     return {}
 
 
-def save_site_scan(sb: Client, scope: str, result: dict) -> None:
+def save_site_scan(sb: Client, scope: str, result: dict) -> bool:
     """Save AI scan result to site_scans table (visible in dashboard)."""
     if not result or not result.get("status"):
-        return
+        return False
     status = result.get("status", "STATUS_AMBIGUOUS")
     threats = result.get("threats", [])
     # Only save threat names if status is not SAFE
@@ -856,8 +857,11 @@ def save_site_scan(sb: Client, scope: str, result: dict) -> None:
             "threat_count":     len(threats),
             "threats_summary":  threats_summary,
         }).execute()
+        log.info(f"  [CG] saved site_scan scope={scope} status={status}")
+        return True
     except Exception as e:
         log.warning(f"  [CG] Failed to save site scan: {e}")
+        return False
 
 
 # ─────────────────────────────────────────────

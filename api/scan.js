@@ -73,7 +73,7 @@ function summarizeThreats(threats) {
 
 async function saveSiteScan(scope, result) {
   const sb = getSupabase();
-  if (!sb || !result?.status) return;
+  if (!sb || !result?.status) return false;
 
   const threats = Array.isArray(result.threats) ? result.threats : [];
   const row = {
@@ -85,7 +85,11 @@ async function saveSiteScan(scope, result) {
   };
 
   const { error } = await sb.from("site_scans").insert(row);
-  if (error) console.error("[site-scan-save]", error.message);
+  if (error) {
+    console.error("[site-scan-save]", error.message);
+    return false;
+  }
+  return true;
 }
 
 function checkRateLimit(ip) {
@@ -671,6 +675,7 @@ async function handler(req, res) {
     return res.status(400).json({ error: `Input too large. Max ${CONFIG.MAX_INPUT_SIZE_CHARS} chars.` });
 
   const adminBypass = await isAdminBypassRequest(req);
+  const skipPersist = String(getHeader(req, "x-cg-skip-persist") || "").trim() === "1";
 
   if (!adminBypass) {
     const usageCheck = await checkSupabaseUsage(ip);
@@ -714,8 +719,12 @@ async function handler(req, res) {
   }
 
   const codeHash = await hashCode(code);
-  const cached   = getFromCache(codeHash);
-  if (cached) return res.status(200).json({ ...cached, _from_cache: true });
+  const cacheKey = `${scope}:${codeHash}`;
+  const cached   = getFromCache(cacheKey);
+  if (cached) {
+    if (!skipPersist) await saveSiteScan(scope, cached);
+    return res.status(200).json({ ...cached, _from_cache: true });
+  }
   const staticResult = runStaticScan(code);
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -768,8 +777,8 @@ async function handler(req, res) {
     result = mergeStaticThreats(result, staticResult);
 
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
-    await saveSiteScan(scope, result);
-    saveToCache(codeHash, result);
+    if (!skipPersist) await saveSiteScan(scope, result);
+    saveToCache(cacheKey, result);
     return res.status(200).json(result);
 
   } catch (err) {

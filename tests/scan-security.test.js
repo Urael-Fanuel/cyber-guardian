@@ -203,6 +203,62 @@ async function testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata() {
   assert.equal(insertedRows[0].row.scope, "mcp");
 }
 
+async function testCachedScanStillPersistsCurrentScope() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const code = 'console.log("same code different scope cache persistence test");';
+
+  const first = mockRes();
+  await scan({
+    method: "POST",
+    headers: {
+      origin: "https://cyberguardianscan.com",
+      host: "cyberguardianscan.com",
+      "x-forwarded-for": "203.0.113.46",
+    },
+    body: { code, scope: "skill" },
+    url: "/api/scan",
+  }, first);
+
+  const second = mockRes();
+  await scan({
+    method: "POST",
+    headers: {
+      origin: "https://cyberguardianscan.com",
+      host: "cyberguardianscan.com",
+      "x-forwarded-for": "203.0.113.46",
+    },
+    body: { code, scope: "mcp" },
+    url: "/api/scan",
+  }, second);
+
+  assert.equal(first.statusCode, 200);
+  assert.equal(second.statusCode, 200);
+  assert.equal(insertedRows.length, 2);
+  assert.equal(insertedRows[0].row.scope, "skill");
+  assert.equal(insertedRows[1].row.scope, "mcp");
+}
+
+async function testBatchScannerCanSkipApiPersistence() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const res = mockRes();
+  await scan({
+    method: "POST",
+    headers: {
+      origin: "https://cyberguardianscan.com",
+      host: "cyberguardianscan.com",
+      "x-forwarded-for": "203.0.113.47",
+      "x-cg-skip-persist": "1",
+    },
+    body: { code: 'console.log("batch scanner owns persistence");', scope: "extension" },
+    url: "/api/scan",
+  }, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(insertedRows.length, 0);
+}
+
 testStaticReverseShell();
 testStaticSecretRead();
 testStaticPromptInjection();
@@ -214,6 +270,8 @@ testNormalizeAddsSixtyFamilyMetadata();
 
 testManualScanPersistsDashboardMetadata()
   .then(testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata)
+  .then(testCachedScanStillPersistsCurrentScope)
+  .then(testBatchScannerCanSkipApiPersistence)
   .then(() => console.log("scan-security tests: ok"))
   .catch(err => {
     console.error(err);
