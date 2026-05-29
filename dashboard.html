@@ -672,6 +672,62 @@ const DECISION_COPY = {
   }
 };
 
+const DECISION_EXTRA_COPY = {
+  en: {
+    purpose: 'What this code appears to do',
+    safer_alternatives: 'Similar lower-risk scans',
+    alt_note: 'Not a guarantee. Review the source and rescan before installing.',
+    no_alternatives: 'No reliable similar alternative is available yet. Rescan later as the database grows.',
+    open_source: 'Open source',
+  },
+  he: {
+    purpose: 'מה הקוד הזה כנראה עושה',
+    safer_alternatives: 'סריקות דומות בסיכון נמוך יותר',
+    alt_note: 'זו אינה הבטחה. בדוק את המקור וסרוק שוב לפני התקנה.',
+    no_alternatives: 'עדיין אין חלופה דומה ואמינה זמינה. כדאי לסרוק שוב בהמשך כשהמאגר יגדל.',
+    open_source: 'פתח מקור',
+  },
+  de: {
+    purpose: 'Was dieser Code vermutlich macht',
+    safer_alternatives: 'Aehnliche Scans mit geringerem Risiko',
+    alt_note: 'Keine Garantie. Pruefen Sie die Quelle und scannen Sie vor der Installation erneut.',
+    no_alternatives: 'Noch keine verlaessliche aehnliche Alternative verfuegbar. Scannen Sie spaeter erneut, wenn die Datenbank gewachsen ist.',
+    open_source: 'Quelle oeffnen',
+  },
+  ja: {
+    purpose: 'このコードが行う可能性があること',
+    safer_alternatives: 'より低リスクの類似スキャン',
+    alt_note: '保証ではありません。インストール前にソースを確認し、再スキャンしてください。',
+    no_alternatives: '信頼できる類似代替候補はまだありません。データベースが増えた後でもう一度スキャンしてください。',
+    open_source: 'ソースを開く',
+  },
+  ko: {
+    purpose: '이 코드가 하는 것으로 보이는 일',
+    safer_alternatives: '위험이 더 낮은 유사 스캔',
+    alt_note: '보장은 아닙니다. 설치 전에 소스를 확인하고 다시 스캔하세요.',
+    no_alternatives: '아직 신뢰할 만한 유사 대안이 없습니다. 데이터베이스가 더 쌓인 뒤 다시 스캔하세요.',
+    open_source: '소스 열기',
+  },
+  fr: {
+    purpose: 'Ce que ce code semble faire',
+    safer_alternatives: 'Scans similaires a risque plus faible',
+    alt_note: 'Ce n’est pas une garantie. Verifiez la source et relancez un scan avant installation.',
+    no_alternatives: 'Aucune alternative similaire fiable n’est encore disponible. Relancez un scan plus tard, lorsque la base aura grandi.',
+    open_source: 'Ouvrir la source',
+  },
+  pt: {
+    purpose: 'O que este codigo parece fazer',
+    safer_alternatives: 'Scans semelhantes com menor risco',
+    alt_note: 'Nao e garantia. Verifique a fonte e escaneie novamente antes de instalar.',
+    no_alternatives: 'Ainda nao ha uma alternativa semelhante confiavel. Escaneie novamente mais tarde, quando a base crescer.',
+    open_source: 'Abrir fonte',
+  }
+};
+
+Object.entries(DECISION_EXTRA_COPY).forEach(([lang, copy]) => {
+  DECISION_COPY[lang] = { ...(DECISION_COPY[lang] || DECISION_COPY.en), ...copy };
+});
+
 const THREAT_EXPLANATIONS = {
   en: {
     credential: 'The code touches passwords, tokens, API keys, SSH keys, or other secrets. Installing it can expose accounts or infrastructure.',
@@ -976,7 +1032,7 @@ function alternativesHtml(scan) {
       return `<div class="alt-item">
         <div class="alt-name">${escapeHtml(label)}</div>
         <div class="alt-meta">${escapeHtml(meta)}</div>
-        ${sourceUrl ? `<a class="alt-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Open source</a>` : ''}
+        ${sourceUrl ? `<a class="alt-link" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(decisionText('open_source', 'Open source'))}</a>` : ''}
       </div>`;
     }).join('')}
     <div class="alt-meta">${escapeHtml(decisionText('alt_note', 'Not a guarantee. Review the source and rescan before installing.'))}</div>
