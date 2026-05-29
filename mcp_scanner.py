@@ -35,17 +35,39 @@ SUPABASE_KEY   = os.environ["SUPABASE_SERVICE_KEY"]   # required (service role)
 SCAN_LIMIT     = int(os.environ.get("SCAN_LIMIT", 30))   # total items per run
 SCAN_SCOPES    = [
     scope.strip().lower()
-    for scope in os.environ.get("SCAN_SCOPES", "mcp,skill,extension").split(",")
+    for scope in os.environ.get("SCAN_SCOPES", "mcp,extension,skill").split(",")
     if scope.strip().lower() in {"mcp", "skill", "extension"}
 ]
+SCAN_SCOPE_LIMITS_RAW = os.environ.get("SCAN_SCOPE_LIMITS", "mcp:5,extension:10,skill:15")
 GITHUB_DELAY   = float(os.environ.get("GITHUB_DELAY", 1.2))   # seconds between API calls
 NPM_DELAY      = float(os.environ.get("NPM_DELAY", 0.5))
 CYBER_GUARDIAN_URL = os.environ.get("CYBER_GUARDIAN_URL", "https://cyberguardianscan.com")
 CG_MAX_INPUT_CHARS = int(os.environ.get("CG_MAX_INPUT_CHARS", "50000"))
-CG_SCAN_DELAY  = float(os.environ.get("CG_SCAN_DELAY", 15.0))  # seconds between CG API calls
+CG_SCAN_DELAY  = float(os.environ.get("CG_SCAN_DELAY", 1.0))  # seconds between CG API calls
 CG_ADMIN_BYPASS_SECRET = os.environ.get("CG_ADMIN_BYPASS_SECRET", "")
 if not SCAN_SCOPES:
     SCAN_SCOPES = ["mcp"]
+
+
+def parse_scope_limits(raw: str) -> dict[str, int]:
+    limits: dict[str, int] = {}
+    for part in raw.split(","):
+        if ":" not in part:
+            continue
+        scope, value = part.split(":", 1)
+        scope = scope.strip().lower()
+        if scope not in {"mcp", "skill", "extension"}:
+            continue
+        try:
+            limit = int(value.strip())
+        except ValueError:
+            continue
+        if limit > 0:
+            limits[scope] = limit
+    return limits
+
+
+SCAN_SCOPE_LIMITS = parse_scope_limits(SCAN_SCOPE_LIMITS_RAW)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -904,7 +926,7 @@ async def run_mcp_only_scan():
     run_id     = hashlib.md5(str(time.time()).encode()).hexdigest()[:12]
     started_at = datetime.now(timezone.utc).isoformat()
     start_time = time.time()
-    MAX_RUNTIME = int(os.environ.get("MAX_RUNTIME_MINUTES", "270")) * 60  # 4.5 hours default
+    MAX_RUNTIME = int(os.environ.get("MAX_RUNTIME_MINUTES", "10")) * 60
     log.info(f"╔══ MCP Security Scan START  run_id={run_id} ══╗")
 
     def time_remaining():
@@ -912,7 +934,7 @@ async def run_mcp_only_scan():
 
     def should_stop():
         remaining = time_remaining()
-        if remaining < 600:  # less than 10 minutes left
+        if remaining <= 0:
             log.warning(f"⏰ Time budget nearly exhausted ({remaining:.0f}s left) — stopping gracefully")
             return True
         return False
@@ -1025,22 +1047,29 @@ async def run_scan():
     run_id = hashlib.md5(str(time.time()).encode()).hexdigest()[:12]
     started_at = datetime.now(timezone.utc).isoformat()
     start_time = time.time()
-    max_runtime = int(os.environ.get("MAX_RUNTIME_MINUTES", "270")) * 60
+    max_runtime = int(os.environ.get("MAX_RUNTIME_MINUTES", "10")) * 60
 
     log.info(f"Cyber-Guardian batch scan START run_id={run_id}")
     log.info(f"Scopes: {', '.join(SCAN_SCOPES)} | total limit: {SCAN_LIMIT}")
+    if SCAN_SCOPE_LIMITS:
+        log.info(f"Scope limits: {json.dumps(SCAN_SCOPE_LIMITS)}")
 
     def should_stop() -> bool:
         remaining = max_runtime - (time.time() - start_time)
-        if remaining < 600:
-            log.warning(f"Time budget nearly exhausted ({remaining:.0f}s left); stopping gracefully")
+        if remaining <= 0:
+            log.warning("Time budget exhausted; stopping gracefully")
             return True
         return False
 
-    def scope_limit(index: int) -> int:
+    def fallback_scope_limit(index: int) -> int:
         base = SCAN_LIMIT // len(SCAN_SCOPES)
         remainder = SCAN_LIMIT % len(SCAN_SCOPES)
         return base + (1 if index < remainder else 0)
+
+    def requested_scope_limit(scope: str, index: int) -> int:
+        if SCAN_SCOPE_LIMITS:
+            return SCAN_SCOPE_LIMITS.get(scope, 0)
+        return fallback_scope_limit(index)
 
     async def scan_cg_and_save(scope: str, source_code: str):
         if not source_code:
@@ -1082,8 +1111,11 @@ async def run_scan():
     all_servers: list[ScannedServer] = []
 
     async with httpx.AsyncClient(follow_redirects=True) as client:
+        remaining_total = SCAN_LIMIT
         for index, scope in enumerate(SCAN_SCOPES):
-            limit = scope_limit(index)
+            requested_limit = requested_scope_limit(scope, index)
+            limit = min(requested_limit, remaining_total)
+            remaining_total -= limit
             if limit <= 0 or should_stop():
                 continue
             log.info(f"Scope {scope}: limit={limit}")

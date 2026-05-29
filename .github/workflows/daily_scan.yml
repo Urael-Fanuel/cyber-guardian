@@ -13,9 +13,17 @@ on:
   workflow_dispatch:               # manual trigger button in GitHub UI
     inputs:
       scan_limit:
-        description: "Max total items to scan (default: 30; usually 10 per scope)"
+        description: "Max total items to scan"
         required: false
         default: "30"
+      scan_scopes:
+        description: "Comma-separated scopes to scan"
+        required: false
+        default: "mcp,extension,skill"
+      scope_limits:
+        description: "Per-scope limits, for example mcp:5,extension:10,skill:15"
+        required: false
+        default: "mcp:5,extension:10,skill:15"
       dry_run:
         description: "Dry run (no Supabase writes)"
         type: boolean
@@ -26,7 +34,7 @@ jobs:
   scan:
     name: Scan MCP, Skills, and IDE Extensions
     runs-on: ubuntu-latest
-    timeout-minutes: 300            # 5 hours max
+    timeout-minutes: 20
 
     steps:
       # ── Checkout ────────────────────────────────────────────
@@ -55,15 +63,18 @@ jobs:
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SCAN_LIMIT:           ${{ github.event.inputs.scan_limit || '30' }}
-          SCAN_SCOPES:          mcp,skill,extension
+          SCAN_SCOPES:          ${{ github.event.inputs.scan_scopes || 'mcp,extension,skill' }}
+          SCAN_SCOPE_LIMITS:    ${{ github.event.inputs.scope_limits || 'mcp:5,extension:10,skill:15' }}
           DRY_RUN:              ${{ github.event.inputs.dry_run || 'false' }}
           CYBER_GUARDIAN_URL:   https://cyberguardianscan.com
           CG_ADMIN_BYPASS_SECRET: ${{ secrets.CG_ADMIN_BYPASS_SECRET }}
-          CG_SCAN_DELAY:        "12"
+          CG_SCAN_DELAY:        "1"
+          MAX_RUNTIME_MINUTES:  "10"
         run: |
           echo "══════════════════════════════════════"
           echo "  Starting Cyber-Guardian Scanner"
           echo "  Scan scopes: $SCAN_SCOPES"
+          echo "  Scope limits: $SCAN_SCOPE_LIMITS"
           echo "  Scan limit : $SCAN_LIMIT"
           echo "  Dry run    : $DRY_RUN"
           echo "  Time (UTC) : $(date -u)"

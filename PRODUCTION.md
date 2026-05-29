@@ -101,11 +101,13 @@ so the dashboard continues updating normally.
 The scheduled GitHub Actions scanner uses conservative launch defaults:
 
 - `SCAN_LIMIT=30`
-- `SCAN_SCOPES=mcp,skill,extension`
+- `SCAN_SCOPES=mcp,extension,skill`
+- `SCAN_SCOPE_LIMITS=mcp:5,extension:10,skill:15`
+- `MAX_RUNTIME_MINUTES=10`
 
-That means a normal run scans about 10 MCP servers, 10 AI Skills, and 10 IDE
-extensions. All three scopes write safe dashboard metadata to Supabase
-`site_scans`.
+That means a normal run scans up to 5 MCP servers, 10 IDE extensions, and 15 AI
+Skills. Each successful scan writes safe dashboard metadata to Supabase
+`site_scans` immediately, so the public dashboard can update during the batch.
 
 ## Editing Public Text
 
