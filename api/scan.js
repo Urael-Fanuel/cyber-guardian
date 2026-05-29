@@ -13,12 +13,16 @@ function intEnv(name, fallback) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function minIntEnv(name, fallback, minimum) {
+  return Math.max(intEnv(name, fallback), minimum);
+}
+
 const CONFIG = {
   ALLOWED_ORIGINS: (process.env.ALLOWED_ORIGINS || "https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
     .split(",").map(s => s.trim()).filter(Boolean),
   MAX_REQUESTS_PER_MINUTE: intEnv("SCAN_MAX_REQUESTS_PER_MINUTE", 5),
   MAX_REQUESTS_PER_HOUR:   intEnv("SCAN_MAX_REQUESTS_PER_HOUR", 20),
-  MAX_FREE_SCANS_PER_MONTH: intEnv("SCAN_MAX_FREE_SCANS_PER_MONTH", 10),
+  MAX_FREE_SCANS_PER_MONTH: minIntEnv("SCAN_MAX_FREE_SCANS_PER_MONTH", 10, 10),
   MAX_INPUT_SIZE_CHARS: intEnv("SCAN_MAX_INPUT_SIZE_CHARS", 50000),
   MIN_INPUT_SIZE_CHARS: intEnv("SCAN_MIN_INPUT_SIZE_CHARS", 5),
   MAX_API_CALLS_PER_DAY: intEnv("SCAN_MAX_API_CALLS_PER_DAY", 5000),
@@ -198,6 +202,10 @@ async function isAdminBypassRequest(req) {
     hashCode(providedSecret),
   ]);
   return configuredHash === providedHash;
+}
+
+function hasAdminBypassHeader(req) {
+  return Boolean(String(getHeader(req, "x-cg-admin-secret") || "").trim());
 }
 
 async function checkSupabaseUsage(ip) {
@@ -736,6 +744,12 @@ async function handler(req, res) {
 
   const adminBypass = await isAdminBypassRequest(req);
   const skipPersist = String(getHeader(req, "x-cg-skip-persist") || "").trim() === "1";
+
+  if (!adminBypass && hasAdminBypassHeader(req)) {
+    return res.status(401).json({
+      error: "Admin bypass secret was not accepted. Check CG_ADMIN_BYPASS_SECRET in Vercel and localStorage cg-admin-secret in your browser.",
+    });
+  }
 
   if (!adminBypass) {
     const usageCheck = await checkSupabaseUsage(ip);

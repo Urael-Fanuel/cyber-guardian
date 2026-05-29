@@ -674,6 +674,9 @@ async function runScan() {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
+      if (response.status === 401 && adminBypassSecret) {
+        localStorage.removeItem('cg-admin-secret');
+      }
       throw new Error(err.error || `Server error ${response.status}`);
     }
 

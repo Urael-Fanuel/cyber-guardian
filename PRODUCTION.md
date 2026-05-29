@@ -85,7 +85,7 @@ requests go to `CONTACT_SUPPORT_TO`.
 ## Developer Bypass
 
 `CG_ADMIN_BYPASS_SECRET` lets the site owner run unlimited scans without changing
-the public 7-scan monthly limit for normal visitors. Keep it private.
+the public 10-scan monthly limit for normal visitors. Keep it private.
 
 After setting it in Vercel and redeploying, enable it in your own browser console:
 
