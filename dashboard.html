@@ -19,6 +19,8 @@
   --cyan2:  rgba(0,212,255,0.12);
   --green:  #00E676;
   --green2: rgba(0,230,118,0.10);
+  --purple: #9D4EDD;
+  --purple2: rgba(157,78,221,0.10);
   --red:    #FF3D3D;
   --red2:   rgba(255,61,61,0.10);
   --orange: #FF9100;
@@ -113,6 +115,12 @@ canvas { max-height: 200px; }
 .scope-icon { font-size: 36px; margin-bottom: 10px; }
 .scope-name { font-family: var(--sans); font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
 .scope-count { font-family: var(--sans); font-size: 40px; font-weight: 900; color: var(--cyan); line-height: 1; }
+.scope-card.scope-mcp { border-top: 3px solid var(--cyan); }
+.scope-card.scope-skill { border-top: 3px solid var(--green); }
+.scope-card.scope-extension { border-top: 3px solid var(--purple); }
+.scope-card.scope-mcp .scope-count, .fi-scope.scope-mcp { color: var(--cyan); }
+.scope-card.scope-skill .scope-count, .fi-scope.scope-skill { color: var(--green); }
+.scope-card.scope-extension .scope-count, .fi-scope.scope-extension { color: var(--purple); }
 .scope-label { font-size: 12px; color: var(--dim); letter-spacing: 1.5px; margin-top: 6px; }
 
 /* RECENT FEED */
@@ -1070,6 +1078,40 @@ loadDashContentOverrides(currentLang).then(() => applyLang(currentLang));
   if (backBtn) backBtn.textContent = t('back');
 })();
 
+const TYPE_COLORS = {
+  mcp: '#00D4FF',
+  skill: '#00E676',
+  extension: '#9D4EDD'
+};
+
+const TYPE_FILLS = {
+  mcp: 'rgba(0,212,255,0.10)',
+  skill: 'rgba(0,230,118,0.10)',
+  extension: 'rgba(157,78,221,0.10)'
+};
+
+function scopeKey(scope) {
+  const value = String(scope || '').trim().toLowerCase();
+  if (value === 'mcp' || value.includes('mcp')) return 'mcp';
+  if (value === 'skill' || value.includes('skill')) return 'skill';
+  if (value === 'extension' || value === 'ext' || value.includes('extension') || value.includes('ide')) return 'extension';
+  return 'extension';
+}
+
+function scopeClass(scope) {
+  return `scope-${scopeKey(scope)}`;
+}
+
+function scopeCount(data, scope) {
+  const key = scopeKey(scope);
+  return data?.by_scope?.[key] || 0;
+}
+
+function trendScopeCount(point, scope) {
+  const key = scopeKey(scope);
+  return point?.[key] || 0;
+}
+
 function animateCount(el, target, duration = 1500) {
   const start = 0;
   const step = target / (duration / 16);
@@ -1116,13 +1158,15 @@ function statusLabel(status) {
   return '❓ UNKNOWN';
 }
 function scopeEmoji(scope) {
-  if (scope === 'mcp') return '🔌';
-  if (scope === 'skill') return '📜';
+  const key = scopeKey(scope);
+  if (key === 'mcp') return '🔌';
+  if (key === 'skill') return '📜';
   return '🧩';
 }
 function scopeLabel(scope) {
-  if (scope === 'mcp') return t('scope_mcp');
-  if (scope === 'skill') return t('scope_skill');
+  const key = scopeKey(scope);
+  if (key === 'mcp') return t('scope_mcp');
+  if (key === 'skill') return t('scope_skill');
   return t('scope_ext');
 }
 
@@ -1130,7 +1174,7 @@ function renderRecentScan(s) {
   const decision = scanDecision(s);
   return `
     <div class="feed-item detailed ${decision.className}">
-      <div class="fi-scope" style="margin-top:4px">${scopeEmoji(s.scope)}</div>
+      <div class="fi-scope ${scopeClass(s.scope)}" style="margin-top:4px">${scopeEmoji(s.scope)}</div>
       <div class="fi-status ${statusClass(s)}" style="margin-top:4px">${statusLabel(s)}</div>
       <div class="feed-main">
         <div class="feed-top">
@@ -1152,6 +1196,9 @@ function render(d) {
   window._dashData = d;
   const blocked = d.blocked ?? d.critical ?? 0;
   const review = d.review ?? d.moderate ?? 0;
+  const mcpCount = scopeCount(d, 'mcp');
+  const skillCount = scopeCount(d, 'skill');
+  const extensionCount = scopeCount(d, 'extension');
   const detRate = d.attention_rate ?? d.detection_rate ?? 0;
   const safeP   = d.total > 0 ? Math.round((d.safe   / d.total) * 100) : 0;
   const modP    = d.total > 0 ? Math.round((review / d.total) * 100) : 0;
@@ -1203,19 +1250,19 @@ function render(d) {
 
     <!-- SCOPE BREAKDOWN -->
     <div class="scope-cards">
-      <div class="scope-card">
+      <div class="scope-card scope-mcp">
         <div class="scope-icon">🔌</div>
         <div class="scope-name">${t('mcp_label')}</div>
         <div class="scope-count" id="n-mcp">0</div>
         <div class="scope-label">${t('scanned')}</div>
       </div>
-      <div class="scope-card">
+      <div class="scope-card scope-skill">
         <div class="scope-icon">📜</div>
         <div class="scope-name">${t('skill_label')}</div>
         <div class="scope-count" id="n-skill">0</div>
         <div class="scope-label">${t('scanned')}</div>
       </div>
-      <div class="scope-card">
+      <div class="scope-card scope-extension">
         <div class="scope-icon">🧩</div>
         <div class="scope-name">${t('ext_label')}</div>
         <div class="scope-count" id="n-ext">0</div>
@@ -1319,9 +1366,9 @@ function render(d) {
   animateCount(document.getElementById('n-threats'), blocked);
   animateCount(document.getElementById('n-mod'),     review);
   animateCount(document.getElementById('n-safe'),    d.safe);
-  animateCount(document.getElementById('n-mcp'),     d.by_scope.mcp || 0);
-  animateCount(document.getElementById('n-skill'),   d.by_scope.skill || 0);
-  animateCount(document.getElementById('n-ext'),     d.by_scope.extension || 0);
+  animateCount(document.getElementById('n-mcp'),     mcpCount);
+  animateCount(document.getElementById('n-skill'),   skillCount);
+  animateCount(document.getElementById('n-ext'),     extensionCount);
 
   // Animate risk bar
   setTimeout(() => {
@@ -1354,10 +1401,10 @@ function render(d) {
   new Chart(document.getElementById('chart-scope'), {
     type: 'doughnut',
     data: {
-      labels: ['MCP Server', 'AI Skill', 'Extension'],
+      labels: [t('scope_mcp'), t('scope_skill'), t('scope_ext')],
       datasets: [{
-        data: [d.by_scope.mcp || 0, d.by_scope.skill || 0, d.by_scope.extension || 0],
-        backgroundColor: ['#00D4FF', '#00E676', '#9D4EDD'],
+        data: [mcpCount, skillCount, extensionCount],
+        backgroundColor: [TYPE_COLORS.mcp, TYPE_COLORS.skill, TYPE_COLORS.extension],
         borderColor: '#0B1117', borderWidth: 3
       }]
     },
@@ -1371,16 +1418,31 @@ function render(d) {
       labels: (d.trend || []).map(t => t.date.slice(5)),
       datasets: [
         {
-          label: 'Total',
-          data: (d.trend || []).map(t => t.total),
-          borderColor: '#00D4FF', backgroundColor: 'rgba(0,212,255,0.08)',
-          tension: 0.4, fill: true, pointRadius: 3
+          label: t('scope_mcp'),
+          data: (d.trend || []).map(point => trendScopeCount(point, 'mcp')),
+          borderColor: TYPE_COLORS.mcp,
+          backgroundColor: TYPE_FILLS.mcp,
+          pointBackgroundColor: TYPE_COLORS.mcp,
+          pointBorderColor: TYPE_COLORS.mcp,
+          tension: 0.4, fill: false, pointRadius: 3
         },
         {
-          label: t('crit_lbl'),
-          data: (d.trend || []).map(t => t.blocked ?? t.threats ?? 0),
-          borderColor: '#FF3D3D', backgroundColor: 'rgba(255,61,61,0.08)',
-          tension: 0.4, fill: true, pointRadius: 3
+          label: t('scope_skill'),
+          data: (d.trend || []).map(point => trendScopeCount(point, 'skill')),
+          borderColor: TYPE_COLORS.skill,
+          backgroundColor: TYPE_FILLS.skill,
+          pointBackgroundColor: TYPE_COLORS.skill,
+          pointBorderColor: TYPE_COLORS.skill,
+          tension: 0.4, fill: false, pointRadius: 3
+        },
+        {
+          label: t('scope_ext'),
+          data: (d.trend || []).map(point => trendScopeCount(point, 'extension')),
+          borderColor: TYPE_COLORS.extension,
+          backgroundColor: TYPE_FILLS.extension,
+          pointBackgroundColor: TYPE_COLORS.extension,
+          pointBorderColor: TYPE_COLORS.extension,
+          tension: 0.4, fill: false, pointRadius: 3
         }
       ]
     },
@@ -1388,7 +1450,7 @@ function render(d) {
       ...chartDefaults,
       scales: {
         x: { ticks: { color: '#7A9BB0', font: { size: 11 } }, grid: { color: '#1A2535' } },
-        y: { ticks: { color: '#7A9BB0', font: { size: 11 } }, grid: { color: '#1A2535' } }
+        y: { beginAtZero: true, ticks: { color: '#7A9BB0', precision: 0, font: { size: 11 } }, grid: { color: '#1A2535' } }
       }
     }
   });

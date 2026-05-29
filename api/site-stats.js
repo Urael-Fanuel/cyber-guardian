@@ -60,6 +60,14 @@ function classifyScan(scan) {
   return 'review';
 }
 
+function normalizeScope(scope) {
+  const value = String(scope || '').trim().toLowerCase();
+  if (value === 'mcp' || value.includes('mcp')) return 'mcp';
+  if (value === 'skill' || value.includes('skill')) return 'skill';
+  if (value === 'extension' || value === 'ext' || value.includes('extension') || value.includes('ide')) return 'extension';
+  return 'extension';
+}
+
 function arrayValue(value) {
   return Array.isArray(value) ? value.filter(Boolean) : [];
 }
@@ -97,7 +105,7 @@ function tagSet(scan) {
 }
 
 function similarityScore(a, b) {
-  if (!a || !b || a.scope !== b.scope) return 0;
+  if (!a || !b || normalizeScope(a.scope) !== normalizeScope(b.scope)) return 0;
   const aTags = tagSet(a);
   const bTags = tagSet(b);
   if (aTags.size === 0 || bTags.size === 0) return 0;
@@ -126,7 +134,7 @@ function saferAlternatives(scan, scans) {
   const seenUrls = new Set();
   const ranked = scans
     .filter(candidate => candidate !== scan)
-    .filter(candidate => candidate.scope === scan.scope)
+    .filter(candidate => normalizeScope(candidate.scope) === normalizeScope(scan.scope))
     .filter(candidate => {
       const candidateUrl = normalizedUrl(candidate.source_url);
       if (!candidateUrl) return false;
@@ -214,12 +222,13 @@ module.exports = async function handler(req, res) {
 
     const by_scope = { mcp: 0, skill: 0, extension: 0 };
     for (const s of scans) {
-      if (by_scope[s.scope] !== undefined) by_scope[s.scope]++;
+      const scope = normalizeScope(s.scope);
+      if (by_scope[scope] !== undefined) by_scope[scope]++;
     }
 
     // Last 10 scans for recent feed
     const recent = scans.slice(0, 10).map(s => ({
-      scope:            s.scope,
+      scope:            normalizeScope(s.scope),
       status:           s.status,
       raw_status:       s.status,
       decision:         classifyScan(s),
@@ -248,6 +257,9 @@ module.exports = async function handler(req, res) {
       trend.push({
         date:     dateStr,
         total:    dayScans.length,
+        mcp:      dayScans.filter(s => normalizeScope(s.scope) === 'mcp').length,
+        skill:    dayScans.filter(s => normalizeScope(s.scope) === 'skill').length,
+        extension: dayScans.filter(s => normalizeScope(s.scope) === 'extension').length,
         threats:  dayDecisions.filter(d => d === 'blocked').length,
         blocked:  dayDecisions.filter(d => d === 'blocked').length,
         review:   dayDecisions.filter(d => d === 'review').length
