@@ -18,6 +18,16 @@ function minIntEnv(name, fallback, minimum) {
   return Math.max(intEnv(name, fallback), minimum);
 }
 
+function anthropicModelEnv() {
+  const configured = String(process.env.ANTHROPIC_MODEL || "").trim();
+  const aliases = {
+    "claude-sonnet-4-6": "claude-sonnet-4-20250514",
+    "claude-sonnet-4": "claude-sonnet-4-20250514",
+    "sonnet-4": "claude-sonnet-4-20250514",
+  };
+  return aliases[configured] || configured || "claude-sonnet-4-20250514";
+}
+
 const CONFIG = {
   ALLOWED_ORIGINS: (process.env.ALLOWED_ORIGINS || "https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
     .split(",").map(s => s.trim()).filter(Boolean),
@@ -29,7 +39,7 @@ const CONFIG = {
   MAX_API_CALLS_PER_DAY: intEnv("SCAN_MAX_API_CALLS_PER_DAY", 5000),
   CACHE_TTL_SECONDS: intEnv("SCAN_CACHE_TTL_SECONDS", 3600),
   ANTHROPIC_TIMEOUT_MS: intEnv("ANTHROPIC_TIMEOUT_MS", 25000),
-  MODEL: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
+  MODEL: anthropicModelEnv(),
   MAX_TOKENS: intEnv("ANTHROPIC_MAX_TOKENS", 1500),
   USAGE_MODE: process.env.SCAN_USAGE_MODE || "fallback",
   ADMIN_BYPASS_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || "",

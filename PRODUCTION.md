@@ -8,7 +8,7 @@ Set these in Vercel Project Settings -> Environment Variables:
 
 ```text
 ANTHROPIC_API_KEY=...
-ANTHROPIC_MODEL=claude-sonnet-4-6
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
 ANTHROPIC_MAX_TOKENS=1500
 ANTHROPIC_TIMEOUT_MS=25000
 
