@@ -162,6 +162,11 @@ jobs:
           CYBER_GUARDIAN_URL:   https://cyberguardianscan.com
           CG_ADMIN_BYPASS_SECRET: ${{ secrets.CG_ADMIN_BYPASS_SECRET }}
           CG_SCAN_DELAY:        "1"
+          GITHUB_FILE_DELAY:    "0.05"
+          MAX_REPO_SCAN_FILES:  "25"
+          MAX_REPO_SCAN_BYTES:  "900000"
+          MAX_ITEM_SECONDS:     "45"
+          MAX_CG_SCAN_SECONDS:  "45"
           MAX_RUNTIME_MINUTES:  "10"
         run: |
           echo "══════════════════════════════════════"

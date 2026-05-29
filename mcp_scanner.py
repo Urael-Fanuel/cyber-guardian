@@ -40,11 +40,14 @@ SCAN_SCOPES    = [
 ]
 SCAN_SCOPE_LIMITS_RAW = os.environ.get("SCAN_SCOPE_LIMITS", "skill:15,mcp:10,extension:5")
 GITHUB_DELAY   = float(os.environ.get("GITHUB_DELAY", 1.2))   # seconds between API calls
+GITHUB_FILE_DELAY = float(os.environ.get("GITHUB_FILE_DELAY", 0.05))
 NPM_DELAY      = float(os.environ.get("NPM_DELAY", 0.5))
 CYBER_GUARDIAN_URL = os.environ.get("CYBER_GUARDIAN_URL", "https://cyberguardianscan.com")
 CG_MAX_INPUT_CHARS = int(os.environ.get("CG_MAX_INPUT_CHARS", "50000"))
 CG_SCAN_DELAY  = float(os.environ.get("CG_SCAN_DELAY", 1.0))  # seconds between CG API calls
 CG_ADMIN_BYPASS_SECRET = os.environ.get("CG_ADMIN_BYPASS_SECRET", "")
+MAX_ITEM_SECONDS = int(os.environ.get("MAX_ITEM_SECONDS", "90"))
+MAX_CG_SCAN_SECONDS = int(os.environ.get("MAX_CG_SCAN_SECONDS", "75"))
 if not SCAN_SCOPES:
     SCAN_SCOPES = ["mcp"]
 
@@ -385,13 +388,18 @@ COMPILED_RULES = [
 
 # File extensions to analyze
 SCAN_EXTENSIONS = {
-    ".py", ".js", ".ts", ".mjs", ".cjs",
+    ".py", ".js", ".ts", ".tsx", ".jsx", ".mjs", ".cjs",
+    ".java", ".kt", ".kts", ".cs",
     ".sh", ".bash", ".zsh",
     ".json",   # package.json scripts, deps
+    ".md", ".mdx",  # Skill files and extension READMEs
+    ".xml",    # JetBrains plugin.xml
     ".toml",   # pyproject.toml
     ".yaml", ".yml",  # workflow files
 }
 MAX_FILE_SIZE = 500_000  # 500 KB — skip huge minified files
+MAX_REPO_SCAN_FILES = int(os.environ.get("MAX_REPO_SCAN_FILES", "25"))
+MAX_REPO_SCAN_BYTES = int(os.environ.get("MAX_REPO_SCAN_BYTES", "900000"))
 MAX_ARCHIVE_SIZE = 20_000_000
 MAX_ARCHIVE_MEMBERS = 2000
 MAX_EXTRACTED_BYTES = 5_000_000
@@ -513,6 +521,26 @@ async def fetch_github_scope(client: httpx.AsyncClient, scope: str, limit: int) 
     return await fetch_github_repositories(client, limit, queries)
 
 
+def github_file_priority(item: dict) -> tuple[int, int, str]:
+    path = str(item.get("path", "")).lower()
+    name = path.rsplit("/", 1)[-1]
+    size = int(item.get("size") or 0)
+    priority = 50
+    if name in {"package.json", "plugin.xml", "skill.md", "readme.md", "pyproject.toml"}:
+        priority = 0
+    elif path.startswith(("src/", "extension/", "server/", "lib/")):
+        priority = 10
+    elif "extension" in name or "activate" in path:
+        priority = 15
+    elif path.startswith(("out/", "dist/", "build/")):
+        priority = 60
+    if any(part in path for part in ("/test/", "/tests/", "/docs/", "/examples/", "/node_modules/", "/coverage/")):
+        priority += 30
+    if name.endswith((".min.js", ".map", ".lock")) or name in {"package-lock.json", "yarn.lock", "pnpm-lock.yaml"}:
+        priority += 100
+    return (priority, size, path)
+
+
 async def fetch_github_code(client: httpx.AsyncClient, full_name: str) -> dict[str, str]:
     """Fetch all scannable files from a GitHub repo using the Trees API."""
     headers = {
@@ -539,7 +567,7 @@ async def fetch_github_code(client: httpx.AsyncClient, full_name: str) -> dict[s
         tree = r.json().get("tree", [])
         await asyncio.sleep(GITHUB_DELAY)
 
-        # Fetch individual files
+        eligible: list[dict] = []
         for item in tree:
             if item.get("type") != "blob":
                 continue
@@ -547,6 +575,20 @@ async def fetch_github_code(client: httpx.AsyncClient, full_name: str) -> dict[s
             ext  = "." + path.rsplit(".", 1)[-1] if "." in path else ""
             size = item.get("size", 0)
             if ext.lower() not in SCAN_EXTENSIONS or size > MAX_FILE_SIZE:
+                continue
+            if github_file_priority(item)[0] >= 150:
+                continue
+            eligible.append(item)
+
+        eligible.sort(key=github_file_priority)
+
+        fetched_bytes = 0
+        for item in eligible:
+            if len(files) >= MAX_REPO_SCAN_FILES or fetched_bytes >= MAX_REPO_SCAN_BYTES:
+                break
+            path = item["path"]
+            size = int(item.get("size") or 0)
+            if size and fetched_bytes + size > MAX_REPO_SCAN_BYTES:
                 continue
 
             try:
@@ -559,9 +601,10 @@ async def fetch_github_code(client: httpx.AsyncClient, full_name: str) -> dict[s
                 if raw.get("encoding") == "base64":
                     content = base64.b64decode(raw["content"]).decode("utf-8", errors="replace")
                     files[path] = content
+                    fetched_bytes += len(content.encode("utf-8", errors="ignore"))
             except Exception as e:
                 log.debug(f"  Skipping {path}: {e}")
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(GITHUB_FILE_DELAY)
 
     except Exception as e:
         log.warning(f"Failed to fetch code for {full_name}: {e}")
@@ -885,6 +928,22 @@ def _site_scan_row(scope: str, result: dict, server=None) -> dict:
     return row
 
 
+def metadata_code_for_server(server: ScannedServer, scope: str) -> str:
+    """Build a small, scannable metadata document when source files are unavailable."""
+    return "\n".join([
+        f"scope: {scope}",
+        f"name: {server.name}",
+        f"source: {server.source}",
+        f"url: {server.url}",
+        f"description: {server.description}",
+        f"language: {server.language}",
+        f"owner: {server.owner}",
+        f"package_name: {server.package_name}",
+        f"version: {server.version}",
+        f"files_scanned: {server.files_scanned}",
+    ]).strip()
+
+
 def save_site_scan(sb: Client, scope: str, result: dict, server=None) -> bool:
     """Save AI scan result to site_scans table (visible in dashboard)."""
     if not result or not result.get("status"):
@@ -1121,11 +1180,19 @@ async def run_scan():
         return fallback_scope_limit(index)
 
     async def scan_cg_and_save(scope: str, source_code: str, server=None):
+        if not source_code and server:
+            source_code = metadata_code_for_server(server, scope)
         if not source_code:
             return
-        cg_result = await scan_with_cyber_guardian(client, source_code, scope)
-        if cg_result:
-            save_site_scan(sb, scope, cg_result, server)
+        try:
+            cg_result = await asyncio.wait_for(
+                scan_with_cyber_guardian(client, source_code, scope),
+                timeout=MAX_CG_SCAN_SECONDS,
+            )
+            if cg_result:
+                save_site_scan(sb, scope, cg_result, server)
+        except asyncio.TimeoutError:
+            log.warning(f"  [CG] timed out scope={scope} source={getattr(server, 'name', 'unknown')}")
         await asyncio.sleep(CG_SCAN_DELAY)
 
     async def scan_github_items(scope: str, repos: list[dict], save_mcp_rows: bool):
@@ -1133,7 +1200,7 @@ async def run_scan():
             if should_stop():
                 break
             try:
-                server = await scan_github_server(client, repo)
+                server = await asyncio.wait_for(scan_github_server(client, repo), timeout=MAX_ITEM_SECONDS)
                 server.source = "github" if scope == "mcp" else f"github_{scope}"
                 all_servers.append(server)
                 if save_mcp_rows:
@@ -1147,7 +1214,7 @@ async def run_scan():
             if should_stop():
                 break
             try:
-                server = await scan_npm_server(client, pkg)
+                server = await asyncio.wait_for(scan_npm_server(client, pkg), timeout=MAX_ITEM_SECONDS)
                 server.source = "npm" if scope == "mcp" else f"npm_{scope}"
                 all_servers.append(server)
                 if save_mcp_rows:
@@ -1186,7 +1253,7 @@ async def run_scan():
                     if should_stop():
                         break
                     try:
-                        server = await scan_mcpso_server(client, item)
+                        server = await asyncio.wait_for(scan_mcpso_server(client, item), timeout=MAX_ITEM_SECONDS)
                         if server:
                             server.source = "mcpso"
                             all_servers.append(server)

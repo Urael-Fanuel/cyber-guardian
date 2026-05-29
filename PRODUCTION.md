@@ -121,11 +121,15 @@ The scheduled GitHub Actions scanner uses conservative launch defaults:
 - `SCAN_SCOPES=skill,mcp,extension`
 - `SCAN_SCOPE_LIMITS=skill:15,mcp:10,extension:5`
 - `MAX_RUNTIME_MINUTES=10`
+- `MAX_ITEM_SECONDS=45`
+- `MAX_CG_SCAN_SECONDS=45`
 
 That means a normal run scans up to 15 AI Skills, 10 MCP servers, and 5 IDE
 extensions. Manual GitHub Actions runs expose separate toggles and limits for
 each scan type. Each successful scan writes safe dashboard metadata to Supabase
 `site_scans` immediately, so the public dashboard can update during the batch.
+Large IDE extension repositories are capped by file count, byte count, and
+per-item timeouts so one repository cannot stall the entire run.
 
 Run `supabase/migrations/005_site_scan_intelligence.sql` to enrich `site_scans`
 with purpose, capabilities, source metadata, and use-case tags. These fields power
