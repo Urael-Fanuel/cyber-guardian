@@ -312,11 +312,7 @@ function checkDailyCap() {
 }
 
 async function hashCode(code) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(code);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, "0")).join("");
+  return crypto.createHash("sha256").update(String(code || ""), "utf8").digest("hex");
 }
 
 function getFromCache(hash) {

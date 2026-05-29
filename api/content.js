@@ -88,7 +88,10 @@ module.exports = async function handler(req, res) {
       .eq("surface", surface)
       .eq("lang", lang);
 
-    if (error) return res.status(500).json({ error: "Content unavailable" });
+    if (error) {
+      console.error("[content-get]", error.message);
+      return res.status(200).json({ surface, lang, entries: {}, warning: "content overrides unavailable" });
+    }
     const entries = {};
     for (const row of data || []) entries[row.content_key] = row.content_value;
     return res.status(200).json({ surface, lang, entries });
