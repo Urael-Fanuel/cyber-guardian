@@ -130,6 +130,20 @@ canvas { max-height: 200px; }
 .fi-status.crit { background: var(--red2); color: var(--red); border: 1px solid rgba(255,61,61,0.2); }
 .fi-score { color: var(--text); flex: 1; opacity: 0.85; }
 .fi-time { color: var(--dim); font-size: 12px; }
+.feed-item.detailed { align-items: flex-start; }
+.feed-main { flex: 1; min-width: 0; }
+.feed-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.feed-meta { color: var(--dim); font-size: 12px; }
+.decision-line { color: #fff; font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+.decision-line strong { color: var(--green); }
+.feed-item.risk-mod .decision-line strong { color: var(--orange); }
+.feed-item.risk-crit .decision-line strong { color: var(--red); }
+.threat-list { display: grid; gap: 7px; margin-top: 8px; }
+.threat-row { border: 1px solid var(--border); background: rgba(8,18,30,0.62); padding: 9px 11px; }
+.threat-name { color: #fff; font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: 0.3px; margin-bottom: 4px; overflow-wrap: anywhere; }
+.threat-desc { color: var(--text); font-size: 12px; line-height: 1.55; opacity: 0.92; }
+.threat-action { color: var(--cyan); font-size: 11px; line-height: 1.5; margin-top: 4px; font-weight: 700; }
+.safe-note { color: var(--green); font-size: 12px; line-height: 1.6; margin-top: 4px; }
 
 /* LOADING */
 .loading { text-align: center; padding: 80px 20px; }
@@ -456,6 +470,226 @@ function t(key) {
   return DASH_CONTENT_OVERRIDES[currentLang]?.[key] || DASH_T[currentLang]?.[key] || DASH_T.en[key] || key;
 }
 
+const DECISION_COPY = {
+  en: {
+    install_ok: 'Install decision: OK to install based on this scan.',
+    review: 'Install decision: do not install yet. Review this code or ask the author to explain/fix the findings.',
+    block: 'Install decision: do not install. This scan found behavior that can harm your system or data.',
+    safe_detail: 'No threat family was detected in this scan. Keep normal caution for updates and new versions.',
+    what_found: 'What was found',
+    action: 'What to do now',
+    action_block: 'Block this package or code until the finding is removed and rescanned clean.',
+    action_review: 'Treat this as suspicious. Read the code, ask for a fix, and rescan before installing.',
+    action_safe: 'You can proceed if the source is trusted and the code matches what you expected.',
+  },
+  he: {
+    install_ok: 'החלטת התקנה: אפשר להתקין לפי הסריקה הזו.',
+    review: 'החלטת התקנה: לא להתקין עדיין. בדוק את הקוד או בקש מהמחבר להסביר ולתקן את הממצאים.',
+    block: 'החלטת התקנה: לא להתקין. הסריקה מצאה התנהגות שעלולה לפגוע במערכת או במידע שלך.',
+    safe_detail: 'לא זוהתה משפחת איום בסריקה הזו. עדיין כדאי לוודא שהמקור אמין ושהגרסה צפויה.',
+    what_found: 'מה נמצא',
+    action: 'מה לעשות עכשיו',
+    action_block: 'חסום את החבילה או הקוד עד שהממצא יוסר וסריקה חוזרת תצא נקייה.',
+    action_review: 'התייחס לזה כחשוד. קרא את הקוד, בקש תיקון, וסרוק שוב לפני התקנה.',
+    action_safe: 'אפשר להמשיך אם המקור אמין והקוד תואם למה שציפית.',
+  },
+  de: {
+    install_ok: 'Installationsentscheidung: laut diesem Scan installierbar.',
+    review: 'Installationsentscheidung: noch nicht installieren. Code pruefen oder eine Erklaerung/Korrektur anfordern.',
+    block: 'Installationsentscheidung: nicht installieren. Der Scan fand Verhalten, das System oder Daten schaedigen kann.',
+    safe_detail: 'Keine Bedrohungsfamilie wurde erkannt. Quelle und Version trotzdem normal pruefen.',
+    what_found: 'Gefunden',
+    action: 'Naechster Schritt',
+    action_block: 'Paket oder Code blockieren, bis der Fund entfernt und sauber erneut gescannt wurde.',
+    action_review: 'Als verdaechtig behandeln. Code lesen, Fix verlangen und vor Installation erneut scannen.',
+    action_safe: 'Fortfahren, wenn die Quelle vertrauenswuerdig ist und der Code erwartet aussieht.',
+  },
+  ja: {
+    install_ok: 'インストール判断: このスキャンではインストール可能です。',
+    review: 'インストール判断: まだインストールしないでください。コード確認または修正を依頼してください。',
+    block: 'インストール判断: インストールしないでください。システムやデータに危険な動作が見つかりました。',
+    safe_detail: 'このスキャンでは脅威ファミリーは検出されませんでした。入手元とバージョンは通常通り確認してください。',
+    what_found: '検出内容',
+    action: '次に行うこと',
+    action_block: '検出内容が削除され、再スキャンで安全になるまでブロックしてください。',
+    action_review: '疑わしいものとして扱い、コードを確認し、修正後に再スキャンしてください。',
+    action_safe: '入手元が信頼でき、内容が想定通りなら進められます。',
+  },
+  ko: {
+    install_ok: '설치 결정: 이 스캔 기준으로 설치할 수 있습니다.',
+    review: '설치 결정: 아직 설치하지 마세요. 코드를 검토하거나 수정/설명을 요청하세요.',
+    block: '설치 결정: 설치하지 마세요. 시스템 또는 데이터에 해를 줄 수 있는 동작이 발견되었습니다.',
+    safe_detail: '이 스캔에서는 위협 패밀리가 감지되지 않았습니다. 출처와 버전은 계속 확인하세요.',
+    what_found: '발견 내용',
+    action: '다음 조치',
+    action_block: '문제가 제거되고 재스캔이 깨끗할 때까지 차단하세요.',
+    action_review: '의심 항목으로 다루고 코드를 읽은 뒤 수정 후 재스캔하세요.',
+    action_safe: '출처가 신뢰 가능하고 코드가 예상과 일치하면 진행할 수 있습니다.',
+  },
+  fr: {
+    install_ok: 'Décision d’installation : installable selon ce scan.',
+    review: 'Décision d’installation : ne pas installer pour l’instant. Vérifiez le code ou demandez une correction.',
+    block: 'Décision d’installation : ne pas installer. Le scan a trouvé un comportement dangereux pour vos données ou votre système.',
+    safe_detail: 'Aucune famille de menace détectée. Vérifiez tout de même la source et la version.',
+    what_found: 'Ce qui a été trouvé',
+    action: 'Que faire maintenant',
+    action_block: 'Bloquez ce paquet ou ce code jusqu’à suppression du problème et nouveau scan propre.',
+    action_review: 'Traitez-le comme suspect. Lisez le code, demandez un correctif puis rescanez avant installation.',
+    action_safe: 'Vous pouvez continuer si la source est fiable et le code correspond à vos attentes.',
+  },
+  pt: {
+    install_ok: 'Decisão de instalação: pode instalar com base neste scan.',
+    review: 'Decisão de instalação: ainda não instale. Revise o código ou peça explicação/correção.',
+    block: 'Decisão de instalação: não instale. O scan encontrou comportamento perigoso para seu sistema ou dados.',
+    safe_detail: 'Nenhuma família de ameaça foi detectada. Ainda verifique a origem e a versão.',
+    what_found: 'O que foi encontrado',
+    action: 'O que fazer agora',
+    action_block: 'Bloqueie o pacote ou código até o problema ser removido e o rescan sair limpo.',
+    action_review: 'Trate como suspeito. Leia o código, peça correção e faça novo scan antes de instalar.',
+    action_safe: 'Você pode prosseguir se a origem for confiável e o código for o esperado.',
+  }
+};
+
+const THREAT_EXPLANATIONS = {
+  en: {
+    credential: 'The code touches passwords, tokens, API keys, SSH keys, or other secrets. Installing it can expose accounts or infrastructure.',
+    exfil: 'The code can send files, source code, secrets, or scan data to an external server.',
+    command: 'The code can run operating-system commands or arbitrary code. This can give it control over the machine.',
+    prompt: 'The code contains hidden instructions intended to manipulate an AI assistant or bypass its rules.',
+    filesystem: 'The code can read or write files outside the expected area. This can expose private projects or credentials.',
+    network: 'The code communicates with external or internal network targets in a way that needs justification before install.',
+    persistence: 'The code can leave a hidden access path, callback, or behavior that activates later.',
+    supply: 'The package or install flow shows supply-chain risk, such as unsafe install scripts or suspicious dependency behavior.',
+    resource: 'The code can consume excessive CPU, memory, disk, or other machine resources.',
+    default: 'This threat family was detected by the scanner. Review the code path carefully before trusting it.',
+  },
+  he: {
+    credential: 'הקוד נוגע בסיסמאות, טוקנים, API keys, SSH keys או סודות אחרים. התקנה עלולה לחשוף חשבונות או תשתיות.',
+    exfil: 'הקוד יכול לשלוח קבצים, קוד מקור, סודות או נתוני סריקה לשרת חיצוני.',
+    command: 'הקוד יכול להריץ פקודות מערכת או קוד שרירותי. זה יכול לתת לו שליטה על המחשב.',
+    prompt: 'הקוד כולל הנחיות נסתרות שמטרתן להשפיע על עוזר AI או לעקוף כללים.',
+    filesystem: 'הקוד יכול לקרוא או לכתוב קבצים מחוץ לאזור הצפוי. זה יכול לחשוף פרויקטים פרטיים או פרטי גישה.',
+    network: 'הקוד מתקשר עם שרתים חיצוניים או פנימיים באופן שדורש הסבר ברור לפני התקנה.',
+    persistence: 'הקוד יכול להשאיר גישה נסתרת, חיבור חוזר או התנהגות שתופעל מאוחר יותר.',
+    supply: 'נמצא סיכון שרשרת אספקה, למשל סקריפט התקנה מסוכן או תלות חשודה.',
+    resource: 'הקוד יכול לנצל בצורה חריגה CPU, זיכרון, דיסק או משאבים אחרים.',
+    default: 'משפחת האיום הזו זוהתה בסריקה. בדוק היטב את מסלול הקוד לפני שאתה סומך עליו.',
+  },
+  de: {
+    credential: 'Der Code greift auf Passwoerter, Tokens, API-Keys, SSH-Keys oder andere Geheimnisse zu.',
+    exfil: 'Der Code kann Dateien, Quellcode, Secrets oder Scandaten an einen externen Server senden.',
+    command: 'Der Code kann Systembefehle oder beliebigen Code ausfuehren und damit Kontrolle ueber den Rechner erhalten.',
+    prompt: 'Der Code enthaelt versteckte Anweisungen, die einen KI-Assistenten manipulieren oder Regeln umgehen sollen.',
+    filesystem: 'Der Code kann Dateien ausserhalb des erwarteten Bereichs lesen oder schreiben.',
+    network: 'Der Code kommuniziert mit externen oder internen Netzwerkzielen und braucht vor Installation eine klare Begruendung.',
+    persistence: 'Der Code kann einen versteckten Zugang, Callback oder spaeter aktivierbares Verhalten hinterlassen.',
+    supply: 'Es gibt Supply-Chain-Risiko, etwa unsichere Install-Skripte oder auffaellige Dependency-Aktivitaet.',
+    resource: 'Der Code kann CPU, Speicher, Festplatte oder andere Ressourcen uebermaessig verbrauchen.',
+    default: 'Diese Bedrohungsfamilie wurde erkannt. Pruefen Sie den Codepfad sorgfaeltig.',
+  },
+  ja: {
+    credential: 'コードがパスワード、トークン、APIキー、SSHキーなどの秘密情報に触れています。',
+    exfil: 'コードがファイル、ソースコード、秘密情報、スキャンデータを外部サーバーへ送信できます。',
+    command: 'コードがOSコマンドや任意コードを実行できます。端末を制御される可能性があります。',
+    prompt: 'AIアシスタントを操作したりルールを回避する隠し指示が含まれています。',
+    filesystem: '想定外の場所のファイルを読み書きできます。秘密情報やプロジェクトが漏れる可能性があります。',
+    network: '外部または内部ネットワークと通信します。インストール前に明確な理由が必要です。',
+    persistence: '隠しアクセス、コールバック、後で動く挙動を残す可能性があります。',
+    supply: '危険なインストールスクリプトや不審な依存関係など、サプライチェーンリスクがあります。',
+    resource: 'CPU、メモリ、ディスクなどを過剰に消費する可能性があります。',
+    default: 'この脅威ファミリーが検出されました。信頼する前にコード経路を確認してください。',
+  },
+  ko: {
+    credential: '코드가 비밀번호, 토큰, API 키, SSH 키 등 민감한 비밀값에 접근합니다.',
+    exfil: '코드가 파일, 소스 코드, 비밀값 또는 스캔 데이터를 외부 서버로 보낼 수 있습니다.',
+    command: '코드가 운영체제 명령 또는 임의 코드를 실행할 수 있어 컴퓨터 제어권을 줄 수 있습니다.',
+    prompt: 'AI 어시스턴트를 조작하거나 규칙을 우회하려는 숨겨진 지시가 포함되어 있습니다.',
+    filesystem: '예상 범위 밖의 파일을 읽거나 쓸 수 있어 개인 프로젝트나 자격 증명이 노출될 수 있습니다.',
+    network: '외부 또는 내부 네트워크 대상과 통신하므로 설치 전 명확한 이유가 필요합니다.',
+    persistence: '숨겨진 접근 경로, 콜백 또는 나중에 활성화되는 동작을 남길 수 있습니다.',
+    supply: '위험한 설치 스크립트나 의심스러운 의존성 동작 같은 공급망 위험이 있습니다.',
+    resource: 'CPU, 메모리, 디스크 등 시스템 자원을 과도하게 사용할 수 있습니다.',
+    default: '이 위협 패밀리가 감지되었습니다. 신뢰하기 전에 코드 경로를 주의 깊게 검토하세요.',
+  },
+  fr: {
+    credential: 'Le code touche des mots de passe, tokens, clés API, clés SSH ou autres secrets.',
+    exfil: 'Le code peut envoyer fichiers, code source, secrets ou données de scan vers un serveur externe.',
+    command: 'Le code peut exécuter des commandes système ou du code arbitraire, donc contrôler la machine.',
+    prompt: 'Le code contient des instructions cachées visant à manipuler un assistant IA ou contourner ses règles.',
+    filesystem: 'Le code peut lire ou écrire des fichiers hors de la zone attendue.',
+    network: 'Le code communique avec des cibles réseau externes ou internes et doit être justifié avant installation.',
+    persistence: 'Le code peut laisser un accès caché, un callback ou un comportement activé plus tard.',
+    supply: 'Risque supply-chain détecté, comme scripts d’installation dangereux ou dépendances suspectes.',
+    resource: 'Le code peut consommer excessivement CPU, mémoire, disque ou autres ressources.',
+    default: 'Cette famille de menace a été détectée. Vérifiez soigneusement le chemin de code.',
+  },
+  pt: {
+    credential: 'O código acessa senhas, tokens, chaves de API, chaves SSH ou outros segredos.',
+    exfil: 'O código pode enviar arquivos, código-fonte, segredos ou dados do scan para um servidor externo.',
+    command: 'O código pode executar comandos do sistema ou código arbitrário, dando controle sobre a máquina.',
+    prompt: 'O código contém instruções ocultas para manipular um assistente de IA ou burlar regras.',
+    filesystem: 'O código pode ler ou gravar arquivos fora da área esperada.',
+    network: 'O código se comunica com destinos de rede externos ou internos e precisa de justificativa antes da instalação.',
+    persistence: 'O código pode deixar acesso oculto, callback ou comportamento ativado depois.',
+    supply: 'Há risco de cadeia de suprimentos, como scripts de instalação perigosos ou dependências suspeitas.',
+    resource: 'O código pode consumir CPU, memória, disco ou outros recursos em excesso.',
+    default: 'Esta família de ameaça foi detectada. Revise cuidadosamente o caminho do código.',
+  }
+};
+
+function copySet() {
+  return DECISION_COPY[currentLang] || DECISION_COPY.en;
+}
+
+function explanationSet() {
+  return THREAT_EXPLANATIONS[currentLang] || THREAT_EXPLANATIONS.en;
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
+function threatCategory(name) {
+  const n = String(name || '').toUpperCase();
+  if (/(CREDENTIAL|API_KEY|SECRET|TOKEN|ENV_VAR|MCP_CREDENTIAL)/.test(n)) return 'credential';
+  if (/(EXFILTRATION|CALLBACK|C2|NETWORK|SSRF|DNS)/.test(n)) return 'exfil';
+  if (/(COMMAND|EXECUTION|RCE|INJECTION|SHELL|EVAL|CODE_INJECTION)/.test(n)) return 'command';
+  if (/(PROMPT|JAILBREAK|CONTEXT|TOOL_POISONING|TOOL_RESULT|SYSTEM_OVERRIDE)/.test(n)) return 'prompt';
+  if (/(FILE|PATH|DIRECTORY|SYMLINK|CLIPBOARD|KEYLOGGER|DATA_HARVESTING)/.test(n)) return 'filesystem';
+  if (/(BACKDOOR|PERSISTENCE|LOGIC_BOMB|REVERSE_SHELL)/.test(n)) return 'persistence';
+  if (/(SUPPLY|DEPENDENCY|TYPOSQUATTING|INSTALL|PACKAGE)/.test(n)) return 'supply';
+  if (/(RESOURCE|MEMORY|ZIP_BOMB|CRYPTO|MINING)/.test(n)) return 'resource';
+  return 'default';
+}
+
+function scanDecision(status) {
+  const c = copySet();
+  if (status === 'STATUS_CRITICAL') return { className: 'risk-crit', text: c.block, action: c.action_block };
+  if (status === 'STATUS_MODERATE') return { className: 'risk-mod', text: c.review, action: c.action_review };
+  return { className: 'risk-safe', text: c.install_ok, action: c.action_safe };
+}
+
+function threatDetailsHtml(scan) {
+  const c = copySet();
+  if (!scan.threats_summary || scan.status === 'STATUS_SAFE') {
+    return `<div class="safe-note">${escapeHtml(c.safe_detail)}</div>`;
+  }
+  const explanations = explanationSet();
+  const decision = scanDecision(scan.status);
+  return `<div class="threat-list">${scan.threats_summary.split(', ').filter(Boolean).map(rawName => {
+    const name = rawName.trim().toUpperCase();
+    const category = threatCategory(name);
+    const desc = explanations[category] || explanations.default;
+    return `<div class="threat-row">
+      <div class="threat-name">${escapeHtml(name)}</div>
+      <div class="threat-desc"><strong>${escapeHtml(c.what_found)}:</strong> ${escapeHtml(desc)}</div>
+      <div class="threat-action">${escapeHtml(c.action)}: ${escapeHtml(decision.action)}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
 function buildLangSwitcher() {
   const container = document.getElementById('lang-switcher');
   if (!container) return;
@@ -526,9 +760,28 @@ function scopeEmoji(scope) {
   return '🧩';
 }
 function scopeLabel(scope) {
-  if (scope === 'mcp') return 'MCP Server';
-  if (scope === 'skill') return 'AI Skill';
-  return 'IDE Extension';
+  if (scope === 'mcp') return t('scope_mcp');
+  if (scope === 'skill') return t('scope_skill');
+  return t('scope_ext');
+}
+
+function renderRecentScan(s) {
+  const decision = scanDecision(s.status);
+  return `
+    <div class="feed-item detailed ${decision.className}">
+      <div class="fi-scope" style="margin-top:4px">${scopeEmoji(s.scope)}</div>
+      <div class="fi-status ${statusClass(s.status)}" style="margin-top:4px">${statusLabel(s.status)}</div>
+      <div class="feed-main">
+        <div class="feed-top">
+          <span>${scopeLabel(s.scope)}</span>
+          <span class="feed-meta">${t('score')}: ${s.threat_score}/100</span>
+          <span class="feed-meta">${s.threat_count} ${s.threat_count !== 1 ? t('threats') : t('threat')}</span>
+          <span class="feed-meta">${timeAgo(s.scanned_at)}</span>
+        </div>
+        <div class="decision-line"><strong>${escapeHtml(decision.text)}</strong></div>
+        ${threatDetailsHtml(s)}
+      </div>
+    </div>`;
 }
 
 // ── Render ───────────────────────────────────────────────────────────
@@ -628,6 +881,7 @@ function render(d) {
         ${d.recent.length === 0
           ? `<div class="feed-item" style="justify-content:center;color:var(--dim)">${t('no_scans')}</div>`
           : d.recent.map(s => {
+            return renderRecentScan(s);
             const threatNames = s.threats_summary ? s.threats_summary.split(', ').map(name => {
               const threatMap = {
                 'PRIVILEGE_ESCALATION': t('threat_privilege'),
