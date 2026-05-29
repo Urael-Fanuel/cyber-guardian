@@ -140,6 +140,7 @@ canvas { max-height: 200px; }
 .cta-band { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 60px; background: var(--cyan2); border: 1px solid rgba(0,212,255,0.25); padding: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
 .cta-text h3 { font-family: var(--sans); font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px; }
 .cta-text p { font-size: 14px; color: var(--text); opacity: 0.8; }
+.cta-value { margin-top: 10px; color: var(--green); font-family: var(--sans); font-size: 13px; font-weight: 800; letter-spacing: 0.4px; }
 .cta-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
 .cta-btn { background: var(--cyan); color: #000; font-family: var(--sans); font-weight: 700; font-size: 13px; letter-spacing: 1px; padding: 12px 28px; border-radius: 2px; text-decoration: none; transition: all 0.15s; white-space: nowrap; }
 .cta-btn.secondary { background: transparent; color: var(--cyan); border: 1px solid rgba(0,212,255,0.45); }
@@ -210,6 +211,7 @@ const DASH_T = {
     no_scans: 'No scans yet - be the first to scan!',
     cta_title: 'Scan your MCP Server, AI Skill or IDE Extension - free',
     cta_sub: 'Need custom volume, a business package, or procurement help? Contact sales@cyberguardianscan.com.',
+    cta_value: 'One blocked bad install can prevent a serious security incident.',
     cta_sales_btn: 'Contact Sales',
     threat_privilege: 'may indicate an attempt to gain unauthorized system access',
     threat_code_injection: 'may indicate execution of malicious code on your machine',
@@ -263,6 +265,7 @@ const DASH_T = {
     no_scans: 'אין סריקות עדיין - היה הראשון!',
     cta_title: 'סרוק שרת MCP, AI Skill או הרחבת IDE - בחינם',
     cta_sub: 'צריך נפח מותאם, חבילה עסקית או עזרה ברכש? צור קשר עם sales@cyberguardianscan.com.',
+    cta_value: 'מספיק שסריקה אחת עצרה התקנה מסוכנת, ומנעת מעצמך בעיות חמורות.',
     cta_sales_btn: 'צור קשר עם Sales',
     threat_privilege: 'עלול להצביע על ניסיון לקבל גישה לא מורשית למערכת',
     threat_code_injection: 'עלול להצביע על הרצת קוד זדוני במחשבך',
@@ -315,6 +318,7 @@ const DASH_T = {
     recent_hdr: '// letzte_scans', no_scans: 'Noch keine Scans.',
     cta_title: 'Jetzt MCP-Server scannen - kostenlos',
     cta_sub: 'Benötigen Sie individuelles Volumen, ein Business-Paket oder Hilfe beim Einkauf? Kontakt: sales@cyberguardianscan.com.',
+    cta_value: 'Eine blockierte schlechte Installation kann einen schweren Sicherheitsvorfall verhindern.',
     cta_sales_btn: 'Sales kontaktieren',
     cta_btn: '▶ \u00a0Jetzt scannen',
     last_scan: 'Letzter Scan:', just_now: 'gerade', min_ago: 'Min. her', hr_ago: 'Std. her', day_ago: 'T. her',
@@ -341,7 +345,7 @@ const DASH_T = {
     threat_tool_poison: 'könnte ein schädliches Tool sein, das sich als legitimes tarnt',
     threat_mcp_cred: 'könnte Ihre MCP-Zugangsdaten stehlen',
   },
-  ja: { live:'ライブ', back:'← スキャナー', loading:'読み込み中...', tag:'ライブ脅威インテリジェンス', title1:'本物の脅威。', title2:'本物の数字。', title3:'本物の保護。', sub:'Cyber-Guardianで実行されたすべてのスキャンを追跡。', kpi_total:'総スキャン数', kpi_total_sub:'MCP · スキル · 拡張', kpi_threats:'重大な脅威', kpi_mod:'要確認', kpi_mod_sub:'疑わしいパターン', kpi_safe:'クリーン', detection_rate:'検出率', passed_safely:'安全合格', of_total:'全スキャンの', risk_label:'リスク分布', safe_lbl:'安全', review_lbl:'確認', crit_lbl:'危険', mcp_label:'MCPサーバー', skill_label:'AIスキル', ext_label:'IDE拡張', scanned:'スキャン済', chart1:'// 判定', chart2:'// タイプ', chart3:'// 7日間', recent_hdr:'// 最近のスキャン', no_scans:'スキャンなし', cta_title:'今すぐMCPサーバー、AIスキル、IDE拡張をスキャン', cta_sub:'カスタム容量、ビジネスプラン、購買支援が必要ですか？ sales@cyberguardianscan.com へご連絡ください。', cta_btn:'▶ \u00a0スキャン開始', cta_sales_btn:'営業に相談', last_scan:'最終スキャン:', just_now:'たった今', min_ago:'分前', hr_ago:'時間前', day_ago:'日前', scope_mcp:'MCPサーバー', scope_skill:'AIスキル', scope_ext:'IDE拡張', score:'スコア', threat:'脅威', threats:'脅威',
+  ja: { live:'ライブ', back:'← スキャナー', loading:'読み込み中...', tag:'ライブ脅威インテリジェンス', title1:'本物の脅威。', title2:'本物の数字。', title3:'本物の保護。', sub:'Cyber-Guardianで実行されたすべてのスキャンを追跡。', kpi_total:'総スキャン数', kpi_total_sub:'MCP · スキル · 拡張', kpi_threats:'重大な脅威', kpi_mod:'要確認', kpi_mod_sub:'疑わしいパターン', kpi_safe:'クリーン', detection_rate:'検出率', passed_safely:'安全合格', of_total:'全スキャンの', risk_label:'リスク分布', safe_lbl:'安全', review_lbl:'確認', crit_lbl:'危険', mcp_label:'MCPサーバー', skill_label:'AIスキル', ext_label:'IDE拡張', scanned:'スキャン済', chart1:'// 判定', chart2:'// タイプ', chart3:'// 7日間', recent_hdr:'// 最近のスキャン', no_scans:'スキャンなし', cta_title:'今すぐMCPサーバー、AIスキル、IDE拡張をスキャン', cta_sub:'カスタム容量、ビジネスプラン、購買支援が必要ですか？ sales@cyberguardianscan.com へご連絡ください。', cta_value:'危険なインストールを1つ防ぐだけで、重大な事故を避けられます。', cta_btn:'▶ \u00a0スキャン開始', cta_sales_btn:'営業に相談', last_scan:'最終スキャン:', just_now:'たった今', min_ago:'分前', hr_ago:'時間前', day_ago:'日前', scope_mcp:'MCPサーバー', scope_skill:'AIスキル', scope_ext:'IDE拡張', score:'スコア', threat:'脅威', threats:'脅威',
     threat_privilege:'不正なシステムアクセスを試みる可能性があります',
     threat_cred:'あなたのパスワードとAPIキーを盗む可能性があります',
     threat_exfil:'あなたのファイルを外部サーバーに送信する可能性があります',
@@ -355,7 +359,7 @@ const DASH_T = {
     threat_tool_poison:'正規のツールに偽装した悪意のあるツールの可能性があります',
     threat_mcp_cred:'あなたのMCP認証情報を盗む可能性があります',
   },
-  ko: { live:'라이브', back:'← 스캐너', loading:'로딩 중...', tag:'실시간 위협 인텔리전스', title1:'실제 위협.', title2:'실제 숫자.', title3:'실제 보호.', sub:'Cyber-Guardian에서 수행된 모든 스캔이 여기에 기록됩니다.', kpi_total:'총 스캔', kpi_total_sub:'MCP · 스킬 · 확장', kpi_threats:'심각한 위협', kpi_mod:'검토 필요', kpi_mod_sub:'의심 패턴', kpi_safe:'안전 코드', detection_rate:'탐지율', passed_safely:'안전 통과', of_total:'전체 스캔 중', risk_label:'위험 분포', safe_lbl:'안전', review_lbl:'검토', crit_lbl:'위험', mcp_label:'MCP 서버', skill_label:'AI 스킬', ext_label:'IDE 확장', scanned:'스캔됨', chart1:'// 판정', chart2:'// 유형', chart3:'// 7일 추세', recent_hdr:'// 최근 스캔', no_scans:'스캔 없음', cta_title:'지금 MCP 서버, AI 스킬, IDE 확장 스캔 - 무료', cta_sub:'맞춤 용량, 비즈니스 패키지 또는 구매 지원이 필요하신가요? sales@cyberguardianscan.com 으로 문의하세요.', cta_btn:'▶ \u00a0스캔 시작', cta_sales_btn:'영업 문의', last_scan:'마지막 스캔:', just_now:'방금', min_ago:'분 전', hr_ago:'시간 전', day_ago:'일 전', scope_mcp:'MCP 서버', scope_skill:'AI 스킬', scope_ext:'IDE 확장', score:'점수', threat:'위협', threats:'위협',
+  ko: { live:'라이브', back:'← 스캐너', loading:'로딩 중...', tag:'실시간 위협 인텔리전스', title1:'실제 위협.', title2:'실제 숫자.', title3:'실제 보호.', sub:'Cyber-Guardian에서 수행된 모든 스캔이 여기에 기록됩니다.', kpi_total:'총 스캔', kpi_total_sub:'MCP · 스킬 · 확장', kpi_threats:'심각한 위협', kpi_mod:'검토 필요', kpi_mod_sub:'의심 패턴', kpi_safe:'안전 코드', detection_rate:'탐지율', passed_safely:'안전 통과', of_total:'전체 스캔 중', risk_label:'위험 분포', safe_lbl:'안전', review_lbl:'검토', crit_lbl:'위험', mcp_label:'MCP 서버', skill_label:'AI 스킬', ext_label:'IDE 확장', scanned:'스캔됨', chart1:'// 판정', chart2:'// 유형', chart3:'// 7일 추세', recent_hdr:'// 최근 스캔', no_scans:'스캔 없음', cta_title:'지금 MCP 서버, AI 스킬, IDE 확장 스캔 - 무료', cta_sub:'맞춤 용량, 비즈니스 패키지 또는 구매 지원이 필요하신가요? sales@cyberguardianscan.com 으로 문의하세요.', cta_value:'나쁜 설치 하나를 막는 것만으로도 심각한 보안 사고를 피할 수 있습니다.', cta_btn:'▶ \u00a0스캔 시작', cta_sales_btn:'영업 문의', last_scan:'마지막 스캔:', just_now:'방금', min_ago:'분 전', hr_ago:'시간 전', day_ago:'일 전', scope_mcp:'MCP 서버', scope_skill:'AI 스킬', scope_ext:'IDE 확장', score:'점수', threat:'위협', threats:'위협',
     threat_privilege:'무단 시스템 접근을 시도할 수 있습니다',
     threat_cred:'비밀번호와 API 키를 훔칠 수 있습니다',
     threat_exfil:'파일을 외부 서버로 전송할 수 있습니다',
@@ -369,7 +373,7 @@ const DASH_T = {
     threat_tool_poison:'합법적인 도구로 위장한 악성 도구일 수 있습니다',
     threat_mcp_cred:'MCP 자격 증명을 훔칠 수 있습니다',
   },
-  fr: { live:'EN DIRECT', back:'← Scanner', loading:'CHARGEMENT...', tag:'INTELLIGENCE DES MENACES EN DIRECT', title1:'Vraies menaces.', title2:'Vrais chiffres.', title3:'Vraie protection.', sub:'Chaque scan effectué sur Cyber-Guardian est suivi ici.', kpi_total:'Scans totaux', kpi_total_sub:'MCP · Skills · Extensions', kpi_threats:'Menaces critiques', kpi_mod:'À vérifier', kpi_mod_sub:'Patterns suspects', kpi_safe:'Code propre', detection_rate:'taux de détection', passed_safely:'passé en sécurité', of_total:'des scans', risk_label:'DISTRIBUTION DES RISQUES', safe_lbl:'SÛR', review_lbl:'VÉRIFIER', crit_lbl:'CRITIQUE', mcp_label:'Serveurs MCP', skill_label:'IA Skills', ext_label:'Extensions IDE', scanned:'SCANNÉS', chart1:'// verdicts', chart2:'// types', chart3:'// tendance 7j', recent_hdr:'// scans récents', no_scans:'Aucun scan pour l\'instant.', cta_title:'Scannez votre serveur MCP, AI Skill ou extension IDE - gratuit', cta_sub:'Besoin d’un volume personnalisé, d’une offre business ou d’aide achat ? Contactez sales@cyberguardianscan.com.', cta_btn:'▶ \u00a0Commencer', cta_sales_btn:'Contacter Sales', last_scan:'Dernier scan:', just_now:'à l\'instant', min_ago:'min', hr_ago:'h', day_ago:'j', scope_mcp:'Serveur MCP', scope_skill:'IA Skill', scope_ext:'Extension IDE', score:'Score', threat:'menace', threats:'menaces',
+  fr: { live:'EN DIRECT', back:'← Scanner', loading:'CHARGEMENT...', tag:'INTELLIGENCE DES MENACES EN DIRECT', title1:'Vraies menaces.', title2:'Vrais chiffres.', title3:'Vraie protection.', sub:'Chaque scan effectué sur Cyber-Guardian est suivi ici.', kpi_total:'Scans totaux', kpi_total_sub:'MCP · Skills · Extensions', kpi_threats:'Menaces critiques', kpi_mod:'À vérifier', kpi_mod_sub:'Patterns suspects', kpi_safe:'Code propre', detection_rate:'taux de détection', passed_safely:'passé en sécurité', of_total:'des scans', risk_label:'DISTRIBUTION DES RISQUES', safe_lbl:'SÛR', review_lbl:'VÉRIFIER', crit_lbl:'CRITIQUE', mcp_label:'Serveurs MCP', skill_label:'IA Skills', ext_label:'Extensions IDE', scanned:'SCANNÉS', chart1:'// verdicts', chart2:'// types', chart3:'// tendance 7j', recent_hdr:'// scans récents', no_scans:'Aucun scan pour l\'instant.', cta_title:'Scannez votre serveur MCP, AI Skill ou extension IDE - gratuit', cta_sub:'Besoin d’un volume personnalisé, d’une offre business ou d’aide achat ? Contactez sales@cyberguardianscan.com.', cta_value:'Une mauvaise installation bloquée peut éviter un incident de sécurité grave.', cta_btn:'▶ \u00a0Commencer', cta_sales_btn:'Contacter Sales', last_scan:'Dernier scan:', just_now:'à l\'instant', min_ago:'min', hr_ago:'h', day_ago:'j', scope_mcp:'Serveur MCP', scope_skill:'IA Skill', scope_ext:'Extension IDE', score:'Score', threat:'menace', threats:'menaces',
     threat_privilege:'pourrait tenter d\'obtenir un accès non autorisé au système',
     threat_cred:'pourrait voler vos mots de passe et clés API',
     threat_exfil:'pourrait envoyer vos fichiers à un serveur externe',
@@ -383,7 +387,7 @@ const DASH_T = {
     threat_tool_poison:'pourrait être un outil malveillant déguisé en outil légitime',
     threat_mcp_cred:'pourrait voler vos identifiants MCP',
   },
-  pt: { live:'AO VIVO', back:'← Scanner', loading:'CARREGANDO...', tag:'INTELIGÊNCIA DE AMEAÇAS AO VIVO', title1:'Ameaças reais.', title2:'Números reais.', title3:'Proteção real.', sub:'Cada scan no Cyber-Guardian é registrado aqui.', kpi_total:'Total de Scans', kpi_total_sub:'MCP · Skills · Extensões', kpi_threats:'Ameaças críticas', kpi_mod:'Revisar', kpi_mod_sub:'Padrões suspeitos', kpi_safe:'Código Limpo', detection_rate:'taxa de detecção', passed_safely:'passou com segurança', of_total:'dos scans', risk_label:'DISTRIBUIÇÃO DE RISCO', safe_lbl:'SEGURO', review_lbl:'REVISAR', crit_lbl:'CRÍTICO', mcp_label:'Servidores MCP', skill_label:'AI Skills', ext_label:'Extensões IDE', scanned:'ESCANEADOS', chart1:'// veredictos', chart2:'// tipos', chart3:'// tendência 7d', recent_hdr:'// scans recentes', no_scans:'Nenhum scan ainda.', cta_title:'Escaneie seu servidor MCP, AI Skill ou extensão IDE - grátis', cta_sub:'Precisa de volume personalizado, pacote empresarial ou ajuda com compras? Contate sales@cyberguardianscan.com.', cta_btn:'▶ \u00a0Começar', cta_sales_btn:'Falar com Vendas', last_scan:'Último scan:', just_now:'agora', min_ago:'min', hr_ago:'h', day_ago:'d', scope_mcp:'Servidor MCP', scope_skill:'AI Skill', scope_ext:'Extensão IDE', score:'Score', threat:'ameaça', threats:'ameaças',
+  pt: { live:'AO VIVO', back:'← Scanner', loading:'CARREGANDO...', tag:'INTELIGÊNCIA DE AMEAÇAS AO VIVO', title1:'Ameaças reais.', title2:'Números reais.', title3:'Proteção real.', sub:'Cada scan no Cyber-Guardian é registrado aqui.', kpi_total:'Total de Scans', kpi_total_sub:'MCP · Skills · Extensões', kpi_threats:'Ameaças críticas', kpi_mod:'Revisar', kpi_mod_sub:'Padrões suspeitos', kpi_safe:'Código Limpo', detection_rate:'taxa de detecção', passed_safely:'passou com segurança', of_total:'dos scans', risk_label:'DISTRIBUIÇÃO DE RISCO', safe_lbl:'SEGURO', review_lbl:'REVISAR', crit_lbl:'CRÍTICO', mcp_label:'Servidores MCP', skill_label:'AI Skills', ext_label:'Extensões IDE', scanned:'ESCANEADOS', chart1:'// veredictos', chart2:'// tipos', chart3:'// tendência 7d', recent_hdr:'// scans recentes', no_scans:'Nenhum scan ainda.', cta_title:'Escaneie seu servidor MCP, AI Skill ou extensão IDE - grátis', cta_sub:'Precisa de volume personalizado, pacote empresarial ou ajuda com compras? Contate sales@cyberguardianscan.com.', cta_value:'Bloquear uma instalação ruim pode evitar um incidente grave de segurança.', cta_btn:'▶ \u00a0Começar', cta_sales_btn:'Falar com Vendas', last_scan:'Último scan:', just_now:'agora', min_ago:'min', hr_ago:'h', day_ago:'d', scope_mcp:'Servidor MCP', scope_skill:'AI Skill', scope_ext:'Extensão IDE', score:'Score', threat:'ameaça', threats:'ameaças',
     threat_privilege:'pode tentar obter acesso não autorizado ao sistema',
     threat_cred:'pode roubar suas senhas e chaves API',
     threat_exfil:'pode enviar seus arquivos para um servidor externo',
@@ -681,6 +685,7 @@ function render(d) {
       <div class="cta-text">
         <h3>${t('cta_title')}</h3>
         <p>${t('cta_sub')}</p>
+        <div class="cta-value">${t('cta_value')}</div>
       </div>
       <div class="cta-actions">
         <a href="/" class="cta-btn">${t('cta_btn')}</a>

@@ -82,7 +82,7 @@ const STATIC_T = {
       <h2>2. Advisory Results</h2><div class="warn">Scan results are advisory only. No scanner can detect every vulnerability, malicious behavior, supply-chain issue, or prompt injection.</div>
       <h2>3. Code Submission Rules</h2><ul><li>You must have permission to submit the code you scan.</li><li>Do not submit secrets, private keys, credentials, customer data, or confidential third-party code without authorization.</li><li>Submitted code may be sent to a third-party AI provider for analysis.</li><li>You may not use the service to attack or bypass another system.</li></ul>
       <h2>4. Acceptable Use</h2><ul><li>Do not exceed or bypass limits or abuse protections.</li><li>Do not automate high-volume scans without written permission.</li><li>Do not reverse engineer, scrape, or resell the service as your own scanner.</li><li>Do not submit illegal content or harmful code for systems you do not own.</li></ul>
-      <h2>5. Free Tier and Paid Plans</h2><p>The free tier currently allows 7 scans per month. Paid plan names, quotas, and prices may change as the product evolves.</p>
+      <h2>5. Free Tier and Paid Plans</h2><p>The free beta currently allows 10 scans per month. Paid plan names, quotas, and prices may change as the product evolves.</p>
       <h2>6. Availability and Changes</h2><p>The service may be changed, paused, rate-limited, or discontinued at any time.</p>
       <h2>7. No Warranty</h2><p>The service is provided "as is" and "as available", without warranties of any kind.</p>
       <h2>8. Limitation of Liability</h2><p>Cyber-Guardian AI and its operators are not liable for damages arising from scan results, missed detections, false positives, downtime, or security incidents.</p>

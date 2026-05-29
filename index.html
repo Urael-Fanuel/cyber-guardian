@@ -265,6 +265,9 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .plan-btn:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
 .plan.popular .plan-btn { background: var(--cyan); color: #000; border-color: var(--cyan); }
 .plan.popular .plan-btn:hover { background: #fff; }
+.value-callout { margin: 20px auto 18px; padding: 16px 18px; border: 1px solid rgba(0,255,136,0.35); background: rgba(0,255,136,0.07); color: var(--text); font-size: 13px; line-height: 1.7; text-align: center; }
+.value-callout strong { display: block; color: var(--green); font-family: var(--sans); font-size: 15px; margin-bottom: 4px; letter-spacing: 0.5px; }
+.pricing-beta { margin-top: 5px; color: var(--orange); font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
 
 /* ── EMAIL ── */
 .email-sec { position: relative; z-index: 2; max-width: 600px; margin: 0 auto 72px; padding: 0 20px; text-align: center; }
@@ -484,12 +487,16 @@ footer a:hover { color: var(--cyan); }
   <div class="section-lbl" data-i18n="pricing_label">// pricing</div>
   <h2 class="section-title" data-i18n="pricing_title">Pick your plan</h2>
   <p class="section-sub" data-i18n="pricing_sub">Start free. Upgrade when you need more scans.</p>
+  <div class="value-callout">
+    <strong data-i18n="value_callout_title">One blocked bad install can pay for every scan.</strong>
+    <span data-i18n="value_callout_sub">If one scan catches one dangerous payload before you install it, you may have avoided a serious security incident.</span>
+  </div>
   <div class="plans">
     <div class="plan">
       <div class="plan-name" data-i18n="plan_free_name">Free</div>
       <div class="plan-for" data-i18n="plan_free_for">Try it out</div>
       <div class="plan-price">$0</div>
-      <div class="plan-scans" data-i18n="plan_free_scans">7 scans / month</div>
+      <div class="plan-scans" data-i18n="plan_free_scans">10 scans / month</div>
       <ul class="plan-features">
         <li data-i18n="plan_feat_signatures">All 60 threat families (MCP + general)</li>
         <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
@@ -500,19 +507,21 @@ footer a:hover { color: var(--cyan); }
       <div class="popular-tag" data-i18n="plan_popular">MOST POPULAR</div>
       <div class="plan-name" data-i18n="plan_pro_name">Pro</div>
       <div class="plan-for" data-i18n="plan_pro_for">Solo developer</div>
-      <div class="plan-price">$9<span>/mo</span></div>
+      <div class="plan-price" data-i18n="plan_price_soon">Soon</div>
+      <div class="pricing-beta" data-i18n="paid_soon">Paid plans opening soon</div>
       <div class="plan-scans" data-i18n="plan_pro_scans">150 scans / month</div>
       <ul class="plan-features">
         <li data-i18n="plan_feat_signatures">All 60 threat families</li>
         <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
         <li data-i18n="plan_feat_support">Email support</li>
       </ul>
-      <button class="plan-btn" data-i18n="btn_subscribe" onclick="startCheckout('pro')">Subscribe</button>
+      <button class="plan-btn" data-i18n="btn_request_pricing" onclick="openContact('sales')">Request Pricing</button>
     </div>
     <div class="plan">
       <div class="plan-name" data-i18n="plan_team_name">Team</div>
       <div class="plan-for" data-i18n="plan_team_for">Startup</div>
-      <div class="plan-price">$29<span>/mo</span></div>
+      <div class="plan-price" data-i18n="plan_price_soon">Soon</div>
+      <div class="pricing-beta" data-i18n="paid_soon">Paid plans opening soon</div>
       <div class="plan-scans" data-i18n="plan_team_scans">500 scans / month</div>
       <ul class="plan-features">
         <li data-i18n="plan_feat_signatures">All 60 threat families</li>
@@ -520,12 +529,13 @@ footer a:hover { color: var(--cyan); }
         <li data-i18n="plan_feat_api">API access</li>
         <li data-i18n="plan_feat_priority">Priority scanning</li>
       </ul>
-      <button class="plan-btn" data-i18n="btn_subscribe" onclick="startCheckout('team')">Subscribe</button>
+      <button class="plan-btn" data-i18n="btn_request_pricing" onclick="openContact('sales')">Request Pricing</button>
     </div>
     <div class="plan">
       <div class="plan-name" data-i18n="plan_business_name">Business</div>
       <div class="plan-for" data-i18n="plan_business_for">Growing company</div>
-      <div class="plan-price">$99<span>/mo</span></div>
+      <div class="plan-price" data-i18n="plan_price_soon">Soon</div>
+      <div class="pricing-beta" data-i18n="paid_soon">Paid plans opening soon</div>
       <div class="plan-scans" data-i18n="plan_business_scans">3,000 scans / month</div>
       <ul class="plan-features">
         <li data-i18n="plan_feat_signatures">All 60 threat families</li>
@@ -534,7 +544,7 @@ footer a:hover { color: var(--cyan); }
         <li data-i18n="plan_feat_priority">Priority scanning</li>
         <li data-i18n="plan_feat_support">Email support</li>
       </ul>
-      <button class="plan-btn" data-i18n="btn_subscribe" onclick="startCheckout('business')">Subscribe</button>
+      <button class="plan-btn" data-i18n="btn_request_pricing" onclick="openContact('sales')">Request Pricing</button>
     </div>
     <div class="plan">
       <div class="plan-name" data-i18n="plan_enterprise_name">Enterprise</div>
@@ -659,7 +669,7 @@ document.querySelectorAll('.scope-pill').forEach(pill => {
   };
 });
 
-const FREE_QUOTA = 7;
+const FREE_QUOTA = 10;
 function getMonthKey() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
 function getQuotaUsed() { return parseInt(localStorage.getItem(`cg-quota-${getMonthKey()}`) || '0', 10); }
 function incrementQuota() { localStorage.setItem(`cg-quota-${getMonthKey()}`, String(getQuotaUsed() + 1)); }

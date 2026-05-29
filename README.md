@@ -32,7 +32,7 @@ It checks 60 canonical threat families before a user decides whether to install 
 ## Production Security Controls
 
 - CORS allowlist via `ALLOWED_ORIGINS`
-- Server-side free quota and rate limits via Supabase
+- Server-side free beta quota of 10 scans per month and rate limits via Supabase
 - Global daily API cap
 - Submitted code is not executed
 - Canonical 60-family threat registry
@@ -41,6 +41,10 @@ It checks 60 canonical threat families before a user decides whether to install 
 - Static deterministic rules are merged with AI findings
 - AI findings cannot downgrade high-confidence static findings
 - No full submitted code is intentionally stored in Supabase
+
+## Beta Pricing
+
+Cyber-Guardian is currently in free beta. Visitors get 10 scans per month, and paid plans are shown as "opening soon" with all pricing and custom-volume requests routed to `sales@cyberguardianscan.com`.
 
 ## Local Checks
 

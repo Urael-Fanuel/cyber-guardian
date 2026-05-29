@@ -19,10 +19,11 @@ ALLOWED_ORIGINS=https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.a
 CG_ADMIN_BYPASS_SECRET=generate-a-long-random-secret
 SITE_URL=https://cyberguardianscan.com
 
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_PRICE_PRO=price_...
-STRIPE_PRICE_TEAM=price_...
-STRIPE_PRICE_BUSINESS=price_...
+# Optional later, when paid checkout is enabled:
+# STRIPE_SECRET_KEY=sk_live_...
+# STRIPE_PRICE_PRO=price_...
+# STRIPE_PRICE_TEAM=price_...
+# STRIPE_PRICE_BUSINESS=price_...
 
 RESEND_API_KEY=re_...
 SUBSCRIBE_NOTIFY_TO=sales@cyberguardianscan.com
@@ -33,7 +34,7 @@ EMAIL_FROM=Cyber-Guardian <notifications@cyberguardianscan.com>
 SCAN_USAGE_MODE=strict
 SCAN_MAX_REQUESTS_PER_MINUTE=5
 SCAN_MAX_REQUESTS_PER_HOUR=20
-SCAN_MAX_FREE_SCANS_PER_MONTH=7
+SCAN_MAX_FREE_SCANS_PER_MONTH=10
 SCAN_MAX_API_CALLS_PER_DAY=5000
 SCAN_MAX_INPUT_SIZE_CHARS=50000
 SCAN_MIN_INPUT_SIZE_CHARS=5
@@ -43,17 +44,22 @@ SCAN_CACHE_TTL_SECONDS=3600
 Use `SCAN_USAGE_MODE=strict` in production after the Supabase SQL migration has been run.
 Use `SCAN_USAGE_MODE=fallback` only during setup or local development.
 
-## Payments
+## Beta Pricing
 
-Create three recurring monthly prices in Stripe and copy their price IDs into:
+Paid checkout is intentionally disabled during the beta launch. The public site
+offers 10 free scans per month and routes Pro, Team, Business, Enterprise, and
+custom-volume inquiries to `sales@cyberguardianscan.com`.
+
+When the business and payment setup are ready, create three recurring monthly
+prices in Stripe and copy their price IDs into:
 
 - `STRIPE_PRICE_PRO`
 - `STRIPE_PRICE_TEAM`
 - `STRIPE_PRICE_BUSINESS`
 
-The pricing buttons call `/api/create-checkout-session`, which creates a Stripe
-Checkout subscription session on the server and redirects the visitor to Stripe.
-Keep `STRIPE_SECRET_KEY` server-side only in Vercel environment variables.
+The existing `/api/create-checkout-session` endpoint can create a Stripe Checkout
+subscription session once the pricing buttons are re-enabled. Keep
+`STRIPE_SECRET_KEY` server-side only in Vercel environment variables.
 
 ## Email Lead Notifications
 
@@ -149,7 +155,7 @@ Recommended launch defaults:
 
 - `SCAN_MAX_REQUESTS_PER_MINUTE=5`
 - `SCAN_MAX_REQUESTS_PER_HOUR=20`
-- `SCAN_MAX_FREE_SCANS_PER_MONTH=7`
+- `SCAN_MAX_FREE_SCANS_PER_MONTH=10`
 - `SCAN_MAX_API_CALLS_PER_DAY=1000-5000`
 
 Choose the daily cap from budget:
