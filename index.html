@@ -101,7 +101,7 @@ h1 .hl { color: var(--cyan); }
 .scope-row { padding: 14px 18px 0; }
 .scope-label { font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
 .scope-pills { display: flex; gap: 6px; flex-wrap: wrap; }
-.scope-pill { background: var(--bg); border: 1px solid var(--border); padding: 7px 14px; border-radius: 20px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); cursor: pointer; transition: all 0.15s; }
+.scope-pill { background: var(--bg); border: 1px solid var(--border); padding: 7px 12px; border-radius: 20px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); cursor: pointer; transition: all 0.15s; }
 .scope-pill:hover { border-color: var(--border2); color: var(--text); }
 .scope-pill.active { border-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan); font-weight: 600; }
 
@@ -230,12 +230,15 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 
 /* ── OTHER PRODUCTS SECTION (NEW) ── */
 .other { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; }
-.other-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.other-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
 @media(max-width:700px){ .other-grid { grid-template-columns: 1fr; } }
 .other-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 22px; transition: all 0.2s; }
 .other-card:hover { border-color: var(--border2); transform: translateY(-2px); }
 .other-card.skills { border-top: 3px solid var(--green); }
 .other-card.ext { border-top: 3px solid var(--purple); }
+.other-card.action { border-top: 3px solid #2F80ED; }
+.other-card.package { border-top: 3px solid #F2C94C; }
+.other-card.dependency { border-top: 3px solid #FF9100; }
 .other-card-icon { font-size: 28px; margin-bottom: 10px; }
 .other-card-t { font-family: var(--sans); font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px; }
 .other-card-d { font-size: 12px; color: var(--text-dim); line-height: 1.7; margin-bottom: 14px; }
@@ -338,7 +341,7 @@ footer a:hover { color: var(--cyan); }
   <div class="stat"><span class="stat-n">60</span><div class="stat-l" data-i18n="stat_families">MCP THREATS</div></div>
   <div class="stat"><span class="stat-n">AI</span><div class="stat-l" data-i18n="stat_ai">DEEP ANALYSIS</div></div>
   <div class="stat"><span class="stat-n">~3s</span><div class="stat-l" data-i18n="stat_speed">SCAN TIME</div></div>
-  <div class="stat"><span class="stat-n">7</span><div class="stat-l" data-i18n="stat_free">FREE / MONTH</div></div>
+  <div class="stat"><span class="stat-n">10</span><div class="stat-l" data-i18n="stat_free">FREE / MONTH</div></div>
 </div>
 
 <div class="wrap" id="scanner">
@@ -361,17 +364,20 @@ footer a:hover { color: var(--cyan); }
         <button class="scope-pill active" data-scope="mcp" data-i18n="scope_mcp">🔌 MCP Server</button>
         <button class="scope-pill" data-scope="skill" data-i18n="scope_skill">📜 AI Skill</button>
         <button class="scope-pill" data-scope="extension" data-i18n="scope_extension">🧩 IDE Extension</button>
+        <button class="scope-pill" data-scope="github_action" data-i18n="scope_github_action">⚙ GitHub Action</button>
+        <button class="scope-pill" data-scope="package" data-i18n="scope_package">📦 npm/PyPI Package</button>
+        <button class="scope-pill" data-scope="dependency" data-i18n="scope_dependency">🔗 Dependencies</button>
       </div>
     </div>
 
     <div class="input-area">
-      <label class="lbl" for="code-input" data-i18n="input_label">Paste your MCP server, skill, or extension code here</label>
+      <label class="lbl" for="code-input" data-i18n="input_label">Paste MCP, skill, extension, workflow, package or dependency code here</label>
       <textarea id="code-input" data-i18n-placeholder="placeholder"></textarea>
     </div>
 
     <div class="bot-row">
       <div class="hint">
-        <span data-i18n="hint_langs">MCP · Skill · Extension · Any code</span>
+        <span data-i18n="hint_langs">MCP · Skill · Extension · Action · Package · Dependencies</span>
         &nbsp;|&nbsp; <kbd>Ctrl+Enter</kbd> <span data-i18n="hint_shortcut">to scan</span>
       </div>
       <button class="scan-btn" id="scan-btn" onclick="runScan()">▶ &nbsp;<span data-i18n="btn_scan">SCAN NOW</span></button>
@@ -437,7 +443,7 @@ footer a:hover { color: var(--cyan); }
 <section class="other">
   <div class="section-lbl" data-i18n="other_label">Also scans</div>
   <h2 class="section-title" data-i18n="other_title">Beyond MCP - full coverage</h2>
-  <p class="section-sub" data-i18n="other_sub">Same scanner, dedicated coverage for two more categories:</p>
+  <p class="section-sub" data-i18n="other_sub">Same scanner, dedicated coverage for the tools and supply-chain files developers install or run:</p>
   <div class="other-grid">
     <div class="other-card skills">
       <div class="other-card-icon">📜</div>
@@ -450,6 +456,24 @@ footer a:hover { color: var(--cyan); }
       <div class="other-card-t" data-i18n="other_card2_title">IDE Extensions</div>
       <div class="other-card-d" data-i18n="other_card2_desc">VS Code, Cursor, JetBrains extensions. Catches credential theft, supply chain attacks.</div>
       <a href="/extensions.html" class="other-card-link" data-i18n="other_card2_link">Extension scanner →</a>
+    </div>
+    <div class="other-card action">
+      <div class="other-card-icon">⚙</div>
+      <div class="other-card-t" data-i18n="other_card3_title">GitHub Actions</div>
+      <div class="other-card-d" data-i18n="other_card3_desc">Review workflows before they run with repo secrets, deploy keys, or production permissions.</div>
+      <a href="#scanner" class="other-card-link" onclick="setScopeAndScroll('github_action');return false;" data-i18n="other_card3_link">Scan workflow →</a>
+    </div>
+    <div class="other-card package">
+      <div class="other-card-icon">📦</div>
+      <div class="other-card-t" data-i18n="other_card4_title">npm/PyPI Packages</div>
+      <div class="other-card-d" data-i18n="other_card4_desc">Check package manifests and install scripts before adding third-party code to a project.</div>
+      <a href="#scanner" class="other-card-link" onclick="setScopeAndScroll('package');return false;" data-i18n="other_card4_link">Scan package →</a>
+    </div>
+    <div class="other-card dependency">
+      <div class="other-card-icon">🔗</div>
+      <div class="other-card-t" data-i18n="other_card5_title">Dependencies</div>
+      <div class="other-card-d" data-i18n="other_card5_desc">Inspect package.json, requirements.txt, lockfiles and registry settings for risky dependency behavior.</div>
+      <a href="#scanner" class="other-card-link" onclick="setScopeAndScroll('dependency');return false;" data-i18n="other_card5_link">Scan dependencies →</a>
     </div>
   </div>
 </section>
@@ -606,12 +630,19 @@ setLang(detectLang());
 
 // Scope pill switching
 let currentScope = 'mcp';
+function setScope(scope) {
+  const target = document.querySelector(`.scope-pill[data-scope="${scope}"]`);
+  if (!target) return;
+  document.querySelectorAll('.scope-pill').forEach(p => p.classList.remove('active'));
+  target.classList.add('active');
+  currentScope = scope;
+}
+function setScopeAndScroll(scope) {
+  setScope(scope);
+  scrollToScanner();
+}
 document.querySelectorAll('.scope-pill').forEach(pill => {
-  pill.onclick = () => {
-    document.querySelectorAll('.scope-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    currentScope = pill.getAttribute('data-scope');
-  };
+  pill.onclick = () => setScope(pill.getAttribute('data-scope'));
 });
 
 const FREE_QUOTA = 10;

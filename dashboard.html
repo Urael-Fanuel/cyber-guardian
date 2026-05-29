@@ -110,6 +110,7 @@ canvas { max-height: 200px; }
 
 /* SCOPE BREAKDOWN */
 .scope-cards { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 40px; display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+@media(max-width:900px){ .scope-cards { grid-template-columns: repeat(2,1fr); } }
 @media(max-width:600px){ .scope-cards { grid-template-columns: 1fr; } }
 .scope-card { background: var(--bg2); padding: 24px; text-align: center; }
 .scope-icon { font-size: 36px; margin-bottom: 10px; }
@@ -118,9 +119,11 @@ canvas { max-height: 200px; }
 .scope-card.scope-mcp { border-top: 3px solid var(--cyan); }
 .scope-card.scope-skill { border-top: 3px solid var(--green); }
 .scope-card.scope-extension { border-top: 3px solid var(--purple); }
+.scope-card.scope-supply_chain { border-top: 3px solid var(--orange); }
 .scope-card.scope-mcp .scope-count, .fi-scope.scope-mcp { color: var(--cyan); }
 .scope-card.scope-skill .scope-count, .fi-scope.scope-skill { color: var(--green); }
 .scope-card.scope-extension .scope-count, .fi-scope.scope-extension { color: var(--purple); }
+.scope-card.scope-supply_chain .scope-count, .fi-scope.scope-supply_chain { color: var(--orange); }
 .scope-label { font-size: 12px; color: var(--dim); letter-spacing: 1.5px; margin-top: 6px; }
 
 /* RECENT FEED */
@@ -506,6 +509,62 @@ const DASH_LABEL_OVERRIDES = {
 };
 
 Object.entries(DASH_LABEL_OVERRIDES).forEach(([lang, labels]) => {
+  DASH_T[lang] = { ...(DASH_T[lang] || {}), ...labels };
+});
+
+const DASH_SCOPE_COPY = {
+  en: {
+    kpi_total_sub: 'MCP · Skills · Extensions · Supply chain',
+    supply_label: 'Supply Chain',
+    scope_action: 'GitHub Action',
+    scope_package: 'npm/PyPI Package',
+    scope_dependency: 'Dependencies'
+  },
+  he: {
+    kpi_total_sub: 'MCP · Skills · הרחבות · שרשרת אספקה',
+    supply_label: 'שרשרת אספקה',
+    scope_action: 'GitHub Action',
+    scope_package: 'חבילת npm/PyPI',
+    scope_dependency: 'תלויות'
+  },
+  de: {
+    kpi_total_sub: 'MCP · Skills · Erweiterungen · Supply Chain',
+    supply_label: 'Supply Chain',
+    scope_action: 'GitHub Action',
+    scope_package: 'npm/PyPI Paket',
+    scope_dependency: 'Dependencies'
+  },
+  ja: {
+    kpi_total_sub: 'MCP · スキル · 拡張 · サプライチェーン',
+    supply_label: 'サプライチェーン',
+    scope_action: 'GitHub Action',
+    scope_package: 'npm/PyPIパッケージ',
+    scope_dependency: '依存関係'
+  },
+  ko: {
+    kpi_total_sub: 'MCP · 스킬 · 확장 · 공급망',
+    supply_label: '공급망',
+    scope_action: 'GitHub Action',
+    scope_package: 'npm/PyPI 패키지',
+    scope_dependency: '의존성'
+  },
+  fr: {
+    kpi_total_sub: 'MCP · Skills · Extensions · Supply chain',
+    supply_label: 'Supply chain',
+    scope_action: 'GitHub Action',
+    scope_package: 'Paquet npm/PyPI',
+    scope_dependency: 'Dependances'
+  },
+  pt: {
+    kpi_total_sub: 'MCP · Skills · Extensoes · Supply chain',
+    supply_label: 'Supply chain',
+    scope_action: 'GitHub Action',
+    scope_package: 'Pacote npm/PyPI',
+    scope_dependency: 'Dependencias'
+  }
+};
+
+Object.entries(DASH_SCOPE_COPY).forEach(([lang, labels]) => {
   DASH_T[lang] = { ...(DASH_T[lang] || {}), ...labels };
 });
 
@@ -1081,13 +1140,15 @@ loadDashContentOverrides(currentLang).then(() => applyLang(currentLang));
 const TYPE_COLORS = {
   mcp: '#00D4FF',
   skill: '#00E676',
-  extension: '#9D4EDD'
+  extension: '#9D4EDD',
+  supply_chain: '#FF9100'
 };
 
 const TYPE_FILLS = {
   mcp: 'rgba(0,212,255,0.10)',
   skill: 'rgba(0,230,118,0.10)',
-  extension: 'rgba(157,78,221,0.10)'
+  extension: 'rgba(157,78,221,0.10)',
+  supply_chain: 'rgba(255,145,0,0.10)'
 };
 
 function scopeKey(scope) {
@@ -1095,7 +1156,8 @@ function scopeKey(scope) {
   if (value === 'mcp' || value.includes('mcp')) return 'mcp';
   if (value === 'skill' || value.includes('skill')) return 'skill';
   if (value === 'extension' || value === 'ext' || value.includes('extension') || value.includes('ide')) return 'extension';
-  return 'extension';
+  if (value.includes('action') || value.includes('workflow') || value.includes('package') || value.includes('npm') || value.includes('pypi') || value.includes('depend')) return 'supply_chain';
+  return 'supply_chain';
 }
 
 function scopeClass(scope) {
@@ -1161,12 +1223,18 @@ function scopeEmoji(scope) {
   const key = scopeKey(scope);
   if (key === 'mcp') return '🔌';
   if (key === 'skill') return '📜';
+  if (key === 'supply_chain') return '📦';
   return '🧩';
 }
 function scopeLabel(scope) {
+  const raw = String(scope || '').trim().toLowerCase();
+  if (raw.includes('action') || raw.includes('workflow')) return t('scope_action');
+  if (raw.includes('package') || raw.includes('npm') || raw.includes('pypi')) return t('scope_package');
+  if (raw.includes('depend')) return t('scope_dependency');
   const key = scopeKey(scope);
   if (key === 'mcp') return t('scope_mcp');
   if (key === 'skill') return t('scope_skill');
+  if (key === 'supply_chain') return t('supply_label');
   return t('scope_ext');
 }
 
@@ -1199,6 +1267,7 @@ function render(d) {
   const mcpCount = scopeCount(d, 'mcp');
   const skillCount = scopeCount(d, 'skill');
   const extensionCount = scopeCount(d, 'extension');
+  const supplyCount = scopeCount(d, 'supply_chain');
   const detRate = d.attention_rate ?? d.detection_rate ?? 0;
   const safeP   = d.total > 0 ? Math.round((d.safe   / d.total) * 100) : 0;
   const modP    = d.total > 0 ? Math.round((review / d.total) * 100) : 0;
@@ -1266,6 +1335,12 @@ function render(d) {
         <div class="scope-icon">🧩</div>
         <div class="scope-name">${t('ext_label')}</div>
         <div class="scope-count" id="n-ext">0</div>
+        <div class="scope-label">${t('scanned')}</div>
+      </div>
+      <div class="scope-card scope-supply_chain">
+        <div class="scope-icon">📦</div>
+        <div class="scope-name">${t('supply_label')}</div>
+        <div class="scope-count" id="n-supply">0</div>
         <div class="scope-label">${t('scanned')}</div>
       </div>
     </div>
@@ -1369,6 +1444,7 @@ function render(d) {
   animateCount(document.getElementById('n-mcp'),     mcpCount);
   animateCount(document.getElementById('n-skill'),   skillCount);
   animateCount(document.getElementById('n-ext'),     extensionCount);
+  animateCount(document.getElementById('n-supply'),  supplyCount);
 
   // Animate risk bar
   setTimeout(() => {
@@ -1401,10 +1477,10 @@ function render(d) {
   new Chart(document.getElementById('chart-scope'), {
     type: 'doughnut',
     data: {
-      labels: [t('scope_mcp'), t('scope_skill'), t('scope_ext')],
+      labels: [t('scope_mcp'), t('scope_skill'), t('scope_ext'), t('supply_label')],
       datasets: [{
-        data: [mcpCount, skillCount, extensionCount],
-        backgroundColor: [TYPE_COLORS.mcp, TYPE_COLORS.skill, TYPE_COLORS.extension],
+        data: [mcpCount, skillCount, extensionCount, supplyCount],
+        backgroundColor: [TYPE_COLORS.mcp, TYPE_COLORS.skill, TYPE_COLORS.extension, TYPE_COLORS.supply_chain],
         borderColor: '#0B1117', borderWidth: 3
       }]
     },
@@ -1442,6 +1518,15 @@ function render(d) {
           backgroundColor: TYPE_FILLS.extension,
           pointBackgroundColor: TYPE_COLORS.extension,
           pointBorderColor: TYPE_COLORS.extension,
+          tension: 0.4, fill: false, pointRadius: 3
+        },
+        {
+          label: t('supply_label'),
+          data: (d.trend || []).map(point => trendScopeCount(point, 'supply_chain')),
+          borderColor: TYPE_COLORS.supply_chain,
+          backgroundColor: TYPE_FILLS.supply_chain,
+          pointBackgroundColor: TYPE_COLORS.supply_chain,
+          pointBorderColor: TYPE_COLORS.supply_chain,
           tension: 0.4, fill: false, pointRadius: 3
         }
       ]

@@ -65,7 +65,16 @@ function normalizeScope(scope) {
   if (value === 'mcp' || value.includes('mcp')) return 'mcp';
   if (value === 'skill' || value.includes('skill')) return 'skill';
   if (value === 'extension' || value === 'ext' || value.includes('extension') || value.includes('ide')) return 'extension';
-  return 'extension';
+  if (value.includes('action') || value.includes('workflow') || value.includes('package') || value.includes('npm') || value.includes('pypi') || value.includes('depend')) return 'supply_chain';
+  return 'supply_chain';
+}
+
+function alternativeScopeKey(scope) {
+  const value = String(scope || '').trim().toLowerCase();
+  if (value.includes('action') || value.includes('workflow')) return 'github_action';
+  if (value.includes('package') || value.includes('npm') || value.includes('pypi')) return 'package';
+  if (value.includes('depend')) return 'dependency';
+  return normalizeScope(scope);
 }
 
 function arrayValue(value) {
@@ -105,7 +114,7 @@ function tagSet(scan) {
 }
 
 function similarityScore(a, b) {
-  if (!a || !b || normalizeScope(a.scope) !== normalizeScope(b.scope)) return 0;
+  if (!a || !b || alternativeScopeKey(a.scope) !== alternativeScopeKey(b.scope)) return 0;
   const aTags = tagSet(a);
   const bTags = tagSet(b);
   if (aTags.size === 0 || bTags.size === 0) return 0;
@@ -134,7 +143,7 @@ function saferAlternatives(scan, scans) {
   const seenUrls = new Set();
   const ranked = scans
     .filter(candidate => candidate !== scan)
-    .filter(candidate => normalizeScope(candidate.scope) === normalizeScope(scan.scope))
+    .filter(candidate => alternativeScopeKey(candidate.scope) === alternativeScopeKey(scan.scope))
     .filter(candidate => {
       const candidateUrl = normalizedUrl(candidate.source_url);
       if (!candidateUrl) return false;
@@ -203,7 +212,7 @@ module.exports = async function handler(req, res) {
         total: 0, safe: 0, moderate: 0, critical: 0,
         review: 0, blocked: 0,
         detection_rate: 0, attention_rate: 0, blocked_rate: 0, avg_threat_score: 0,
-        by_scope: { mcp: 0, skill: 0, extension: 0 },
+        by_scope: { mcp: 0, skill: 0, extension: 0, supply_chain: 0 },
         recent: [], trend: []
       });
     }
@@ -220,7 +229,7 @@ module.exports = async function handler(req, res) {
     const detection_rate = attention_rate;
     const avg_threat_score = total > 0 ? Math.round(scans.reduce((a, s) => a + (s.threat_score || 0), 0) / total) : 0;
 
-    const by_scope = { mcp: 0, skill: 0, extension: 0 };
+    const by_scope = { mcp: 0, skill: 0, extension: 0, supply_chain: 0 };
     for (const s of scans) {
       const scope = normalizeScope(s.scope);
       if (by_scope[scope] !== undefined) by_scope[scope]++;
@@ -228,7 +237,7 @@ module.exports = async function handler(req, res) {
 
     // Last 10 scans for recent feed
     const recent = scans.slice(0, 10).map(s => ({
-      scope:            normalizeScope(s.scope),
+      scope:            s.scope || normalizeScope(s.scope),
       status:           s.status,
       raw_status:       s.status,
       decision:         classifyScan(s),
@@ -260,6 +269,7 @@ module.exports = async function handler(req, res) {
         mcp:      dayScans.filter(s => normalizeScope(s.scope) === 'mcp').length,
         skill:    dayScans.filter(s => normalizeScope(s.scope) === 'skill').length,
         extension: dayScans.filter(s => normalizeScope(s.scope) === 'extension').length,
+        supply_chain: dayScans.filter(s => normalizeScope(s.scope) === 'supply_chain').length,
         threats:  dayDecisions.filter(d => d === 'blocked').length,
         blocked:  dayDecisions.filter(d => d === 'blocked').length,
         review:   dayDecisions.filter(d => d === 'review').length

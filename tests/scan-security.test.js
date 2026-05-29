@@ -43,6 +43,7 @@ const {
   THREAT_FAMILY_DEFINITIONS,
   ALL_STATIC_RULES,
   coverageMetadata,
+  normalizeScanScope,
 } = scan._test;
 
 global.fetch = async () => ({
@@ -136,6 +137,26 @@ function testStaticPromptInjection() {
   assert.equal(result.status, "STATUS_CRITICAL");
   assert.ok(result.threats.some(t => t.family === "PROMPT_INJECTION"));
   assert.ok(result.threats.some(t => t.family === "SYSTEM_OVERRIDE"));
+}
+
+function testStaticSupplyChainWorkflow() {
+  const result = runStaticScan(`name: deploy
+on:
+  pull_request_target:
+jobs:
+  deploy:
+    steps:
+      - uses: actions/checkout@main
+`);
+  assert.equal(result.status, "STATUS_MODERATE");
+  assert.ok(result.threats.some(t => t.family === "SUPPLY_CHAIN_ATTACK"));
+}
+
+function testScopeNormalization() {
+  assert.equal(normalizeScanScope("github-actions"), "github_action");
+  assert.equal(normalizeScanScope("npm"), "package");
+  assert.equal(normalizeScanScope("dependencies"), "dependency");
+  assert.equal(normalizeScanScope("unknown"), "mcp");
 }
 
 function testStaticMergeCannotDowngrade() {
@@ -259,10 +280,32 @@ async function testBatchScannerCanSkipApiPersistence() {
   assert.equal(insertedRows.length, 0);
 }
 
+async function testSupplyChainScopesPersist() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const res = mockRes();
+  await scan({
+    method: "POST",
+    headers: {
+      origin: "https://cyberguardianscan.com",
+      host: "cyberguardianscan.com",
+      "x-forwarded-for": "203.0.113.48",
+    },
+    body: { code: 'name: ci\non: [push]\njobs:\n  test:\n    steps:\n      - uses: actions/checkout@main', scope: "github-actions" },
+    url: "/api/scan",
+  }, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(insertedRows.length, 1);
+  assert.equal(insertedRows[0].row.scope, "github_action");
+}
+
 testStaticReverseShell();
 testStaticSecretRead();
 testStaticPromptInjection();
+testStaticSupplyChainWorkflow();
 testStaticMergeCannotDowngrade();
+testScopeNormalization();
 testCanonicalSixtyFamilies();
 testCoverageMetadata();
 testEveryFamilyHasDefinitionAndStaticRule();
@@ -272,6 +315,7 @@ testManualScanPersistsDashboardMetadata()
   .then(testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata)
   .then(testCachedScanStillPersistsCurrentScope)
   .then(testBatchScannerCanSkipApiPersistence)
+  .then(testSupplyChainScopesPersist)
   .then(() => console.log("scan-security tests: ok"))
   .catch(err => {
     console.error(err);
