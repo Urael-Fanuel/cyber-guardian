@@ -339,7 +339,7 @@ function setCors(res, origin) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CG-Admin-Secret");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CG-Admin-Secret, X-CG-Admin-Token");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Content-Type", "application/json");
 }
@@ -878,6 +878,10 @@ async function handler(req, res) {
     clearTimeout(timeoutId);
     if (err.name === "AbortError")
       return res.status(504).json({ error: "Scan timed out. Try again." });
+    console.error("[scan-failed]", err.message);
+    if (/Anthropic API/.test(err.message || "")) {
+      return res.status(502).json({ error: "AI analysis provider failed. Try again in a moment." });
+    }
     return res.status(500).json({ error: "Scan failed. Try again." });
   }
 }
