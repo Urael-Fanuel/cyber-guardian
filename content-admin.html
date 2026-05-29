@@ -145,6 +145,7 @@ async function login() {
     loginStatusEl.className = 'status error';
     return;
   }
+  localStorage.removeItem('cg-admin-secret');
   setToken(data.token);
   passwordEl.value = '';
   updateAuthView();

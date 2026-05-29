@@ -622,6 +622,7 @@ function isDevMode() { return localStorage.getItem('cg-dev-mode') === 'cg-dev-20
 function getAdminBypassSecret() { return localStorage.getItem('cg-admin-secret') || ''; }
 function getAdminToken() { return localStorage.getItem('cg-admin-token') || ''; }
 function hasAdminBypass() { return Boolean(getAdminBypassSecret().trim() || getAdminToken().trim()); }
+function isAsciiHeaderValue(value) { return /^[\x20-\x7E]*$/.test(value); }
 
 function openContact(type = 'sales') {
   window.location.href = `/contact.html?type=${encodeURIComponent(type)}`;
@@ -664,10 +665,17 @@ async function runScan() {
   let result;
   try {
     const headers = { 'Content-Type': 'application/json' };
-    const adminBypassSecret = getAdminBypassSecret().trim();
-    if (adminBypassSecret) headers['X-CG-Admin-Secret'] = adminBypassSecret;
     const adminToken = getAdminToken().trim();
-    if (adminToken) headers['X-CG-Admin-Token'] = adminToken;
+    const adminBypassSecret = getAdminBypassSecret().trim();
+    if (adminToken) {
+      headers['X-CG-Admin-Token'] = adminToken;
+    } else if (adminBypassSecret) {
+      if (isAsciiHeaderValue(adminBypassSecret)) {
+        headers['X-CG-Admin-Secret'] = adminBypassSecret;
+      } else {
+        localStorage.removeItem('cg-admin-secret');
+      }
+    }
 
     const response = await fetch('/api/scan', {
       method: 'POST',
@@ -677,7 +685,7 @@ async function runScan() {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      if (response.status === 401 && adminBypassSecret) {
+      if (response.status === 401 && (adminBypassSecret || adminToken)) {
         localStorage.removeItem('cg-admin-secret');
         localStorage.removeItem('cg-admin-token');
       }
