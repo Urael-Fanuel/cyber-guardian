@@ -80,14 +80,43 @@ jobs:
           set -euo pipefail
 
           EVENT_NAME="${{ github.event_name }}"
-          SCAN_LIMIT="${{ github.event.inputs.scan_limit || '30' }}"
+          SCAN_LIMIT="${{ inputs.scan_limit }}"
+          SCAN_LIMIT="${SCAN_LIMIT:-30}"
 
-          SCAN_SKILLS="${{ github.event.inputs.scan_skills || 'true' }}"
-          SKILL_LIMIT="${{ github.event.inputs.skill_limit || '15' }}"
-          SCAN_MCP="${{ github.event.inputs.scan_mcp || 'true' }}"
-          MCP_LIMIT="${{ github.event.inputs.mcp_limit || '10' }}"
-          SCAN_IDE_EXTENSIONS="${{ github.event.inputs.scan_ide_extensions || 'true' }}"
-          IDE_EXTENSION_LIMIT="${{ github.event.inputs.ide_extension_limit || '5' }}"
+          raw_scan_skills="${{ inputs.scan_skills }}"
+          raw_skill_limit="${{ inputs.skill_limit }}"
+          raw_scan_mcp="${{ inputs.scan_mcp }}"
+          raw_mcp_limit="${{ inputs.mcp_limit }}"
+          raw_scan_ide_extensions="${{ inputs.scan_ide_extensions }}"
+          raw_ide_extension_limit="${{ inputs.ide_extension_limit }}"
+
+          normalize_bool() {
+            local raw="${1:-}"
+            local default_value="$2"
+            raw="$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]')"
+            case "$raw" in
+              true|1|yes|y|on) echo "true" ;;
+              false|0|no|n|off) echo "false" ;;
+              *) echo "$default_value" ;;
+            esac
+          }
+
+          normalize_limit() {
+            local raw="${1:-}"
+            local default_value="$2"
+            if [[ "$raw" =~ ^[0-9]+$ ]] && [ "$raw" -gt 0 ]; then
+              echo "$raw"
+            else
+              echo "$default_value"
+            fi
+          }
+
+          SCAN_SKILLS="$(normalize_bool "$raw_scan_skills" "true")"
+          SKILL_LIMIT="$(normalize_limit "$raw_skill_limit" "15")"
+          SCAN_MCP="$(normalize_bool "$raw_scan_mcp" "true")"
+          MCP_LIMIT="$(normalize_limit "$raw_mcp_limit" "10")"
+          SCAN_IDE_EXTENSIONS="$(normalize_bool "$raw_scan_ide_extensions" "true")"
+          IDE_EXTENSION_LIMIT="$(normalize_limit "$raw_ide_extension_limit" "5")"
 
           SCOPES=""
           LIMITS=""
@@ -115,8 +144,8 @@ jobs:
           fi
 
           if [ -z "$SCOPES" ]; then
-            echo "::error::At least one scan type must be selected."
-            exit 1
+            echo "::warning::No scan type was selected or GitHub returned empty inputs. Falling back to AI Skills."
+            add_scope "skill" "$SKILL_LIMIT"
           fi
 
           echo "SCAN_LIMIT=$SCAN_LIMIT" >> "$GITHUB_ENV"
@@ -129,7 +158,7 @@ jobs:
           GITHUB_TOKEN:         ${{ secrets.SCANNER_GITHUB_TOKEN }}
           SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          DRY_RUN:              ${{ github.event.inputs.dry_run || 'false' }}
+          DRY_RUN:              ${{ inputs.dry_run || 'false' }}
           CYBER_GUARDIAN_URL:   https://cyberguardianscan.com
           CG_ADMIN_BYPASS_SECRET: ${{ secrets.CG_ADMIN_BYPASS_SECRET }}
           CG_SCAN_DELAY:        "1"
