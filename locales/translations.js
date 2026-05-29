@@ -82,6 +82,17 @@ const TRANSLATIONS = {
     pricing_label: "// pricing",
     pricing_title: "Free beta now. Paid plans opening soon.",
     pricing_sub: "Start with 10 free scans per month. For teams or bulk scanning, contact sales.",
+    access_label: "Free beta access",
+    access_title: "10 free scans every month.",
+    access_sub: "Cyber-Guardian is still learning from real-world scans. Use it freely, test it carefully, and help the product mature before we introduce commercial plans.",
+    access_free_name: "Free beta",
+    access_free_for: "For developers, builders, and security reviewers",
+    access_free_price: "10",
+    access_free_scans: "scans per month",
+    access_feat_coverage: "Covers MCP servers, AI Skills, and IDE extensions.",
+    access_feat_families: "Checks 60 defined security and malicious-behavior families.",
+    access_feat_decision: "Gives a clear install decision: safe, security review, or do not install.",
+    access_large_volume: "Need more than 10 scans per month for a team, research project, or organization?",
     value_callout_title: "One blocked bad install can pay for every scan.",
     value_callout_sub: "If one scan catches one dangerous payload before you install it, you may have avoided a serious security incident.",
     sales_note: "Need a custom package, invoice, procurement approval, or higher scan volume?",
@@ -220,6 +231,17 @@ const TRANSLATIONS = {
     pricing_label: "// preise",
     pricing_title: "Kostenlose Beta jetzt. Bezahlte Plaene starten bald.",
     pricing_sub: "Starten Sie mit 10 kostenlosen Scans pro Monat. Fuer Teams oder Bulk-Scans: Sales kontaktieren.",
+    access_label: "Kostenloser Beta-Zugang",
+    access_title: "10 kostenlose Scans pro Monat.",
+    access_sub: "Cyber-Guardian lernt noch aus realen Scans. Nutzen Sie es frei, testen Sie sorgfaeltig und helfen Sie, das Produkt zu reifen, bevor kommerzielle Plaene eingefuehrt werden.",
+    access_free_name: "Kostenlose Beta",
+    access_free_for: "Fuer Entwickler, Builder und Security Reviewer",
+    access_free_price: "10",
+    access_free_scans: "Scans pro Monat",
+    access_feat_coverage: "Deckt MCP-Server, AI Skills und IDE-Erweiterungen ab.",
+    access_feat_families: "Prueft 60 definierte Sicherheits- und Schadverhaltens-Familien.",
+    access_feat_decision: "Gibt eine klare Installationsentscheidung: sicher, Security Review oder nicht installieren.",
+    access_large_volume: "Brauchen Sie mehr als 10 Scans pro Monat fuer Team, Forschung oder Organisation?",
     value_callout_title: "Eine blockierte schlechte Installation kann alle Scans bezahlen.",
     value_callout_sub: "Wenn ein Scan eine gefaehrliche Payload vor der Installation findet, haben Sie moeglicherweise einen schweren Sicherheitsvorfall verhindert.",
     sales_note: "Benötigen Sie ein individuelles Paket, Rechnung, Einkaufsfreigabe oder höheres Scan-Volumen?",
@@ -973,6 +995,111 @@ const TRANSLATIONS = {
 };
 
 // ── i18n Engine ─────────────────────────────────────────────────────
+const ACCESS_COPY = {
+  en: {
+    access_label: "Free beta access",
+    access_title: "10 free scans every month.",
+    access_sub: "Cyber-Guardian is still learning from real-world scans. Use it freely, test it carefully, and help the product mature before we introduce commercial plans.",
+    access_free_name: "Free beta",
+    access_free_for: "For developers, builders, and security reviewers",
+    access_free_price: "10",
+    access_free_scans: "scans per month",
+    access_feat_coverage: "Covers MCP servers, AI Skills, and IDE extensions.",
+    access_feat_families: "Checks 60 defined security and malicious-behavior families.",
+    access_feat_decision: "Gives a clear install decision: safe, security review, or do not install.",
+    access_large_volume: "Need more than 10 scans per month for a team, research project, or organization?",
+    access_contact_sales: "Contact Sales"
+  },
+  de: {
+    access_label: "Kostenloser Beta-Zugang",
+    access_title: "10 kostenlose Scans pro Monat.",
+    access_sub: "Cyber-Guardian lernt noch aus realen Scans. Nutzen Sie es frei, testen Sie sorgfaeltig und helfen Sie, das Produkt zu reifen, bevor kommerzielle Plaene eingefuehrt werden.",
+    access_free_name: "Kostenlose Beta",
+    access_free_for: "Fuer Entwickler, Builder und Security Reviewer",
+    access_free_price: "10",
+    access_free_scans: "Scans pro Monat",
+    access_feat_coverage: "Deckt MCP-Server, AI Skills und IDE-Erweiterungen ab.",
+    access_feat_families: "Prueft 60 definierte Sicherheits- und Schadverhaltens-Familien.",
+    access_feat_decision: "Gibt eine klare Installationsentscheidung: sicher, Security Review oder nicht installieren.",
+    access_large_volume: "Brauchen Sie mehr als 10 Scans pro Monat fuer Team, Forschung oder Organisation?",
+    access_contact_sales: "Sales kontaktieren"
+  },
+  ja: {
+    access_label: "無料ベータアクセス",
+    access_title: "毎月10回まで無料スキャン。",
+    access_sub: "Cyber-Guardianは実際のスキャンから学習を続けています。商用プランを出す前に、自由に試し、慎重に検証し、製品の成熟にご協力ください。",
+    access_free_name: "無料ベータ",
+    access_free_for: "開発者、ビルダー、セキュリティレビュー向け",
+    access_free_price: "10",
+    access_free_scans: "月間スキャン",
+    access_feat_coverage: "MCPサーバー、AI Skills、IDE拡張をカバーします。",
+    access_feat_families: "定義済みの60種類のセキュリティ/悪性動作ファミリーを確認します。",
+    access_feat_decision: "安全、セキュリティ確認、インストール不可の明確な判断を返します。",
+    access_large_volume: "チーム、研究、組織で月10回以上のスキャンが必要ですか？",
+    access_contact_sales: "営業に相談"
+  },
+  ko: {
+    access_label: "무료 베타 이용",
+    access_title: "매월 무료 스캔 10회.",
+    access_sub: "Cyber-Guardian은 실제 스캔을 통해 계속 학습 중입니다. 상용 플랜을 도입하기 전에 자유롭게 사용하고 신중히 테스트하며 제품 성숙을 도와주세요.",
+    access_free_name: "무료 베타",
+    access_free_for: "개발자, 빌더, 보안 리뷰어용",
+    access_free_price: "10",
+    access_free_scans: "월간 스캔",
+    access_feat_coverage: "MCP 서버, AI Skills, IDE 확장을 지원합니다.",
+    access_feat_families: "정의된 60개 보안 및 악성 동작 패밀리를 검사합니다.",
+    access_feat_decision: "안전, 보안 검토, 설치 금지 중 명확한 결정을 제공합니다.",
+    access_large_volume: "팀, 연구 프로젝트 또는 조직에 월 10회 이상 스캔이 필요하신가요?",
+    access_contact_sales: "영업 문의"
+  },
+  fr: {
+    access_label: "Acces beta gratuit",
+    access_title: "10 scans gratuits chaque mois.",
+    access_sub: "Cyber-Guardian apprend encore des scans reels. Utilisez-le librement, testez-le soigneusement et aidez le produit a murir avant l'arrivee d'offres commerciales.",
+    access_free_name: "Beta gratuite",
+    access_free_for: "Pour developpeurs, builders et reviewers securite",
+    access_free_price: "10",
+    access_free_scans: "scans par mois",
+    access_feat_coverage: "Couvre les serveurs MCP, AI Skills et extensions IDE.",
+    access_feat_families: "Verifie 60 familles definies de securite et comportements malveillants.",
+    access_feat_decision: "Donne une decision claire : sur, revue securite ou ne pas installer.",
+    access_large_volume: "Besoin de plus de 10 scans par mois pour une equipe, recherche ou organisation ?",
+    access_contact_sales: "Contacter Sales"
+  },
+  pt: {
+    access_label: "Acesso beta gratuito",
+    access_title: "10 scans gratis por mes.",
+    access_sub: "Cyber-Guardian ainda esta aprendendo com scans reais. Use livremente, teste com cuidado e ajude o produto a amadurecer antes de planos comerciais.",
+    access_free_name: "Beta gratis",
+    access_free_for: "Para desenvolvedores, builders e revisores de seguranca",
+    access_free_price: "10",
+    access_free_scans: "scans por mes",
+    access_feat_coverage: "Cobre servidores MCP, AI Skills e extensoes IDE.",
+    access_feat_families: "Verifica 60 familias definidas de seguranca e comportamento malicioso.",
+    access_feat_decision: "Entrega decisao clara: seguro, revisao de seguranca ou nao instalar.",
+    access_large_volume: "Precisa de mais de 10 scans por mes para equipe, pesquisa ou organizacao?",
+    access_contact_sales: "Falar com vendas"
+  },
+  he: {
+    access_label: "גישה חינמית בבטא",
+    access_title: "10 סריקות חינם בכל חודש.",
+    access_sub: "Cyber-Guardian עדיין לומד מסריקות אמיתיות. השתמש בו בחופשיות, בדוק אותו בזהירות, ועזור למוצר להבשיל לפני שנפתח מסלולים מסחריים.",
+    access_free_name: "בטא חינמית",
+    access_free_for: "למפתחים, יוצרי כלים ובודקי אבטחה",
+    access_free_price: "10",
+    access_free_scans: "סריקות בחודש",
+    access_feat_coverage: "מכסה שרתי MCP, AI Skills והרחבות IDE.",
+    access_feat_families: "בודק 60 משפחות מוגדרות של חולשות והתנהגות זדונית.",
+    access_feat_decision: "נותן החלטת התקנה ברורה: בטוח, בדיקת אבטחה או לא להתקנה.",
+    access_large_volume: "צריך יותר מ-10 סריקות בחודש לצוות, מחקר או ארגון?",
+    access_contact_sales: "צור קשר עם מכירות"
+  }
+};
+
+Object.entries(ACCESS_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const LANGS = {
   en: { name: "English",    flag: "🇺🇸", dir: "ltr" },
   de: { name: "Deutsch",    flag: "🇩🇪", dir: "ltr" },

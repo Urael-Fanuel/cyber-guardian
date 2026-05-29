@@ -66,12 +66,12 @@ const STATIC_T = {
     privacy_body: `
       <h2>1. What We Collect</h2>
       <p>Cyber-Guardian AI collects the minimum data needed to provide security scan results and protect the service from abuse.</p>
-      <ul><li><strong>Code submitted for scanning:</strong> processed for security analysis and may be sent to a third-party AI provider.</li><li><strong>Scan metadata:</strong> scope, status, score, threat count, summaries, timestamps, and one-way hashes for cache and quota enforcement.</li><li><strong>Usage keys:</strong> IP-derived keys may be hashed or shortened for rate limits.</li><li><strong>Email/contact data:</strong> collected only when you subscribe or contact us.</li><li><strong>Payment information:</strong> handled by a payment provider. We do not store card numbers.</li></ul>
+      <ul><li><strong>Code submitted for scanning:</strong> processed for security analysis and may be sent to a third-party AI provider.</li><li><strong>Scan metadata:</strong> scope, status, score, threat count, summaries, timestamps, and one-way hashes for cache and quota enforcement.</li><li><strong>Usage keys:</strong> IP-derived keys may be hashed or shortened for rate limits.</li><li><strong>Email/contact data:</strong> collected only when you subscribe or contact us.</li></ul>
       <h2>2. Submitted Code</h2><div class="warn">Do not submit code unless you have permission to analyze it. Avoid pasting secrets, private keys, customer data, or highly confidential source code.</div>
       <p>Submitted code may be sent to a third-party AI provider for analysis. Cyber-Guardian does not intentionally store full submitted code in the database.</p>
       <h2>3. What We Do Not Do</h2><div class="good"><strong>We do not sell personal data.</strong><br><br><strong>We do not use third-party advertising trackers.</strong><br><br><strong>We do not execute submitted code.</strong> Scans are static/AI-assisted analysis only.</div>
       <h2>4. How We Use Data</h2><ul><li>Provide scan verdicts and recommendations.</li><li>Prevent abuse through rate limits and quotas.</li><li>Generate aggregate dashboard statistics.</li><li>Improve detection quality and reliability.</li></ul>
-      <h2>5. Third-Party Providers</h2><p>The service may use a third-party AI provider, Vercel, Supabase, Stripe, and Resend for analysis, hosting, storage, payments, and email notifications.</p>
+      <h2>5. Third-Party Providers</h2><p>The service may use a third-party AI provider, Vercel, Supabase, and Resend for analysis, hosting, storage, and email notifications.</p>
       <h2>6. Data Retention</h2><ul><li>Submitted scan code: processed transiently and not intentionally stored.</li><li>Scan cache: up to 1 hour.</li><li>Usage windows: retained for quota periods.</li><li>Contact/subscriber emails: retained until deletion request or operational cleanup.</li></ul>
       <h2>7. Local Storage</h2><p>The site may use browser local storage for language preference, developer settings, and client-side display state.</p>
       <h2>8. Your Rights</h2><p>For privacy or support requests, use <a href="/contact.html?type=support">support@cyberguardianscan.com</a>. For sales or business requests, use <a href="/contact.html?type=sales">sales@cyberguardianscan.com</a>.</p>
@@ -82,12 +82,12 @@ const STATIC_T = {
       <h2>2. Advisory Results</h2><div class="warn">Scan results are advisory only. No scanner can detect every vulnerability, malicious behavior, supply-chain issue, or prompt injection.</div>
       <h2>3. Code Submission Rules</h2><ul><li>You must have permission to submit the code you scan.</li><li>Do not submit secrets, private keys, credentials, customer data, or confidential third-party code without authorization.</li><li>Submitted code may be sent to a third-party AI provider for analysis.</li><li>You may not use the service to attack or bypass another system.</li></ul>
       <h2>4. Acceptable Use</h2><ul><li>Do not exceed or bypass limits or abuse protections.</li><li>Do not automate high-volume scans without written permission.</li><li>Do not reverse engineer, scrape, or resell the service as your own scanner.</li><li>Do not submit illegal content or harmful code for systems you do not own.</li></ul>
-      <h2>5. Free Tier and Paid Plans</h2><p>The free beta currently allows 10 scans per month. Paid plan names, quotas, and prices may change as the product evolves.</p>
+      <h2>5. Free Beta Access</h2><p>The free beta currently allows 10 scans per month. If you need larger scan volume for a team, research project, or organization, contact sales@cyberguardianscan.com.</p>
       <h2>6. Availability and Changes</h2><p>The service may be changed, paused, rate-limited, or discontinued at any time.</p>
       <h2>7. No Warranty</h2><p>The service is provided "as is" and "as available", without warranties of any kind.</p>
       <h2>8. Limitation of Liability</h2><p>Cyber-Guardian AI and its operators are not liable for damages arising from scan results, missed detections, false positives, downtime, or security incidents.</p>
       <h2>9. Governing Law</h2><p>These terms are governed by the laws of Israel, unless mandatory local law requires otherwise.</p>
-      <h2>10. Contact</h2><p>For support or legal questions, use <a href="/contact.html?type=support">support@cyberguardianscan.com</a>. For pricing or enterprise requests, use <a href="/contact.html?type=sales">sales@cyberguardianscan.com</a>.</p>`
+      <h2>10. Contact</h2><p>For support or legal questions, use <a href="/contact.html?type=support">support@cyberguardianscan.com</a>. For larger scan-volume requests, use <a href="/contact.html?type=sales">sales@cyberguardianscan.com</a>.</p>`
   },
 };
 
@@ -108,13 +108,13 @@ for (const code of ["de", "fr", "pt", "he", "ja", "ko"]) {
     <p>${code === "he" ? "Cyber-Guardian AI אוסף את המידע המינימלי הדרוש להפעלת הסורק, מניעת שימוש לרעה, שמירת סטטיסטיקות ותפעול פניות משתמשים." : code === "de" ? "Cyber-Guardian AI erfasst nur die Daten, die fur Scan-Ergebnisse, Missbrauchsschutz, Statistiken und Kontaktanfragen erforderlich sind." : code === "fr" ? "Cyber-Guardian AI collecte uniquement les donnees necessaires aux scans, a la protection contre les abus, aux statistiques et aux demandes de contact." : code === "pt" ? "Cyber-Guardian AI coleta apenas os dados necessarios para scans, protecao contra abuso, estatisticas e contatos." : code === "ja" ? "Cyber-Guardian AI は、スキャン、悪用防止、統計、問い合わせ対応に必要な最小限のデータのみを収集します。" : "Cyber-Guardian AI는 스캔, 악용 방지, 통계 및 문의 처리를 위해 필요한 최소 데이터만 수집합니다."}</p>
     <ul><li>${code === "he" ? "קוד שנשלח לסריקה עשוי להישלח לספק AI צד שלישי לניתוח." : code === "de" ? "Eingereichter Code kann zur Analyse an einen Drittanbieter fur KI gesendet werden." : code === "fr" ? "Le code soumis peut etre envoye a un fournisseur IA tiers pour analyse." : code === "pt" ? "O codigo enviado pode ser encaminhado a um provedor de IA de terceiros para analise." : code === "ja" ? "送信されたコードは解析のため第三者 AI プロバイダーへ送られる場合があります。" : "제출된 코드는 분석을 위해 제3자 AI 제공업체로 전송될 수 있습니다."}</li><li>${code === "he" ? "איננו מוכרים מידע אישי ואיננו מריצים את הקוד שנשלח." : code === "de" ? "Wir verkaufen keine personenbezogenen Daten und fuhren eingereichten Code nicht aus." : code === "fr" ? "Nous ne vendons pas les donnees personnelles et n'executons pas le code soumis." : code === "pt" ? "Nao vendemos dados pessoais e nao executamos o codigo enviado." : code === "ja" ? "個人データを販売せず、送信コードを実行しません。" : "개인 데이터를 판매하지 않으며 제출된 코드를 실행하지 않습니다."}</li><li>${code === "he" ? "אימיילים ופניות נשמרים לצורך מענה ותפעול השירות." : code === "de" ? "E-Mails und Kontaktanfragen werden zur Beantwortung und fur den Betrieb gespeichert." : code === "fr" ? "Les emails et messages sont conserves pour repondre et exploiter le service." : code === "pt" ? "Emails e mensagens sao mantidos para resposta e operacao do servico." : code === "ja" ? "メールと問い合わせは返信と運用のため保持されます。" : "이메일과 문의는 응답 및 서비스 운영을 위해 보관됩니다."}</li></ul>
     <h2>${code === "he" ? "צדדים שלישיים ושמירה" : code === "de" ? "Drittanbieter und Aufbewahrung" : code === "fr" ? "Fournisseurs tiers et conservation" : code === "pt" ? "Terceiros e retencao" : code === "ja" ? "第三者サービスと保存期間" : "제3자 서비스 및 보관"}</h2>
-    <p>${code === "he" ? "השירות עשוי להשתמש ב-Vercel, Supabase, Stripe, Resend וספק AI צד שלישי. ניתן לפנות אלינו לגבי גישה, תיקון או מחיקה דרך טופס התמיכה." : code === "de" ? "Der Dienst kann Vercel, Supabase, Stripe, Resend und einen Drittanbieter fur KI verwenden. Anfragen zu Zugriff, Korrektur oder Loschung konnen uber das Support-Formular gestellt werden." : code === "fr" ? "Le service peut utiliser Vercel, Supabase, Stripe, Resend et un fournisseur IA tiers. Les demandes d'acces, correction ou suppression passent par le formulaire support." : code === "pt" ? "O servico pode usar Vercel, Supabase, Stripe, Resend e um provedor de IA de terceiros. Solicite acesso, correcao ou exclusao pelo formulario de suporte." : code === "ja" ? "本サービスは Vercel、Supabase、Stripe、Resend、第三者 AI プロバイダーを使用する場合があります。アクセス、修正、削除の依頼はサポートフォームから行えます。" : "이 서비스는 Vercel, Supabase, Stripe, Resend 및 제3자 AI 제공업체를 사용할 수 있습니다. 접근, 수정 또는 삭제 요청은 지원 양식으로 보내세요."}</p>`;
+    <p>${code === "he" ? "השירות עשוי להשתמש ב-Vercel, Supabase, Resend וספק AI צד שלישי. ניתן לפנות אלינו לגבי גישה, תיקון או מחיקה דרך טופס התמיכה." : code === "de" ? "Der Dienst kann Vercel, Supabase, Resend und einen Drittanbieter fur KI verwenden. Anfragen zu Zugriff, Korrektur oder Loschung konnen uber das Support-Formular gestellt werden." : code === "fr" ? "Le service peut utiliser Vercel, Supabase, Resend et un fournisseur IA tiers. Les demandes d'acces, correction ou suppression passent par le formulaire support." : code === "pt" ? "O servico pode usar Vercel, Supabase, Resend e um provedor de IA de terceiros. Solicite acesso, correcao ou exclusao pelo formulario de suporte." : code === "ja" ? "本サービスは Vercel、Supabase、Resend、第三者 AI プロバイダーを使用する場合があります。アクセス、修正、削除の依頼はサポートフォームから行えます。" : "이 서비스는 Vercel, Supabase, Resend 및 제3자 AI 제공업체를 사용할 수 있습니다. 접근, 수정 또는 삭제 요청은 지원 양식으로 보내세요."}</p>`;
   STATIC_T[code].terms_body = `
     <h2>${STATIC_T[code].terms_title}</h2>
     <p>${code === "he" ? "Cyber-Guardian AI הוא כלי סריקת אבטחה ל-MCP servers, AI Skills, הרחבות IDE וקוד קשור. התוצאות הן המלצה בלבד ואינן מבטיחות גילוי מלא של כל איום." : code === "de" ? "Cyber-Guardian AI ist ein Sicherheitsscanner fur MCP-Server, AI Skills, IDE-Erweiterungen und verwandten Code. Ergebnisse sind nur Hinweise und garantieren keine vollstandige Erkennung." : code === "fr" ? "Cyber-Guardian AI est un scanner de securite pour MCP servers, AI Skills, extensions IDE et code lie. Les resultats sont indicatifs et ne garantissent pas une detection complete." : code === "pt" ? "Cyber-Guardian AI e um scanner de seguranca para MCP servers, AI Skills, extensoes IDE e codigo relacionado. Os resultados sao consultivos e nao garantem deteccao completa." : code === "ja" ? "Cyber-Guardian AI は MCP サーバー、AI Skills、IDE 拡張、関連コード向けのセキュリティスキャナーです。結果は助言であり、完全な検出を保証しません。" : "Cyber-Guardian AI는 MCP 서버, AI Skills, IDE 확장 및 관련 코드를 위한 보안 스캐너입니다. 결과는 참고용이며 모든 위협 탐지를 보장하지 않습니다."}</p>
     <ul><li>${code === "he" ? "מותר לשלוח רק קוד שיש לך הרשאה לבדוק." : code === "de" ? "Sie durfen nur Code einreichen, den Sie prufen durfen." : code === "fr" ? "Vous ne devez soumettre que du code que vous etes autorise a analyser." : code === "pt" ? "Envie apenas codigo que voce tem permissao para analisar." : code === "ja" ? "解析する権限があるコードのみ送信してください。" : "분석 권한이 있는 코드만 제출하세요."}</li><li>${code === "he" ? "אין לשלוח סודות, מפתחות פרטיים, נתוני לקוחות או קוד חסוי ללא הרשאה." : code === "de" ? "Senden Sie keine Secrets, privaten Schlussel, Kundendaten oder vertraulichen Code ohne Berechtigung." : code === "fr" ? "Ne soumettez pas de secrets, cles privees, donnees client ou code confidentiel sans autorisation." : code === "pt" ? "Nao envie segredos, chaves privadas, dados de clientes ou codigo confidencial sem autorizacao." : code === "ja" ? "秘密情報、秘密鍵、顧客データ、機密コードを無断で送信しないでください。" : "비밀, 개인 키, 고객 데이터 또는 기밀 코드를 권한 없이 제출하지 마세요."}</li><li>${code === "he" ? "אין לעקוף מגבלות, לנצל לרעה את השירות או להשתמש בו לתקיפת מערכות שאינך מנהל." : code === "de" ? "Umgehen Sie keine Limits und verwenden Sie den Dienst nicht zum Angriff auf fremde Systeme." : code === "fr" ? "Ne contournez pas les limites et n'utilisez pas le service pour attaquer des systemes tiers." : code === "pt" ? "Nao contorne limites nem use o servico para atacar sistemas de terceiros." : code === "ja" ? "制限を回避したり、他者のシステム攻撃に使用したりしないでください。" : "제한을 우회하거나 타 시스템 공격에 사용하지 마세요."}</li></ul>
     <h2>${code === "he" ? "אחריות ויצירת קשר" : code === "de" ? "Haftung und Kontakt" : code === "fr" ? "Responsabilite et contact" : code === "pt" ? "Responsabilidade e contato" : code === "ja" ? "責任と連絡先" : "책임 및 연락처"}</h2>
-    <p>${code === "he" ? "השירות מסופק כפי שהוא. לשאלות תמיכה, משפטיות או פרטיות השתמש בטופס התמיכה; למחירים או Enterprise השתמש בטופס המכירות." : code === "de" ? "Der Dienst wird wie besehen bereitgestellt. Fur Support, Recht oder Datenschutz nutzen Sie das Support-Formular; fur Preise oder Enterprise das Sales-Formular." : code === "fr" ? "Le service est fourni tel quel. Pour support, juridique ou confidentialite utilisez le formulaire support; pour prix ou enterprise le formulaire sales." : code === "pt" ? "O servico e fornecido como esta. Para suporte, legal ou privacidade use o formulario de suporte; para precos ou enterprise use vendas." : code === "ja" ? "本サービスは現状有姿で提供されます。サポート、法務、プライバシーはサポートフォームへ、価格や Enterprise は営業フォームへお問い合わせください。" : "서비스는 있는 그대로 제공됩니다. 지원, 법무, 개인정보 문의는 지원 양식으로, 가격 및 Enterprise 문의는 영업 양식으로 보내세요."}</p>`;
+    <p>${code === "he" ? "השירות מסופק כפי שהוא. לשאלות תמיכה, משפטיות או פרטיות השתמש בטופס התמיכה; לבקשות נפח סריקות גדול יותר השתמש בטופס המכירות." : code === "de" ? "Der Dienst wird wie besehen bereitgestellt. Fuer Support, Recht oder Datenschutz nutzen Sie das Support-Formular; fuer hoeheres Scan-Volumen das Sales-Formular." : code === "fr" ? "Le service est fourni tel quel. Pour support, juridique ou confidentialite utilisez le formulaire support; pour un volume de scans plus eleve le formulaire sales." : code === "pt" ? "O servico e fornecido como esta. Para suporte, legal ou privacidade use o formulario de suporte; para maior volume de scans use vendas." : code === "ja" ? "本サービスは現状有姿で提供されます。サポート、法務、プライバシーはサポートフォームへ、追加スキャン量は営業フォームへお問い合わせください。" : "서비스는 있는 그대로 제공됩니다. 지원, 법무, 개인정보 문의는 지원 양식으로, 추가 스캔 용량 문의는 영업 양식으로 보내세요."}</p>`;
 }
 
 Object.assign(STATIC_T.de, {
@@ -177,6 +177,55 @@ function staticText(key) {
   const lang = getStaticLang();
   return String(STATIC_T[lang]?.[key] || STATIC_T.en[key] || key).replace(/^\/\/\s*/, "");
 }
+
+const CONTACT_ACCESS_COPY = {
+  en: {
+    contact_sub: "Use this form for larger scan-volume requests, procurement questions, support, or security issues. Your message stays inside the site and goes to the right inbox.",
+    opt_sales: "Large-volume request",
+    opt_enterprise: "Organization / procurement",
+    contact_direct: "Large-volume and business requests go to sales@cyberguardianscan.com. Support and security requests go to support@cyberguardianscan.com."
+  },
+  he: {
+    contact_sub: "השתמשו בטופס לבקשות נפח סריקות גדול יותר, רכש, תמיכה או שאלות אבטחה. ההודעה נשארת באתר ומנותבת לתיבה הנכונה.",
+    opt_sales: "בקשת נפח סריקות גדול",
+    opt_enterprise: "ארגון / רכש",
+    contact_direct: "בקשות לנפח סריקות גדול ולפניות עסקיות מנותבות אל sales@cyberguardianscan.com. תמיכה ואבטחה מנותבות אל support@cyberguardianscan.com."
+  },
+  de: {
+    contact_sub: "Nutzen Sie dieses Formular fuer hoehere Scan-Volumen, Einkauf, Support oder Sicherheitsfragen.",
+    opt_sales: "Hoeheres Scan-Volumen",
+    opt_enterprise: "Organisation / Einkauf",
+    contact_direct: "Anfragen zu hoeherem Scan-Volumen gehen an sales@cyberguardianscan.com. Support und Sicherheit gehen an support@cyberguardianscan.com."
+  },
+  ja: {
+    contact_sub: "スキャン量の追加、購買、サポート、セキュリティ質問はこちらから送信できます。",
+    opt_sales: "追加スキャン量の相談",
+    opt_enterprise: "組織 / 購買",
+    contact_direct: "追加スキャン量やビジネス相談は sales@cyberguardianscan.com へ、サポートとセキュリティは support@cyberguardianscan.com へ送られます。"
+  },
+  ko: {
+    contact_sub: "더 많은 스캔 용량, 구매, 지원 또는 보안 질문을 이 양식으로 보내세요.",
+    opt_sales: "추가 스캔 용량 문의",
+    opt_enterprise: "조직 / 구매",
+    contact_direct: "추가 스캔 용량 및 비즈니스 문의는 sales@cyberguardianscan.com 으로, 지원 및 보안 문의는 support@cyberguardianscan.com 으로 전달됩니다."
+  },
+  fr: {
+    contact_sub: "Utilisez ce formulaire pour un volume de scans plus eleve, achat, support ou questions securite.",
+    opt_sales: "Volume de scans plus eleve",
+    opt_enterprise: "Organisation / achat",
+    contact_direct: "Les demandes de volume plus eleve vont a sales@cyberguardianscan.com. Support et securite vont a support@cyberguardianscan.com."
+  },
+  pt: {
+    contact_sub: "Use este formulario para maior volume de scans, compras, suporte ou seguranca.",
+    opt_sales: "Maior volume de scans",
+    opt_enterprise: "Organizacao / compras",
+    contact_direct: "Pedidos de maior volume vao para sales@cyberguardianscan.com. Suporte e seguranca vao para support@cyberguardianscan.com."
+  }
+};
+
+Object.entries(CONTACT_ACCESS_COPY).forEach(([lang, copy]) => {
+  STATIC_T[lang] = { ...(STATIC_T[lang] || {}), ...copy };
+});
 
 function setStaticLang(code) {
   if (!STATIC_T[code]) return;

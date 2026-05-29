@@ -243,9 +243,9 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .other-card-link:hover { text-decoration: underline; }
 
 /* ── PRICING ── */
-.pricing { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto 72px; padding: 0 20px; }
-.plans { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
-@media(max-width:980px){ .plans { grid-template-columns: repeat(2,1fr); } }
+.access { position: relative; z-index: 2; max-width: 720px; margin: 0 auto 72px; padding: 0 20px; }
+.plans { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 520px; margin: 0 auto; }
+@media(max-width:980px){ .plans { grid-template-columns: 1fr; } }
 @media(max-width:600px){ .plans { grid-template-columns: 1fr; } }
 .plan { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 22px 18px; display: flex; flex-direction: column; position: relative; transition: all 0.2s; }
 .plan:hover { border-color: var(--border2); transform: translateY(-2px); }
@@ -253,8 +253,8 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .popular-tag { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--cyan); color: #000; font-family: var(--sans); font-size: 9px; font-weight: 700; padding: 3px 10px; border-radius: 2px; letter-spacing: 1px; }
 .plan-name { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
 .plan-for { font-size: 10px; color: var(--text-dim); margin-bottom: 16px; }
-.plan-price { font-family: var(--sans); font-size: 32px; font-weight: 800; color: #fff; line-height: 1; margin-bottom: 4px; }
-.plan-price span { font-size: 14px; color: var(--text-dim); font-weight: 400; }
+.access-count { font-family: var(--sans); font-size: 32px; font-weight: 800; color: #fff; line-height: 1; margin-bottom: 4px; }
+.access-count span { font-size: 14px; color: var(--text-dim); font-weight: 400; }
 .plan-scans { font-size: 11px; color: var(--cyan); margin-bottom: 18px; font-weight: 600; }
 .plan-features { list-style: none; margin: 0 0 18px; flex: 1; }
 .plan-features li { font-size: 10.5px; color: var(--text); padding: 4px 0; padding-left: 18px; position: relative; }
@@ -267,7 +267,6 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .plan.popular .plan-btn:hover { background: #fff; }
 .value-callout { margin: 20px auto 18px; padding: 16px 18px; border: 1px solid rgba(0,255,136,0.35); background: rgba(0,255,136,0.07); color: var(--text); font-size: 13px; line-height: 1.7; text-align: center; }
 .value-callout strong { display: block; color: var(--green); font-family: var(--sans); font-size: 15px; margin-bottom: 4px; letter-spacing: 0.5px; }
-.pricing-beta { margin-top: 5px; color: var(--orange); font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
 
 /* ── EMAIL ── */
 .email-sec { position: relative; z-index: 2; max-width: 600px; margin: 0 auto 72px; padding: 0 20px; text-align: center; }
@@ -304,7 +303,7 @@ footer a:hover { color: var(--cyan); }
 @media(max-width:600px) {
   nav { padding: 12px 16px; }
   .hero { padding: 36px 16px 28px; }
-  .wrap, .why, .how, .other, .pricing, .email-sec, .families { padding: 0 12px; }
+  .wrap, .why, .how, .other, .access, .email-sec, .families { padding: 0 12px; }
   .bot-row { flex-direction: column; }
   .scan-btn { width: 100%; }
   footer { flex-direction: column; text-align: center; }
@@ -483,85 +482,31 @@ footer a:hover { color: var(--cyan); }
   </div>
 </section>
 
-<section class="pricing" id="pricing">
-  <div class="section-lbl" data-i18n="pricing_label">Pricing</div>
-  <h2 class="section-title" data-i18n="pricing_title">Pick your plan</h2>
-  <p class="section-sub" data-i18n="pricing_sub">Start free. Upgrade when you need more scans.</p>
+<section class="access" id="free-access">
+  <div class="section-lbl" data-i18n="access_label">Free beta access</div>
+  <h2 class="section-title" data-i18n="access_title">10 free scans every month.</h2>
+  <p class="section-sub" data-i18n="access_sub">Cyber-Guardian is still learning from real-world scans. Use it freely, test it carefully, and help the product mature before we introduce commercial plans.</p>
   <div class="value-callout">
     <strong data-i18n="value_callout_title">One blocked bad install can pay for every scan.</strong>
     <span data-i18n="value_callout_sub">If one scan catches one dangerous payload before you install it, you may have avoided a serious security incident.</span>
   </div>
   <div class="plans">
     <div class="plan">
-      <div class="plan-name" data-i18n="plan_free_name">Free</div>
-      <div class="plan-for" data-i18n="plan_free_for">Try it out</div>
-      <div class="plan-price">$0</div>
-      <div class="plan-scans" data-i18n="plan_free_scans">10 scans / month</div>
+      <div class="plan-name" data-i18n="access_free_name">Free beta</div>
+      <div class="plan-for" data-i18n="access_free_for">For developers, builders, and security reviewers</div>
+      <div class="access-count" data-i18n="access_free_price">10</div>
+      <div class="plan-scans" data-i18n="access_free_scans">scans per month</div>
       <ul class="plan-features">
-        <li data-i18n="plan_feat_signatures">All 60 threat families (MCP + general)</li>
-        <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
+        <li data-i18n="access_feat_coverage">Covers MCP servers, AI Skills, and IDE extensions.</li>
+        <li data-i18n="access_feat_families">Checks 60 defined security and malicious-behavior families.</li>
+        <li data-i18n="access_feat_decision">Gives a clear install decision: safe, security review, or do not install.</li>
       </ul>
       <button class="plan-btn" data-i18n="btn_get_started" onclick="scrollToScanner()">Get Started</button>
     </div>
-    <div class="plan popular">
-      <div class="popular-tag" data-i18n="plan_popular">MOST POPULAR</div>
-      <div class="plan-name" data-i18n="plan_pro_name">Pro</div>
-      <div class="plan-for" data-i18n="plan_pro_for">Solo developer</div>
-      <div class="plan-price" data-i18n="plan_price_soon">Soon</div>
-      <div class="pricing-beta" data-i18n="paid_soon">Paid plans opening soon</div>
-      <div class="plan-scans" data-i18n="plan_pro_scans">150 scans / month</div>
-      <ul class="plan-features">
-        <li data-i18n="plan_feat_signatures">All 60 threat families</li>
-        <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
-        <li data-i18n="plan_feat_support">Email support</li>
-      </ul>
-      <button class="plan-btn" data-i18n="btn_request_pricing" onclick="openContact('sales')">Request Pricing</button>
-    </div>
-    <div class="plan">
-      <div class="plan-name" data-i18n="plan_team_name">Team</div>
-      <div class="plan-for" data-i18n="plan_team_for">Startup</div>
-      <div class="plan-price" data-i18n="plan_price_soon">Soon</div>
-      <div class="pricing-beta" data-i18n="paid_soon">Paid plans opening soon</div>
-      <div class="plan-scans" data-i18n="plan_team_scans">500 scans / month</div>
-      <ul class="plan-features">
-        <li data-i18n="plan_feat_signatures">All 60 threat families</li>
-        <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
-        <li data-i18n="plan_feat_api">API access</li>
-        <li data-i18n="plan_feat_priority">Priority scanning</li>
-      </ul>
-      <button class="plan-btn" data-i18n="btn_request_pricing" onclick="openContact('sales')">Request Pricing</button>
-    </div>
-    <div class="plan">
-      <div class="plan-name" data-i18n="plan_business_name">Business</div>
-      <div class="plan-for" data-i18n="plan_business_for">Growing company</div>
-      <div class="plan-price" data-i18n="plan_price_soon">Soon</div>
-      <div class="pricing-beta" data-i18n="paid_soon">Paid plans opening soon</div>
-      <div class="plan-scans" data-i18n="plan_business_scans">3,000 scans / month</div>
-      <ul class="plan-features">
-        <li data-i18n="plan_feat_signatures">All 60 threat families</li>
-        <li data-i18n="plan_feat_ai">Advanced AI deep analysis</li>
-        <li data-i18n="plan_feat_api">API access</li>
-        <li data-i18n="plan_feat_priority">Priority scanning</li>
-        <li data-i18n="plan_feat_support">Email support</li>
-      </ul>
-      <button class="plan-btn" data-i18n="btn_request_pricing" onclick="openContact('sales')">Request Pricing</button>
-    </div>
-    <div class="plan">
-      <div class="plan-name" data-i18n="plan_enterprise_name">Enterprise</div>
-      <div class="plan-for" data-i18n="plan_enterprise_for">Large organization</div>
-      <div class="plan-price" data-i18n="btn_custom">Custom</div>
-      <div class="plan-scans" data-i18n="plan_enterprise_scans">Custom volume + SLA</div>
-      <ul class="plan-features">
-        <li data-i18n="plan_feat_signatures">All 60 threat families</li>
-        <li data-i18n="plan_feat_sla">99.9% SLA + dedicated support</li>
-        <li data-i18n="plan_feat_custom">Custom MCP integrations</li>
-      </ul>
-      <button class="plan-btn" data-i18n="btn_contact_us" onclick="openContact('enterprise')">Contact Us</button>
-    </div>
   </div>
   <div class="sales-note">
-    <span data-i18n="sales_note">Need a custom package, invoice, procurement approval, or higher scan volume?</span>
-    <button type="button" class="inline-contact" onclick="openContact('sales')">Contact Sales</button>
+    <span data-i18n="access_large_volume">Need more than 10 scans per month for a team, research project, or organization?</span>
+    <button type="button" class="inline-contact" onclick="openContact('sales')" data-i18n="access_contact_sales">Contact Sales</button>
   </div>
 </section>
 
@@ -681,21 +626,6 @@ function openContact(type = 'sales') {
   window.location.href = `/contact.html?type=${encodeURIComponent(type)}`;
 }
 
-async function startCheckout(plan) {
-  try {
-    const response = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan })
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.url) throw new Error(data.error || 'Checkout is unavailable.');
-    window.location.href = data.url;
-  } catch (err) {
-    alert(err.message || 'Checkout is unavailable.');
-  }
-}
-
 async function runScan() {
   const code = document.getElementById('code-input').value;
   const btn  = document.getElementById('scan-btn');
@@ -714,7 +644,7 @@ async function runScan() {
     res.innerHTML = `<div class="quota-box">
       <div class="quota-title">${t('quota_exceeded_title')}</div>
       <div class="quota-msg">${t('quota_exceeded_msg')}</div>
-      <a href="#pricing" class="quota-btn">${t('btn_get_started')} →</a>
+      <a href="#free-access" class="quota-btn">${t('btn_get_started')} →</a>
     </div>`;
     res.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return;

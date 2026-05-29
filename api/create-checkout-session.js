@@ -60,7 +60,7 @@ module.exports = async function handler(req, res) {
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${siteUrl}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/?checkout=cancelled#pricing`,
+      cancel_url: `${siteUrl}/?checkout=cancelled#free-access`,
       allow_promotion_codes: true,
       billing_address_collection: "auto",
       metadata: { plan },

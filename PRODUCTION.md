@@ -19,7 +19,7 @@ ALLOWED_ORIGINS=https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.a
 CG_ADMIN_BYPASS_SECRET=generate-a-long-random-secret
 SITE_URL=https://cyberguardianscan.com
 
-# Optional later, when paid checkout is enabled:
+# Optional later, when payment is enabled:
 # STRIPE_SECRET_KEY=sk_live_...
 # STRIPE_PRICE_PRO=price_...
 # STRIPE_PRICE_TEAM=price_...
@@ -44,21 +44,22 @@ SCAN_CACHE_TTL_SECONDS=3600
 Use `SCAN_USAGE_MODE=strict` in production after the Supabase SQL migration has been run.
 Use `SCAN_USAGE_MODE=fallback` only during setup or local development.
 
-## Beta Pricing
+## Free Beta Access
 
 Paid checkout is intentionally disabled during the beta launch. The public site
-offers 10 free scans per month and routes Pro, Team, Business, Enterprise, and
-custom-volume inquiries to `sales@cyberguardianscan.com`.
+offers 10 free scans per month and routes larger-volume inquiries to
+`sales@cyberguardianscan.com`. Public pricing is intentionally not shown during
+this learning phase.
 
-When the business and payment setup are ready, create three recurring monthly
-prices in Stripe and copy their price IDs into:
+When the business and payment setup are ready, create recurring monthly prices
+in Stripe and copy their price IDs into the relevant variables, for example:
 
 - `STRIPE_PRICE_PRO`
 - `STRIPE_PRICE_TEAM`
 - `STRIPE_PRICE_BUSINESS`
 
 The existing `/api/create-checkout-session` endpoint can create a Stripe Checkout
-subscription session once the pricing buttons are re-enabled. Keep
+subscription session once public payment buttons are enabled. Keep
 `STRIPE_SECRET_KEY` server-side only in Vercel environment variables.
 
 ## Email Lead Notifications

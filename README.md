@@ -42,9 +42,9 @@ It checks 60 canonical threat families before a user decides whether to install 
 - AI findings cannot downgrade high-confidence static findings
 - No full submitted code is intentionally stored in Supabase
 
-## Beta Pricing
+## Free Beta Access
 
-Cyber-Guardian is currently in free beta. Visitors get 10 scans per month, and paid plans are shown as "opening soon" with all pricing and custom-volume requests routed to `sales@cyberguardianscan.com`.
+Cyber-Guardian is currently in free beta. Visitors get 10 scans per month. Larger scan-volume requests are routed to `sales@cyberguardianscan.com`; public pricing is intentionally not shown during this learning phase.
 
 ## Local Checks
 
