@@ -64,12 +64,36 @@ function arrayValue(value) {
   return Array.isArray(value) ? value.filter(Boolean) : [];
 }
 
+const TAG_STOP_WORDS = new Set([
+  'ai', 'api', 'app', 'apps', 'code', 'coding', 'dev', 'developer', 'extension', 'extensions',
+  'github', 'ide', 'mcp', 'npm', 'package', 'plugin', 'plugins', 'repo', 'server', 'servers',
+  'skill', 'skills', 'tool', 'tools', 'vscode', 'cursor', 'claude', 'openai', 'view', 'kit',
+]);
+
+function tokenize(value) {
+  return String(value || '')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .map(token => token.trim())
+    .filter(token => token.length >= 4)
+    .filter(token => !TAG_STOP_WORDS.has(token))
+    .slice(0, 12);
+}
+
 function tagSet(scan) {
-  return new Set([
+  const tags = [
     ...arrayValue(scan.use_case_tags),
     ...arrayValue(scan.capabilities),
-    scan.component_type,
-  ].map(v => String(v || '').toLowerCase()).filter(Boolean));
+  ].flatMap(tokenize);
+
+  const component = String(scan.component_type || '').toLowerCase();
+  if (component && !['unknown', 'other', scan.scope].includes(component)) {
+    tags.push(...tokenize(component));
+  }
+
+  tags.push(...tokenize(scan.code_purpose));
+  tags.push(...tokenize(scan.source_name));
+  return new Set(tags);
 }
 
 function similarityScore(a, b) {

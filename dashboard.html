@@ -590,6 +590,7 @@ const DECISION_COPY = {
     purpose: 'What this code appears to do',
     safer_alternatives: 'Similar lower-risk scans',
     alt_note: 'Not a guarantee. Review the source and rescan before installing.',
+    no_alternatives: 'No reliable similar alternative is available yet. Rescan later as the database grows.',
   },
   he: {
     install_ok: 'החלטת התקנה: אפשר להתקין לפי הסריקה הזו.',
@@ -955,6 +956,12 @@ function purposeHtml(scan) {
 
 function alternativesHtml(scan) {
   const items = Array.isArray(scan.alternatives) ? scan.alternatives : [];
+  if (!items.length && scanDecision(scan).value !== 'safe') {
+    return `<div class="alternatives-box">
+      <div class="alt-title">${escapeHtml(decisionText('safer_alternatives', 'Similar lower-risk scans'))}</div>
+      <div class="alt-meta">${escapeHtml(decisionText('no_alternatives', 'No reliable similar alternative is available yet. Rescan later as the database grows.'))}</div>
+    </div>`;
+  }
   if (!items.length) return '';
   return `<div class="alternatives-box">
     <div class="alt-title">${escapeHtml(decisionText('safer_alternatives', 'Similar lower-risk scans'))}</div>
