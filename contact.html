@@ -102,6 +102,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
 </main>
 
 <script src="/locales/static-pages.js"></script>
+<script src="/analytics.js?v=1"></script>
 <script>
 const params = new URLSearchParams(window.location.search);
 const initialType = params.get('type') || params.get('kind');
@@ -134,6 +135,7 @@ document.getElementById('contact-form').addEventListener('submit', async (event)
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || staticText('contact_failed'));
+    if (window.cgTrack) window.cgTrack('contact_form_submitted', { type: payload.kind });
     msg.className = 'msg success';
     msg.textContent = staticText('contact_success');
     event.target.reset();

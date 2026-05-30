@@ -625,6 +625,7 @@ footer a:hover { color: var(--cyan); }
 </footer>
 
 <script src="/locales/translations.js"></script>
+<script src="/analytics.js?v=1"></script>
 <script>
 (function buildLangSwitcher() {
   const container = document.getElementById('lang-switcher');
@@ -678,6 +679,7 @@ function hasAdminBypass() { return Boolean(getAdminBypassSecret().trim() || getA
 function isAsciiHeaderValue(value) { return /^[\x20-\x7E]*$/.test(value); }
 
 function openContact(type = 'sales') {
+  if (window.cgTrack) window.cgTrack(type === 'sales' ? 'contact_sales_clicked' : 'contact_clicked', { type });
   window.location.href = `/contact.html?type=${encodeURIComponent(type)}`;
 }
 
@@ -693,6 +695,8 @@ async function runScan() {
     setTimeout(() => ta.style.borderColor = 'var(--border)', 1200);
     ta.focus(); return;
   }
+
+  if (window.cgTrack) window.cgTrack('scan_started', { scope: currentScope, input_length: code.length });
 
   if (!isDevMode() && !hasAdminBypass() && getQuotaUsed() >= FREE_QUOTA) {
     res.style.display = 'block';
@@ -747,8 +751,18 @@ async function runScan() {
 
     result = await response.json();
     if (!hasAdminBypass()) incrementQuota();
+    if (window.cgTrack) {
+      window.cgTrack('scan_completed', {
+        scope: currentScope,
+        status: result.status,
+        threat_score: result.threat_score || 0,
+        threat_count: result.threat_count || 0,
+        from_cache: Boolean(result._from_cache)
+      });
+    }
 
   } catch (err) {
+    if (window.cgTrack) window.cgTrack('scan_failed', { scope: currentScope, error: err.message || 'unknown' });
     sl.classList.remove('on');
     btn.disabled = false;
     btn.innerHTML = '▶ &nbsp;<span>' + t('btn_scan_again') + '</span>';
@@ -890,6 +904,7 @@ async function subscribeEmail() {
     });
     const data = await r.json();
     if (r.ok) {
+      if (window.cgTrack) window.cgTrack('email_submitted', { area: 'threat_alerts' });
       msg.textContent = data.message || 'Subscribed!';
       msg.className = 'email-msg success'; input.value = '';
     } else {

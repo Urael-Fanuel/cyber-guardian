@@ -85,6 +85,17 @@ notifications through Resend.
 Sales and enterprise requests go to `CONTACT_SALES_TO`; support and security
 requests go to `CONTACT_SUPPORT_TO`.
 
+## Product Analytics
+
+Run `supabase/migrations/006_site_events.sql` in Supabase to enable anonymous
+product analytics. The site then stores page views, scan starts, completed scans,
+failed scans, Sales clicks, contact form submissions, and email signups in
+`site_events`.
+
+Raw IP addresses are not stored. Country, region, and city are taken from Vercel
+geo headers when available. The detailed analytics endpoint requires the signed
+admin token, so business metrics are visible only after the owner logs in.
+
 ## Developer Bypass
 
 `/content-admin.html` provides a username/password login for the site owner.

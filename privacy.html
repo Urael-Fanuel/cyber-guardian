@@ -39,6 +39,7 @@ footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1E2D3D; fon
     <li><strong>Code submitted for scanning:</strong> processed for security analysis and may be sent to a third-party AI provider.</li>
     <li><strong>Scan metadata:</strong> scope, status, score, threat count, short threat summaries, timestamps, and one-way hashes used for caching and quota enforcement.</li>
     <li><strong>IP-derived usage keys:</strong> IP addresses are hashed before being stored for rate limiting and quota windows.</li>
+    <li><strong>Product analytics events:</strong> anonymous page views, scan starts/completions/failures, selected scan scope, country-level geo headers, Sales clicks, and signup/contact events.</li>
     <li><strong>Email address:</strong> collected only if you subscribe to updates.</li>
   </ul>
 
@@ -60,6 +61,7 @@ footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1E2D3D; fon
     <li>Provide scan verdicts, threat summaries, and recommendations.</li>
     <li>Prevent abuse through rate limits, monthly quota, and global daily caps.</li>
     <li>Generate aggregate scan statistics shown on the dashboard.</li>
+    <li>Understand product usage, popular scan types, countries, and conversion from visit to scan or contact request.</li>
     <li>Improve detection quality and operational reliability.</li>
   </ul>
 
@@ -68,7 +70,7 @@ footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1E2D3D; fon
   <ul>
     <li><strong>Third-party AI provider:</strong> AI-powered code analysis. The current provider may include Anthropic. See <a href="https://www.anthropic.com/privacy">anthropic.com/privacy</a>.</li>
     <li><strong>Vercel:</strong> hosting and serverless request processing.</li>
-    <li><strong>Supabase:</strong> database storage for quotas, scan statistics, and dashboard data.</li>
+    <li><strong>Supabase:</strong> database storage for quotas, scan statistics, dashboard data, contact messages, and anonymous product analytics.</li>
   </ul>
 
   <h2>6. Data Retention</h2>
@@ -77,6 +79,7 @@ footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1E2D3D; fon
     <li>In-memory scan cache: up to 1 hour.</li>
     <li>Usage windows: expire automatically based on minute, hour, day, and monthly quota windows.</li>
     <li>Aggregate scan metadata: retained for dashboard and service analytics.</li>
+    <li>Product analytics events: retained for product improvement and business reporting.</li>
     <li>Subscriber emails: retained until unsubscribe or deletion request.</li>
   </ul>
 
@@ -97,5 +100,6 @@ footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1E2D3D; fon
   </footer>
 </div>
 <script src="/locales/static-pages.js"></script>
+<script src="/analytics.js?v=1"></script>
 </body>
 </html>
