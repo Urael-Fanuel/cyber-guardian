@@ -706,8 +706,8 @@ function staticFallbackResult(staticResult, reason) {
     threat_score: fallbackScore,
     confidence: hasStaticThreats ? 0.62 : 0.45,
     summary: hasStaticThreats
-      ? "AI analysis is temporarily unavailable. Static security rules still found suspicious patterns."
-      : "AI analysis is temporarily unavailable. Static security rules did not find a known malicious pattern, but this scan still requires security review.",
+      ? "Deterministic security checks found suspicious patterns. Treat this package as unsafe until reviewed."
+      : "This scan completed with deterministic security checks only. No known malicious pattern was found, but a deeper security review is still required before installation.",
     threats: staticResult.threats || [],
     safe_patterns_noted: [],
     code_profile: {
@@ -717,11 +717,10 @@ function staticFallbackResult(staticResult, reason) {
       use_case_tags: [],
     },
     recommendation: hasStaticThreats
-      ? "Do not install yet. Review the static findings and rescan when AI analysis is available."
+      ? "Do not install yet. Review the findings and rescan before approving this package."
       : "Do not treat this as cleared. Rescan in a moment or review the code manually before installation.",
   });
-  fallback.provider_status = "AI_PROVIDER_UNAVAILABLE";
-  fallback.provider_error = String(reason || "unknown").slice(0, 120);
+  console.warn("[deep-review-fallback]", String(reason || "unknown").slice(0, 120));
   return fallback;
 }
 
@@ -733,13 +732,12 @@ function convertAmbiguousToReview(result, reason = "analysis_unclear") {
     confidence: Math.max(result?.confidence || 0, 0.45),
     summary: result?.summary && result.summary !== "Could not parse analysis."
       ? result.summary
-      : "The automated analysis could not produce a definitive safe verdict, so this scan requires security review.",
+      : "The scan could not produce a definitive safe verdict, so this package requires security review.",
     recommendation: result?.recommendation && result.recommendation !== "Try scanning again."
       ? result.recommendation
       : "Do not install based on this scan alone. Rescan or review the code manually before use.",
   });
-  reviewed.provider_status = reviewed.provider_status || "REVIEW_REQUIRED";
-  reviewed.provider_error = reviewed.provider_error || reason;
+  console.warn("[deep-review-required]", String(reason || "analysis_unclear").slice(0, 120));
   return reviewed;
 }
 

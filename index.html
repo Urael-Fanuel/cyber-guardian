@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cyber-Guardian - MCP Security Scanner | First scanner for MCP Servers, AI Skills & IDE Extensions</title>
-<meta name="description" content="The first security scanner for Model Context Protocol (MCP) servers. Detect malicious code, prompt injection, credential theft and tool poisoning before connecting. Also scans AI Skills and IDE extensions. Powered by Advanced AI Engine.">
+<meta name="description" content="The first security scanner for Model Context Protocol (MCP) servers. Detect malicious code, prompt injection, credential theft and tool poisoning before connecting. Also scans AI Skills and IDE extensions. Powered by an advanced security engine.">
 <meta name="keywords" content="MCP security, MCP scanner, Model Context Protocol security, MCP server audit, AI skill scanner, AI security, MCP security, Cursor MCP, prompt injection scanner">
 <meta property="og:title" content="Cyber-Guardian - The First MCP Security Scanner">
 <meta property="og:description" content="Before you connect an MCP server, scan it. 10,000+ MCP servers exist. Zero are audited.">
@@ -351,7 +351,7 @@ footer a:hover { color: var(--cyan); }
 
 <div class="stats">
   <div class="stat"><span class="stat-n">60</span><div class="stat-l" data-i18n="stat_families">MCP THREATS</div></div>
-  <div class="stat"><span class="stat-n">AI</span><div class="stat-l" data-i18n="stat_ai">DEEP ANALYSIS</div></div>
+  <div class="stat"><span class="stat-n">60</span><div class="stat-l" data-i18n="stat_ai">DEEP ANALYSIS</div></div>
   <div class="stat"><span class="stat-n">~3s</span><div class="stat-l" data-i18n="stat_speed">SCAN TIME</div></div>
   <div class="stat"><span class="stat-n">10</span><div class="stat-l" data-i18n="stat_free">FREE / MONTH</div></div>
 </div>
@@ -399,7 +399,7 @@ footer a:hover { color: var(--cyan); }
       <div class="pulse" style="width:6px;height:6px"></div>
       <div class="ai-badge">
         <span data-i18n="ai_badge_pre">Powered by</span>
-        <strong>AI Engine</strong>
+        <strong>Security Engine</strong>
         <span data-i18n="ai_badge_post">· 60 threat families · MCP-aware</span>
       </div>
     </div>
@@ -441,8 +441,8 @@ footer a:hover { color: var(--cyan); }
     </div>
     <div class="step">
       <div class="step-n">02</div>
-      <div class="step-t" data-i18n="step2_title">AI Deep Scan</div>
-      <div class="step-d" data-i18n="step2_desc">MCP-specific signatures + Advanced AI deep analysis.</div>
+      <div class="step-t" data-i18n="step2_title">Deep Security Scan</div>
+      <div class="step-d" data-i18n="step2_desc">MCP-specific signatures + advanced semantic security analysis.</div>
     </div>
     <div class="step">
       <div class="step-n">03</div>
@@ -610,8 +610,8 @@ footer a:hover { color: var(--cyan); }
 </section>
 
 <footer>
-  <div class="fl">Cyber-Guardian AI</div>
-  <div data-i18n="footer_tagline">MCP-FIRST · 60 THREAT FAMILIES · CLAUDE AI</div>
+  <div class="fl">Cyber-Guardian</div>
+  <div data-i18n="footer_tagline">MCP-FIRST · 60 THREAT FAMILIES · SECURITY ENGINE</div>
   <div>
     <span data-i18n="footer_legal">Apache 2.0 · </span>
     <a href="/terms.html" data-i18n="footer_terms">Terms</a>
@@ -890,7 +890,7 @@ function renderResult(r) {
 }
 
 function copyReport(score, status, count) {
-  const txt = `Cyber-Guardian AI - MCP Security Scan Report\n${'─'.repeat(48)}\nScope:          ${currentScope.toUpperCase()}\nStatus:         ${status}\nThreat Score:   ${score}/100\nThreats Found:  ${count}\nScanned At:     ${new Date().toISOString()}\nPowered By:     AI Engine · MCP-aware\n${'─'.repeat(48)}`;
+  const txt = `Cyber-Guardian - MCP Security Scan Report\n${'─'.repeat(48)}\nScope:          ${currentScope.toUpperCase()}\nStatus:         ${status}\nThreat Score:   ${score}/100\nThreats Found:  ${count}\nScanned At:     ${new Date().toISOString()}\nEngine:         MCP-aware security engine\n${'─'.repeat(48)}`;
   navigator.clipboard.writeText(txt).then(() => {
     const b = event.target; const o = b.textContent;
     b.textContent = '✓ ' + t('action_copy'); b.style.color = 'var(--green)';
