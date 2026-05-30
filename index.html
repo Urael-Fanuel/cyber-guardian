@@ -806,9 +806,10 @@ function renderResult(r) {
     STATUS_SAFE:      { cls:'safe',  icon:'✅', title:t('verdict_safe_title'), sub:t('verdict_safe_sub') },
     STATUS_MODERATE:  { cls:'mod',   icon:'⚠️', title:t('verdict_mod_title'),  sub:t('verdict_mod_sub') },
     STATUS_CRITICAL:  { cls:'crit',  icon:'🚨', title:t('verdict_crit_title'), sub:t('verdict_crit_sub') },
-    STATUS_AMBIGUOUS: { cls:'',      icon:'❓', title:t('verdict_amb_title'),  sub:t('verdict_amb_sub') },
+    STATUS_AMBIGUOUS: { cls:'mod',   icon:'⚠️', title:t('verdict_amb_title'),  sub:t('verdict_amb_sub') },
   };
-  const s = statusMap[r.status] || statusMap['STATUS_AMBIGUOUS'];
+  if (r.status === 'STATUS_AMBIGUOUS') r.status = 'STATUS_MODERATE';
+  const s = statusMap[r.status] || statusMap['STATUS_MODERATE'];
   const threats = r.threats || [];
   const score   = r.threat_score || 0;
 
