@@ -100,7 +100,7 @@ admin token, so business metrics are visible only after the owner logs in.
 
 `/content-admin.html` provides a username/password login for the site owner.
 Set `CG_ADMIN_USERNAME` and `CG_ADMIN_PASSWORD` in Vercel. The password is
-exchanged for a signed 12-hour admin token and is not stored in the browser.
+exchanged for a signed 30-day admin token and is not stored in the browser.
 
 The same signed admin token lets the site owner run unlimited scans without
 changing the public 10-scan monthly limit for normal visitors.

@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const ADMIN_USERNAME = process.env.CG_ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD = process.env.CG_ADMIN_PASSWORD || process.env.CG_ADMIN_BYPASS_SECRET || "";
 const TOKEN_SECRET = process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "";
+const ADMIN_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
   .split(",").map(s => s.trim()).filter(Boolean);
 
@@ -43,7 +44,7 @@ function createToken(username) {
     sub: username,
     role: "admin",
     iat: now,
-    exp: now + (12 * 60 * 60),
+    exp: now + ADMIN_TOKEN_TTL_SECONDS,
   }));
   return `${payload}.${sign(payload)}`;
 }
@@ -70,6 +71,6 @@ module.exports = async function handler(req, res) {
   return res.status(200).json({
     ok: true,
     token: createToken(username),
-    expires_in: 12 * 60 * 60,
+    expires_in: ADMIN_TOKEN_TTL_SECONDS,
   });
 };

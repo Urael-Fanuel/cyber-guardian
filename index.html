@@ -677,6 +677,22 @@ function getAdminBypassSecret() { return localStorage.getItem('cg-admin-secret')
 function getAdminToken() { return localStorage.getItem('cg-admin-token') || ''; }
 function hasAdminBypass() { return Boolean(getAdminBypassSecret().trim() || getAdminToken().trim()); }
 function isAsciiHeaderValue(value) { return /^[\x20-\x7E]*$/.test(value); }
+function clearAdminAuth() {
+  localStorage.removeItem('cg-admin-secret');
+  localStorage.removeItem('cg-admin-token');
+}
+function scanHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  const adminBypassSecret = getAdminBypassSecret().trim();
+  const adminToken = getAdminToken().trim();
+  if (adminBypassSecret) {
+    if (isAsciiHeaderValue(adminBypassSecret)) headers['X-CG-Admin-Secret'] = adminBypassSecret;
+    else localStorage.removeItem('cg-admin-secret');
+  } else if (adminToken) {
+    headers['X-CG-Admin-Token'] = adminToken;
+  }
+  return headers;
+}
 
 function openContact(type = 'sales') {
   if (window.cgTrack) window.cgTrack(type === 'sales' ? 'contact_sales_clicked' : 'contact_clicked', { type });
@@ -721,35 +737,41 @@ async function runScan() {
 
   let result;
   try {
-    const headers = { 'Content-Type': 'application/json' };
-    const adminToken = getAdminToken().trim();
-    const adminBypassSecret = getAdminBypassSecret().trim();
-    if (adminToken) {
-      headers['X-CG-Admin-Token'] = adminToken;
-    } else if (adminBypassSecret) {
-      if (isAsciiHeaderValue(adminBypassSecret)) {
-        headers['X-CG-Admin-Secret'] = adminBypassSecret;
-      } else {
-        localStorage.removeItem('cg-admin-secret');
-      }
-    }
-
-    const response = await fetch('/api/scan', {
+    let response = await fetch('/api/scan', {
       method: 'POST',
-      headers,
+      headers: scanHeaders(),
       body: JSON.stringify({ code, scope: currentScope })
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      if (response.status === 401 && (adminBypassSecret || adminToken)) {
-        localStorage.removeItem('cg-admin-secret');
+      const hadAdminAuth = hasAdminBypass();
+      if (response.status === 401 && hadAdminAuth) {
+        const adminBypassSecret = getAdminBypassSecret().trim();
         localStorage.removeItem('cg-admin-token');
+        if (adminBypassSecret && isAsciiHeaderValue(adminBypassSecret)) {
+          response = await fetch('/api/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CG-Admin-Secret': adminBypassSecret },
+            body: JSON.stringify({ code, scope: currentScope })
+          });
+          if (response.ok) {
+            result = await response.json();
+          } else {
+            clearAdminAuth();
+            const retryErr = await response.json().catch(() => ({}));
+            throw new Error(retryErr.error || err.error || 'Admin session expired. Sign in again at /content-admin.html.');
+          }
+        } else {
+          clearAdminAuth();
+          throw new Error(err.error || 'Admin session expired. Sign in again at /content-admin.html.');
+        }
+      } else {
+        throw new Error(err.error || `Server error ${response.status}`);
       }
-      throw new Error(err.error || `Server error ${response.status}`);
     }
 
-    result = await response.json();
+    if (!result) result = await response.json();
     if (!hasAdminBypass()) incrementQuota();
     if (window.cgTrack) {
       window.cgTrack('scan_completed', {
