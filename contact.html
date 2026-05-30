@@ -12,9 +12,10 @@ body::before { content:''; position: fixed; inset: 0; pointer-events: none; back
 nav { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; padding: 18px 28px; border-bottom: 1px solid var(--border); }
 .logo { font-family: var(--sans); font-weight: 800; color: #fff; text-decoration: none; }
 .nav-r { display:flex; align-items:center; gap:12px; }
-.static-lang-switcher { display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; }
-.static-lang-btn { width:auto; border:1px solid var(--border2); background:transparent; color:var(--dim); padding:5px 7px; font-size:11px; border-radius:2px; cursor:pointer; }
-.static-lang-btn.active { color:#001018; background:var(--cyan); border-color:var(--cyan); }
+.static-lang-switcher { display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; align-items:center; }
+.static-lang-btn { width:auto; background:#1E2D3D; border:1px solid #2A3F54; color:#7A9BB0; padding:5px 9px; font-size:15px; border-radius:4px; cursor:pointer; font-family:var(--mono); letter-spacing:1px; transition:all 0.15s; }
+.static-lang-btn:hover { border-color:var(--cyan); background:#243346; color:var(--cyan); transform:scale(1.08); }
+.static-lang-btn.active { border-color:var(--cyan); background:rgba(0,212,255,0.18); color:var(--cyan); font-weight:700; box-shadow:0 0 10px rgba(0,212,255,0.35); }
 .back { color: var(--cyan); text-decoration: none; font-size: 12px; border: 1px solid var(--border2); padding: 7px 12px; }
 main { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 54px 18px 70px; }
 .eyebrow { color: var(--cyan); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }

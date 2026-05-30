@@ -349,7 +349,7 @@ function applyPageSpecificStaticTranslations() {
 }
 
 const style = document.createElement("style");
-style.textContent = ".static-lang-switcher{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;align-items:center}.static-lang-btn{border:1px solid #2D5A73;background:transparent;color:#7A9BB0;padding:5px 7px;font-size:11px;border-radius:2px;cursor:pointer}.static-lang-btn.active{background:#00D4FF;border-color:#00D4FF;color:#001018}";
+style.textContent = ".static-lang-switcher{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;align-items:center}.static-lang-btn{background:#1E2D3D;border:1px solid #2A3F54;color:#7A9BB0;padding:5px 9px;font-size:15px;border-radius:4px;cursor:pointer;font-family:var(--mono,'IBM Plex Mono',Consolas,monospace);letter-spacing:1px;transition:all .15s}.static-lang-btn:hover{border-color:#00D4FF;background:#243346;color:#00D4FF;transform:scale(1.08)}.static-lang-btn.active{border-color:#00D4FF;background:rgba(0,212,255,.18);color:#00D4FF;font-weight:700;box-shadow:0 0 10px rgba(0,212,255,.35)}";
 document.head.appendChild(style);
 
 buildStaticLangSwitcher();
