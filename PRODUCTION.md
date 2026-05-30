@@ -126,19 +126,22 @@ so the dashboard continues updating normally.
 
 ## Automatic Scanner Scope
 
-The scheduled GitHub Actions scanner uses conservative launch defaults:
+The scheduled GitHub Actions scanner spreads discovery throughout the day:
 
-- `SCAN_LIMIT=30`
-- `SCAN_SCOPES=skill,mcp,extension`
-- `SCAN_SCOPE_LIMITS=skill:15,mcp:10,extension:5`
+- Runs once per hour.
+- Scheduled runs use `SCAN_LIMIT=1`.
+- Scope rotates by UTC hour: `skill`, `mcp`, `extension`, then repeats.
+- Scheduled runs set `SCAN_OFFSET` from the day/hour so each run advances through
+  discovery results instead of repeatedly scanning the same top repository.
 - `MAX_RUNTIME_MINUTES=10`
 - `MAX_ITEM_SECONDS=45`
 - `MAX_CG_SCAN_SECONDS=45`
 
-That means a normal run scans up to 15 AI Skills, 10 MCP servers, and 5 IDE
-extensions. Manual GitHub Actions runs expose separate toggles and limits for
-each scan type. Each successful scan writes safe dashboard metadata to Supabase
-`site_scans` immediately, so the public dashboard can update during the batch.
+That means the public dashboard receives a steadier stream of scan results during
+the day instead of one large daily batch. Manual GitHub Actions runs still expose
+separate toggles and limits for each scan type. Each successful scan writes safe
+dashboard metadata to Supabase `site_scans` immediately, so the public dashboard
+can update during the run.
 Large IDE extension repositories are capped by file count, byte count, and
 per-item timeouts so one repository cannot stall the entire run.
 

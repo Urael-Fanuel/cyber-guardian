@@ -5,11 +5,11 @@
 #  Also triggerable manually from the GitHub Actions UI
 # ══════════════════════════════════════════════════════════════
 
-name: Daily Cyber-Guardian Security Scan
+name: Hourly Cyber-Guardian Security Scan
 
 on:
   schedule:
-    - cron: "0 3 * * *"          # 03:00 UTC every day
+    - cron: "0 * * * *"          # once per hour
   workflow_dispatch:               # manual trigger button in GitHub UI
     inputs:
       scan_limit:
@@ -51,7 +51,7 @@ on:
 
 jobs:
   scan:
-    name: Scan MCP, Skills, and IDE Extensions
+    name: Scan rotating MCP, Skills, and IDE Extensions
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -82,6 +82,7 @@ jobs:
           EVENT_NAME="${{ github.event_name }}"
           SCAN_LIMIT="${{ inputs.scan_limit }}"
           SCAN_LIMIT="${SCAN_LIMIT:-30}"
+          SCAN_OFFSET="0"
 
           raw_scan_skills="${{ inputs.scan_skills }}"
           raw_skill_limit="${{ inputs.skill_limit }}"
@@ -133,13 +134,25 @@ jobs:
             fi
           }
 
-          if [ "$EVENT_NAME" != "workflow_dispatch" ] || [ "$SCAN_SKILLS" = "true" ]; then
+          if [ "$EVENT_NAME" != "workflow_dispatch" ]; then
+            HOUR_UTC="$(date -u +%H)"
+            DAY_OF_YEAR="$(date -u +%j)"
+            HOUR_NUM=$((10#$HOUR_UTC))
+            DAY_NUM=$((10#$DAY_OF_YEAR))
+            case $((HOUR_NUM % 3)) in
+              0) add_scope "skill" "1" ;;
+              1) add_scope "mcp" "1" ;;
+              2) add_scope "extension" "1" ;;
+            esac
+            SCAN_LIMIT="1"
+            SCAN_OFFSET=$((DAY_NUM * 8 + HOUR_NUM / 3))
+          elif [ "$SCAN_SKILLS" = "true" ]; then
             add_scope "skill" "$SKILL_LIMIT"
           fi
-          if [ "$EVENT_NAME" != "workflow_dispatch" ] || [ "$SCAN_MCP" = "true" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$SCAN_MCP" = "true" ]; then
             add_scope "mcp" "$MCP_LIMIT"
           fi
-          if [ "$EVENT_NAME" != "workflow_dispatch" ] || [ "$SCAN_IDE_EXTENSIONS" = "true" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$SCAN_IDE_EXTENSIONS" = "true" ]; then
             add_scope "extension" "$IDE_EXTENSION_LIMIT"
           fi
 
@@ -151,6 +164,7 @@ jobs:
           echo "SCAN_LIMIT=$SCAN_LIMIT" >> "$GITHUB_ENV"
           echo "SCAN_SCOPES=$SCOPES" >> "$GITHUB_ENV"
           echo "SCAN_SCOPE_LIMITS=$LIMITS" >> "$GITHUB_ENV"
+          echo "SCAN_OFFSET=$SCAN_OFFSET" >> "$GITHUB_ENV"
 
       # ── Run scanner ──────────────────────────────────────────
       - name: Run Cyber-Guardian Security Scanner
@@ -174,6 +188,7 @@ jobs:
           echo "  Scan scopes: $SCAN_SCOPES"
           echo "  Scope limits: $SCAN_SCOPE_LIMITS"
           echo "  Scan limit : $SCAN_LIMIT"
+          echo "  Scan offset: $SCAN_OFFSET"
           echo "  Dry run    : $DRY_RUN"
           echo "  Time (UTC) : $(date -u)"
           echo "══════════════════════════════════════"

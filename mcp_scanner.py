@@ -33,6 +33,7 @@ GITHUB_TOKEN   = os.environ["GITHUB_TOKEN"]          # required
 SUPABASE_URL   = os.environ["SUPABASE_URL"]           # required
 SUPABASE_KEY   = os.environ["SUPABASE_SERVICE_KEY"]   # required (service role)
 SCAN_LIMIT     = int(os.environ.get("SCAN_LIMIT", 30))   # total items per run
+SCAN_OFFSET    = max(0, int(os.environ.get("SCAN_OFFSET", 0)))
 SCAN_SCOPES    = [
     scope.strip().lower()
     for scope in os.environ.get("SCAN_SCOPES", "skill,mcp,extension").split(",")
@@ -495,8 +496,10 @@ async def fetch_github_repositories(client: httpx.AsyncClient, limit: int, queri
     }
     results: dict[str, dict] = {}   # full_name → repo dict
 
+    target_count = max(limit, limit + SCAN_OFFSET)
+
     for query in queries:
-        if len(results) >= limit:
+        if len(results) >= target_count:
             break
         url = "https://api.github.com/search/repositories"
         params = {"q": query, "sort": "stars", "order": "desc", "per_page": 50}
@@ -509,7 +512,11 @@ async def fetch_github_repositories(client: httpx.AsyncClient, limit: int, queri
             log.warning(f"GitHub search error [{query}]: {e}")
         await asyncio.sleep(GITHUB_DELAY)
 
-    return list(results.values())[:limit]
+    repos = list(results.values())
+    if not repos:
+        return []
+    start = SCAN_OFFSET % len(repos)
+    return (repos[start:] + repos[:start])[:limit]
 
 
 async def fetch_github_servers(client: httpx.AsyncClient, limit: int) -> list[dict]:
@@ -676,9 +683,10 @@ NPM_TERMS_BY_SCOPE = {
 
 async def fetch_npm_packages(client: httpx.AsyncClient, limit: int, terms: list[str]) -> list[dict]:
     results: dict[str, dict] = {}
+    target_count = max(limit, limit + SCAN_OFFSET)
 
     for term in terms:
-        if len(results) >= limit:
+        if len(results) >= target_count:
             break
         try:
             r = await client.get(
@@ -694,7 +702,11 @@ async def fetch_npm_packages(client: httpx.AsyncClient, limit: int, terms: list[
             log.warning(f"npm search error [{term}]: {e}")
         await asyncio.sleep(NPM_DELAY)
 
-    return list(results.values())[:limit]
+    packages = list(results.values())
+    if not packages:
+        return []
+    start = SCAN_OFFSET % len(packages)
+    return (packages[start:] + packages[:start])[:limit]
 
 
 async def fetch_npm_servers(client: httpx.AsyncClient, limit: int) -> list[dict]:
@@ -1237,9 +1249,14 @@ async def run_scan():
             log.info(f"Scope {scope}: limit={limit}")
 
             if scope == "mcp":
-                github_limit = max(1, limit // 3)
-                npm_limit = max(1, limit // 3)
-                mcpso_limit = max(0, limit - github_limit - npm_limit)
+                if limit == 1:
+                    github_limit = 1
+                    npm_limit = 0
+                    mcpso_limit = 0
+                else:
+                    github_limit = max(1, limit // 3)
+                    npm_limit = max(1, limit // 3)
+                    mcpso_limit = max(0, limit - github_limit - npm_limit)
 
                 github_repos = await fetch_github_servers(client, github_limit)
                 npm_pkgs = await fetch_npm_servers(client, npm_limit)
