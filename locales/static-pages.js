@@ -1,11 +1,11 @@
 const STATIC_LANGS = {
-  en: { flag: "EN", dir: "ltr" },
-  he: { flag: "IL", dir: "rtl" },
-  de: { flag: "DE", dir: "ltr" },
-  ja: { flag: "JP", dir: "ltr" },
-  ko: { flag: "KR", dir: "ltr" },
-  fr: { flag: "FR", dir: "ltr" },
-  pt: { flag: "BR", dir: "ltr" },
+  en: { flag: "EN", flagCode: "us", dir: "ltr" },
+  he: { flag: "IL", flagCode: "il", dir: "rtl" },
+  de: { flag: "DE", flagCode: "de", dir: "ltr" },
+  ja: { flag: "JP", flagCode: "jp", dir: "ltr" },
+  ko: { flag: "KR", flagCode: "kr", dir: "ltr" },
+  fr: { flag: "FR", flagCode: "fr", dir: "ltr" },
+  pt: { flag: "BR", flagCode: "br", dir: "ltr" },
 };
 
 const STATIC_T = {
@@ -269,7 +269,12 @@ function buildStaticLangSwitcher() {
     btn.type = "button";
     btn.className = "static-lang-btn";
     btn.dataset.lang = code;
-    btn.textContent = info.flag;
+    btn.title = info.flag;
+    btn.setAttribute("aria-label", info.flag);
+    const flag = document.createElement("span");
+    flag.className = `static-flag-icon static-flag-${info.flagCode}`;
+    flag.setAttribute("aria-hidden", "true");
+    btn.appendChild(flag);
     btn.onclick = () => setStaticLang(code);
     container.appendChild(btn);
   });
@@ -349,7 +354,7 @@ function applyPageSpecificStaticTranslations() {
 }
 
 const style = document.createElement("style");
-style.textContent = ".static-lang-switcher{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;align-items:center}.static-lang-btn{background:#1E2D3D;border:1px solid #2A3F54;color:#7A9BB0;padding:5px 9px;font-size:15px;border-radius:4px;cursor:pointer;font-family:var(--mono,'IBM Plex Mono',Consolas,monospace);letter-spacing:1px;transition:all .15s}.static-lang-btn:hover{border-color:#00D4FF;background:#243346;color:#00D4FF;transform:scale(1.08)}.static-lang-btn.active{border-color:#00D4FF;background:rgba(0,212,255,.18);color:#00D4FF;font-weight:700;box-shadow:0 0 10px rgba(0,212,255,.35)}";
+style.textContent = ".static-lang-switcher{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;align-items:center}.static-lang-btn{min-width:44px;min-height:30px;display:inline-flex;align-items:center;justify-content:center;background:#1E2D3D;border:1px solid #2A3F54;color:#7A9BB0;padding:5px 9px;font-size:15px;border-radius:4px;cursor:pointer;font-family:var(--mono,'IBM Plex Mono',Consolas,monospace);letter-spacing:1px;transition:all .15s;line-height:1}.static-lang-btn:hover{border-color:#00D4FF;background:#243346;color:#00D4FF;transform:scale(1.08)}.static-lang-btn.active{border-color:#00D4FF;background:rgba(0,212,255,.18);color:#00D4FF;font-weight:700;box-shadow:0 0 10px rgba(0,212,255,.35)}.static-flag-icon{position:relative;display:block;width:24px;height:16px;overflow:hidden;border-radius:2px;background:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 0 0 1px rgba(0,0,0,.25)}.static-flag-us{background:repeating-linear-gradient(to bottom,#b22234 0 1.23px,#fff 1.23px 2.46px)}.static-flag-us:before{content:'';position:absolute;left:0;top:0;width:10px;height:8.6px;background:#3c3b6e}.static-flag-il{background:linear-gradient(to bottom,#fff 0 16%,#005eb8 16% 28%,#fff 28% 72%,#005eb8 72% 84%,#fff 84%)}.static-flag-il:before{content:'✡';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#005eb8;font-size:8px;line-height:1}.static-flag-de{background:linear-gradient(to bottom,#000 0 33.33%,#dd0000 33.33% 66.66%,#ffce00 66.66%)}.static-flag-jp:before{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#bc002d;left:50%;top:50%;transform:translate(-50%,-50%)}.static-flag-kr:before{content:'';position:absolute;width:9px;height:9px;border-radius:50%;background:linear-gradient(to bottom,#cd2e3a 0 50%,#0047a0 50%);left:50%;top:50%;transform:translate(-50%,-50%) rotate(28deg)}.static-flag-fr{background:linear-gradient(to right,#0055a4 0 33.33%,#fff 33.33% 66.66%,#ef4135 66.66%)}.static-flag-br{background:#009b3a}.static-flag-br:before{content:'';position:absolute;width:13px;height:13px;background:#ffdf00;left:50%;top:50%;transform:translate(-50%,-50%) rotate(45deg)}.static-flag-br:after{content:'';position:absolute;width:7px;height:7px;border-radius:50%;background:#002776;left:50%;top:50%;transform:translate(-50%,-50%)}";
 document.head.appendChild(style);
 
 buildStaticLangSwitcher();

@@ -60,14 +60,26 @@ nav {
 .logo-hex { width: 30px; height: 30px; background: var(--cyan); clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display: flex; align-items: center; justify-content: center; font-size: 14px; animation: hexPulse 4s ease-in-out infinite; }
 @keyframes hexPulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.3)} }
 .nav-tag { font-size: 10px; color: var(--cyan); letter-spacing: 2px; border: 1px solid var(--border2); padding: 4px 10px; border-radius: 2px; }
-.nav-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.nav-right { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; min-width: 0; }
 .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: p 2s infinite; }
 @keyframes p { 0%,100%{opacity:1} 50%{opacity:0.2} }
 .pulse-txt { font-size: 10px; color: var(--green); letter-spacing: 1.5px; }
-.lang-switcher { display: flex; gap: 5px; flex-wrap: wrap; }
-.lang-btn { background: #1E2D3D; border: 1px solid #2A3F54; padding: 5px 9px; font-size: 15px; cursor: pointer; border-radius: 4px; transition: all 0.15s; color: #7A9BB0; font-family: var(--mono); letter-spacing: 1px; }
+.lang-switcher { display: flex; gap: 5px; flex-wrap: wrap; flex: 0 0 auto; }
+.lang-btn { min-width: 44px; min-height: 30px; display: inline-flex; align-items: center; justify-content: center; background: #1E2D3D; border: 1px solid #2A3F54; padding: 5px 9px; font-size: 15px; cursor: pointer; border-radius: 4px; transition: all 0.15s; color: #7A9BB0; font-family: var(--mono); letter-spacing: 1px; line-height: 1; }
 .lang-btn:hover { border-color: var(--cyan); background: #243346; color: var(--cyan); transform: scale(1.08); }
 .lang-btn.active { border-color: var(--cyan); background: rgba(0,212,255,0.18); color: var(--cyan); font-weight: 700; box-shadow: 0 0 10px rgba(0,212,255,0.35); }
+.flag-icon { position: relative; display: block; width: 24px; height: 16px; overflow: hidden; border-radius: 2px; background: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28), 0 0 0 1px rgba(0,0,0,0.25); }
+.flag-us { background: repeating-linear-gradient(to bottom,#b22234 0 1.23px,#fff 1.23px 2.46px); }
+.flag-us::before { content: ''; position: absolute; left: 0; top: 0; width: 10px; height: 8.6px; background: #3c3b6e; }
+.flag-il { background: linear-gradient(to bottom,#fff 0 16%,#005eb8 16% 28%,#fff 28% 72%,#005eb8 72% 84%,#fff 84%); }
+.flag-il::before { content: '✡'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #005eb8; font-size: 8px; line-height: 1; }
+.flag-de { background: linear-gradient(to bottom,#000 0 33.33%,#dd0000 33.33% 66.66%,#ffce00 66.66%); }
+.flag-jp::before { content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #bc002d; left: 50%; top: 50%; transform: translate(-50%,-50%); }
+.flag-kr::before { content: ''; position: absolute; width: 9px; height: 9px; border-radius: 50%; background: linear-gradient(to bottom,#cd2e3a 0 50%,#0047a0 50%); left: 50%; top: 50%; transform: translate(-50%,-50%) rotate(28deg); }
+.flag-fr { background: linear-gradient(to right,#0055a4 0 33.33%,#fff 33.33% 66.66%,#ef4135 66.66%); }
+.flag-br { background: #009b3a; }
+.flag-br::before { content: ''; position: absolute; width: 13px; height: 13px; background: #ffdf00; left: 50%; top: 50%; transform: translate(-50%,-50%) rotate(45deg); }
+.flag-br::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: #002776; left: 50%; top: 50%; transform: translate(-50%,-50%); }
 
 /* ── HERO ── */
 .hero { position: relative; z-index: 2; text-align: center; padding: 60px 40px 36px; max-width: 760px; margin: 0 auto; }
@@ -617,18 +629,21 @@ footer a:hover { color: var(--cyan); }
 (function buildLangSwitcher() {
   const container = document.getElementById('lang-switcher');
   const languageButtons = [
-    ['en', 'EN'], ['he', 'IL'], ['de', 'DE'], ['ja', 'JP'],
-    ['ko', 'KR'], ['fr', 'FR'], ['pt', 'BR']
+    ['en', 'EN', 'us'], ['he', 'IL', 'il'], ['de', 'DE', 'de'], ['ja', 'JP', 'jp'],
+    ['ko', 'KR', 'kr'], ['fr', 'FR', 'fr'], ['pt', 'BR', 'br']
   ];
-  languageButtons.forEach(([code, label]) => {
+  languageButtons.forEach(([code, label, flagCode]) => {
     const info = LANGS[code];
     if (!info) return;
     const btn = document.createElement('button');
     btn.className = 'lang-btn';
     btn.setAttribute('data-lang', code);
-    btn.textContent = label;
     btn.title = info.name;
     btn.setAttribute('aria-label', info.name || label);
+    const flag = document.createElement('span');
+    flag.className = `flag-icon flag-${flagCode}`;
+    flag.setAttribute('aria-hidden', 'true');
+    btn.appendChild(flag);
     btn.onclick = () => setLang(code);
     container.appendChild(btn);
   });
