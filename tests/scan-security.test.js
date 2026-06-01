@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const Module = require("node:module");
 
 process.env.NODE_ENV = "test";
@@ -6,6 +7,7 @@ process.env.SUPABASE_URL = "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_KEY = "service-key";
 process.env.ANTHROPIC_API_KEY = "test-anthropic-key";
 process.env.CG_ADMIN_BYPASS_SECRET = "developer-secret";
+process.env.DYNAMIC_SANDBOX_ENABLED = "false";
 
 const insertedRows = [];
 const rpcCalls = [];
@@ -38,6 +40,7 @@ const scan = require("../api/scan");
 const {
   runStaticScan,
   mergeStaticThreats,
+  mergeDynamicSandbox,
   normalizeResult,
   THREAT_FAMILIES,
   THREAT_FAMILY_DEFINITIONS,
@@ -70,6 +73,15 @@ function mockRes() {
   res.json = (body) => { res.body = body; return res; };
   res.end = () => { res.ended = true; return res; };
   return res;
+}
+
+function adminToken(secret = "developer-secret") {
+  const payload = Buffer.from(JSON.stringify({
+    role: "admin",
+    exp: Math.floor(Date.now() / 1000) + 3600,
+  })).toString("base64url");
+  const signature = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
 }
 
 function testCanonicalSixtyFamilies() {
@@ -176,6 +188,28 @@ function testStaticMergeCannotDowngrade() {
   assert.deepEqual(merged.safe_patterns_noted, []);
 }
 
+function testDynamicSandboxCanRaiseVerdict() {
+  const merged = mergeDynamicSandbox({
+    status: "STATUS_SAFE",
+    threat_score: 2,
+    confidence: 0.85,
+    summary: "Static review did not find a known malicious pattern.",
+    threats: [],
+    safe_patterns_noted: ["No obvious credential access"],
+  }, {
+    enabled: true,
+    status: "completed",
+    verdict: "malicious",
+    threat_score: 88,
+    summary: "Sandbox observed a callback to an external host.",
+    signals: ["external network callback"],
+  });
+
+  assert.equal(merged.status, "STATUS_CRITICAL");
+  assert.equal(merged.threat_score, 88);
+  assert.equal(merged.dynamic_sandbox.status, "completed");
+}
+
 async function testManualScanPersistsDashboardMetadata() {
   insertedRows.length = 0;
   rpcCalls.length = 0;
@@ -222,6 +256,29 @@ async function testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata() {
   assert.equal(insertedRows.length, 1);
   assert.equal(insertedRows[0].table, "site_scans");
   assert.equal(insertedRows[0].row.scope, "mcp");
+}
+
+async function testAdminTokenBypassSkipsUsageLimits() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const res = mockRes();
+  await scan({
+    method: "POST",
+    headers: {
+      origin: "https://cyberguardianscan.com",
+      host: "cyberguardianscan.com",
+      "x-forwarded-for": "203.0.113.49",
+      "x-cg-admin-token": adminToken(),
+    },
+    body: { code: 'console.log("admin token bypass persistence test");', scope: "skill" },
+    url: "/api/scan",
+  }, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(rpcCalls.length, 0);
+  assert.equal(insertedRows.length, 1);
+  assert.equal(insertedRows[0].row.scope, "skill");
+  assert.equal(res.body._admin_bypass, true);
 }
 
 async function testCachedScanStillPersistsCurrentScope() {
@@ -305,6 +362,7 @@ testStaticSecretRead();
 testStaticPromptInjection();
 testStaticSupplyChainWorkflow();
 testStaticMergeCannotDowngrade();
+testDynamicSandboxCanRaiseVerdict();
 testScopeNormalization();
 testCanonicalSixtyFamilies();
 testCoverageMetadata();
@@ -313,6 +371,7 @@ testNormalizeAddsSixtyFamilyMetadata();
 
 testManualScanPersistsDashboardMetadata()
   .then(testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata)
+  .then(testAdminTokenBypassSkipsUsageLimits)
   .then(testCachedScanStillPersistsCurrentScope)
   .then(testBatchScannerCanSkipApiPersistence)
   .then(testSupplyChainScopesPersist)

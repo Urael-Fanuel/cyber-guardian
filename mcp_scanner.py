@@ -929,6 +929,7 @@ def _site_scan_row(scope: str, result: dict, server=None) -> dict:
         "component_type":   _clean_text(profile.get("component_type") or scope, 48).lower(),
         "capabilities":     _clean_list(profile.get("capabilities"), 8),
         "use_case_tags":    _clean_list(profile.get("use_case_tags") or profile.get("keywords"), 10),
+        "dynamic_sandbox":  result.get("dynamic_sandbox") if isinstance(result.get("dynamic_sandbox"), dict) else {},
     }
     if server:
         row.update({
@@ -968,6 +969,15 @@ def save_site_scan(sb: Client, scope: str, result: dict, server=None) -> bool:
     except Exception as e:
         legacy_markers = ("schema cache", "column", "could not find")
         if any(marker in str(e).lower() for marker in legacy_markers):
+            if "dynamic_sandbox" in row:
+                try:
+                    enriched = dict(row)
+                    enriched.pop("dynamic_sandbox", None)
+                    sb.table("site_scans").insert(enriched).execute()
+                    log.warning("  [CG] saved site_scan without dynamic_sandbox; run migration 007")
+                    return True
+                except Exception:
+                    pass
             try:
                 legacy = {key: row[key] for key in ("scope", "status", "threat_score", "threat_count", "threats_summary")}
                 sb.table("site_scans").insert(legacy).execute()

@@ -176,6 +176,12 @@ canvas { max-height: 200px; }
 .purpose-title, .alt-title { color: var(--cyan); font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 4px; }
 .cap-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
 .cap-tag { border: 1px solid rgba(0,230,118,0.18); background: rgba(0,230,118,0.055); color: var(--green); padding: 3px 7px; font-family: var(--mono); font-size: 10px; }
+.sandbox-evidence { border: 1px solid rgba(0,212,255,0.18); background: rgba(0,212,255,0.035); padding: 9px 11px; margin: 8px 0 10px; color: var(--text); font-size: 12px; line-height: 1.55; }
+.sandbox-evidence.clean { border-color: rgba(0,230,118,0.22); background: rgba(0,230,118,0.045); }
+.sandbox-evidence.risky { border-color: rgba(255,189,46,0.3); background: rgba(255,189,46,0.055); }
+.sandbox-evidence.error { border-color: rgba(255,61,61,0.28); background: rgba(255,61,61,0.045); }
+.sandbox-evidence-title { color: var(--cyan); font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 4px; }
+.sandbox-evidence-meta { color: var(--dim); margin-top: 5px; }
 .alternatives-box { border: 1px solid rgba(0,230,118,0.18); background: rgba(0,230,118,0.035); padding: 10px 12px; margin-top: 10px; }
 .alt-item { padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.06); }
 .alt-item:first-of-type { border-top: none; }
@@ -806,6 +812,13 @@ const DECISION_EXTRA_COPY = {
     alt_note: 'Not a guarantee. Review the source and rescan before installing.',
     no_alternatives: 'No reliable similar alternative is available yet. Rescan later as the database grows.',
     open_source: 'Open source',
+    sandbox_evidence: 'Dynamic sandbox evidence',
+    sandbox_provider: 'Sandbox provider',
+    sandbox_status_completed: 'completed',
+    sandbox_status_queued: 'queued',
+    sandbox_status_submitted: 'submitted',
+    sandbox_status_error: 'provider error',
+    sandbox_status_skipped: 'skipped',
   },
   he: {
     purpose: 'מה הקוד הזה כנראה עושה',
@@ -813,6 +826,13 @@ const DECISION_EXTRA_COPY = {
     alt_note: 'זו אינה הבטחה. בדוק את המקור וסרוק שוב לפני התקנה.',
     no_alternatives: 'עדיין אין חלופה דומה ואמינה זמינה. כדאי לסרוק שוב בהמשך כשהמאגר יגדל.',
     open_source: 'פתח מקור',
+    sandbox_evidence: 'ראיות מ-Sandbox דינמי',
+    sandbox_provider: 'ספק Sandbox',
+    sandbox_status_completed: 'הושלם',
+    sandbox_status_queued: 'בתור',
+    sandbox_status_submitted: 'נשלח',
+    sandbox_status_error: 'שגיאת ספק',
+    sandbox_status_skipped: 'דולג',
   },
   de: {
     purpose: 'Was dieser Code vermutlich macht',
@@ -820,6 +840,13 @@ const DECISION_EXTRA_COPY = {
     alt_note: 'Keine Garantie. Pruefen Sie die Quelle und scannen Sie vor der Installation erneut.',
     no_alternatives: 'Noch keine verlaessliche aehnliche Alternative verfuegbar. Scannen Sie spaeter erneut, wenn die Datenbank gewachsen ist.',
     open_source: 'Quelle oeffnen',
+    sandbox_evidence: 'Dynamische Sandbox-Evidenz',
+    sandbox_provider: 'Sandbox-Provider',
+    sandbox_status_completed: 'abgeschlossen',
+    sandbox_status_queued: 'in Warteschlange',
+    sandbox_status_submitted: 'eingereicht',
+    sandbox_status_error: 'Provider-Fehler',
+    sandbox_status_skipped: 'uebersprungen',
   },
   ja: {
     purpose: 'このコードが行う可能性があること',
@@ -827,6 +854,13 @@ const DECISION_EXTRA_COPY = {
     alt_note: '保証ではありません。インストール前にソースを確認し、再スキャンしてください。',
     no_alternatives: '信頼できる類似代替候補はまだありません。データベースが増えた後でもう一度スキャンしてください。',
     open_source: 'ソースを開く',
+    sandbox_evidence: '動的サンドボックス証拠',
+    sandbox_provider: 'サンドボックス提供元',
+    sandbox_status_completed: '完了',
+    sandbox_status_queued: '待機中',
+    sandbox_status_submitted: '送信済み',
+    sandbox_status_error: 'プロバイダーエラー',
+    sandbox_status_skipped: 'スキップ',
   },
   ko: {
     purpose: '이 코드가 하는 것으로 보이는 일',
@@ -834,6 +868,13 @@ const DECISION_EXTRA_COPY = {
     alt_note: '보장은 아닙니다. 설치 전에 소스를 확인하고 다시 스캔하세요.',
     no_alternatives: '아직 신뢰할 만한 유사 대안이 없습니다. 데이터베이스가 더 쌓인 뒤 다시 스캔하세요.',
     open_source: '소스 열기',
+    sandbox_evidence: '동적 샌드박스 증거',
+    sandbox_provider: '샌드박스 제공자',
+    sandbox_status_completed: '완료',
+    sandbox_status_queued: '대기 중',
+    sandbox_status_submitted: '제출됨',
+    sandbox_status_error: '제공자 오류',
+    sandbox_status_skipped: '건너뜀',
   },
   fr: {
     purpose: 'Ce que ce code semble faire',
@@ -841,6 +882,13 @@ const DECISION_EXTRA_COPY = {
     alt_note: 'Ce n’est pas une garantie. Verifiez la source et relancez un scan avant installation.',
     no_alternatives: 'Aucune alternative similaire fiable n’est encore disponible. Relancez un scan plus tard, lorsque la base aura grandi.',
     open_source: 'Ouvrir la source',
+    sandbox_evidence: 'Preuves de sandbox dynamique',
+    sandbox_provider: 'Fournisseur sandbox',
+    sandbox_status_completed: 'termine',
+    sandbox_status_queued: 'en file',
+    sandbox_status_submitted: 'soumis',
+    sandbox_status_error: 'erreur fournisseur',
+    sandbox_status_skipped: 'ignore',
   },
   pt: {
     purpose: 'O que este codigo parece fazer',
@@ -848,6 +896,13 @@ const DECISION_EXTRA_COPY = {
     alt_note: 'Nao e garantia. Verifique a fonte e escaneie novamente antes de instalar.',
     no_alternatives: 'Ainda nao ha uma alternativa semelhante confiavel. Escaneie novamente mais tarde, quando a base crescer.',
     open_source: 'Abrir fonte',
+    sandbox_evidence: 'Evidencia de sandbox dinamico',
+    sandbox_provider: 'Provedor de sandbox',
+    sandbox_status_completed: 'concluido',
+    sandbox_status_queued: 'na fila',
+    sandbox_status_submitted: 'enviado',
+    sandbox_status_error: 'erro do provedor',
+    sandbox_status_skipped: 'ignorado',
   }
 };
 
@@ -1137,6 +1192,26 @@ function purposeHtml(scan) {
   </div>`;
 }
 
+function sandboxEvidenceHtml(scan) {
+  const sandbox = scan?.dynamic_sandbox && typeof scan.dynamic_sandbox === 'object' ? scan.dynamic_sandbox : {};
+  if (!sandbox.status || ['disabled', 'not_configured'].includes(sandbox.status)) return '';
+  const score = Number.isFinite(sandbox.threat_score) ? sandbox.threat_score : parseInt(sandbox.threat_score || '0', 10) || 0;
+  const cls = sandbox.status === 'error'
+    ? 'error'
+    : (sandbox.verdict === 'malicious' || score >= 70 ? 'risky' : (sandbox.verdict === 'clean' ? 'clean' : ''));
+  const statusText = decisionText(`sandbox_status_${sandbox.status}`, sandbox.status);
+  const bits = [
+    statusText,
+    score ? `${t('score')}: ${score}/100` : '',
+    sandbox.verdict && sandbox.verdict !== 'unknown' ? sandbox.verdict : '',
+  ].filter(Boolean).join(' · ');
+  return `<div class="sandbox-evidence ${cls}">
+    <div class="sandbox-evidence-title">${escapeHtml(decisionText('sandbox_evidence', 'Dynamic sandbox evidence'))}</div>
+    ${sandbox.summary ? `<div>${escapeHtml(sandbox.summary)}</div>` : ''}
+    <div class="sandbox-evidence-meta">${escapeHtml(bits)}${bits ? ' · ' : ''}${escapeHtml(decisionText('sandbox_provider', 'Sandbox provider'))}: ${escapeHtml(sandbox.provider || 'external-isolated-runner')}</div>
+  </div>`;
+}
+
 function alternativesHtml(scan) {
   const items = Array.isArray(scan.alternatives) ? scan.alternatives : [];
   if (!items.length && scanDecision(scan).value !== 'safe') {
@@ -1316,6 +1391,7 @@ function renderRecentScan(s) {
           <span class="feed-meta">${timeAgo(s.scanned_at)}</span>
         </div>
         ${purposeHtml(s)}
+        ${sandboxEvidenceHtml(s)}
         <div class="decision-line"><strong>${escapeHtml(decision.text)}</strong></div>
         ${threatDetailsHtml(s)}
         ${alternativesHtml(s)}

@@ -25,6 +25,7 @@ It checks 60 canonical threat families before a user decides whether to install 
 | Frontend | Static HTML/CSS/JavaScript |
 | API | Vercel Serverless Functions |
 | AI analysis | Anthropic Claude |
+| Dynamic sandbox | Optional external isolated runner/provider |
 | Database | Supabase |
 | Rate limits | Supabase RPC plus server fallback |
 | Batch scanner | Python scanner for GitHub, npm, MCP directories, Skills, and IDE extensions |
@@ -34,7 +35,8 @@ It checks 60 canonical threat families before a user decides whether to install 
 - CORS allowlist via `ALLOWED_ORIGINS`
 - Server-side free beta quota of 10 scans per month and rate limits via Supabase
 - Global daily API cap
-- Submitted code is not executed
+- Submitted code is never executed inside the Vercel API
+- Optional dynamic sandbox evidence can be collected by a separate isolated runner/provider
 - Canonical 60-family threat registry
 - Definition for every threat family
 - Static deterministic rule coverage for every family
@@ -69,6 +71,7 @@ Core variables:
 - `SUPABASE_SERVICE_KEY`
 - `ALLOWED_ORIGINS`
 - `SCAN_USAGE_MODE=strict`
+- Optional sandbox runner: `DYNAMIC_SANDBOX_ENABLED=true`, `DYNAMIC_SANDBOX_WEBHOOK_URL`, `DYNAMIC_SANDBOX_API_KEY`
 
 ## Supabase Setup
 
@@ -88,6 +91,7 @@ The scan engine currently enforces:
 - one definition per family;
 - at least one deterministic static rule per family;
 - AI semantic analysis across the same 60-family registry;
+- optional dynamic sandbox evidence from an external isolated runner;
 - test coverage that fails if a family, definition, or static rule is missing.
 
 Every normalized scan response includes `threat_families_checked`, `threat_family_definitions`, and `coverage` metadata.
@@ -96,6 +100,10 @@ New scans also store scan intelligence for future recommendations: component typ
 plain-English purpose, capabilities, use-case tags, source name/URL, and a code
 hash. Run `supabase/migrations/005_site_scan_intelligence.sql` once so these
 fields populate and the dashboard can show similar lower-risk alternatives.
+
+Dynamic sandbox note: untrusted code must not run inside Vercel serverless
+functions. Configure a separate hardened runner/provider, then set the sandbox
+environment variables above and run `supabase/migrations/007_dynamic_sandbox.sql`.
 
 ## License
 

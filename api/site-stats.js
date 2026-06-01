@@ -190,11 +190,22 @@ module.exports = async function handler(req, res) {
 
   try {
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const enrichedSelect = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags';
     let { data: scans, error } = await sb
       .from('site_scans')
-      .select('scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags')
+      .select(`${enrichedSelect},dynamic_sandbox`)
       .order('scanned_at', { ascending: false })
       .limit(5000);
+
+    if (error && /column .* does not exist|schema cache|Could not find/i.test(error.message || '')) {
+      const enriched = await sb
+        .from('site_scans')
+        .select(enrichedSelect)
+        .order('scanned_at', { ascending: false })
+        .limit(5000);
+      scans = enriched.data;
+      error = enriched.error;
+    }
 
     if (error && /column .* does not exist|schema cache|Could not find/i.test(error.message || '')) {
       const legacy = await sb
@@ -252,6 +263,7 @@ module.exports = async function handler(req, res) {
       component_type:   s.component_type || s.scope || '',
       capabilities:     arrayValue(s.capabilities),
       use_case_tags:    arrayValue(s.use_case_tags),
+      dynamic_sandbox:  s.dynamic_sandbox && typeof s.dynamic_sandbox === 'object' ? s.dynamic_sandbox : {},
       alternatives:     saferAlternatives(s, scans),
     }));
 

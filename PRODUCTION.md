@@ -42,6 +42,15 @@ SCAN_MAX_API_CALLS_PER_DAY=5000
 SCAN_MAX_INPUT_SIZE_CHARS=50000
 SCAN_MIN_INPUT_SIZE_CHARS=5
 SCAN_CACHE_TTL_SECONDS=3600
+
+# Optional dynamic sandbox runner/provider:
+DYNAMIC_SANDBOX_ENABLED=false
+DYNAMIC_SANDBOX_WEBHOOK_URL=https://your-isolated-runner.example.com/scan
+DYNAMIC_SANDBOX_API_KEY=...
+DYNAMIC_SANDBOX_PROVIDER=external-isolated-runner
+DYNAMIC_SANDBOX_TIMEOUT_MS=4500
+DYNAMIC_SANDBOX_MIN_SCORE=0
+DYNAMIC_SANDBOX_SCOPES=mcp,skill,extension,github_action,package,dependency
 ```
 
 Use `SCAN_USAGE_MODE=strict` in production after the Supabase SQL migration has been run.
@@ -95,6 +104,20 @@ failed scans, Sales clicks, contact form submissions, and email signups in
 Raw IP addresses are not stored. Country, region, and city are taken from Vercel
 geo headers when available. The detailed analytics endpoint requires the signed
 admin token, so business metrics are visible only after the owner logs in.
+
+## Dynamic Sandbox
+
+The Vercel scan API must not execute untrusted user code directly. For dynamic
+behavior analysis, connect a separate hardened runner/provider and set
+`DYNAMIC_SANDBOX_ENABLED=true` with `DYNAMIC_SANDBOX_WEBHOOK_URL`.
+
+The runner endpoint receives the submitted code plus static scan context and
+should return JSON with fields such as `status`, `verdict`, `threat_score`,
+`summary`, `signals`, and `report_url`. Returned evidence is attached to the scan
+response and saved in Supabase `site_scans.dynamic_sandbox`.
+
+Run `supabase/migrations/007_dynamic_sandbox.sql` before enabling the runner in
+production.
 
 ## Developer Bypass
 
@@ -168,6 +191,9 @@ supabase/migrations/001_scan_usage_limits.sql
 supabase/migrations/002_site_content_overrides.sql
 supabase/migrations/003_email_subscribers.sql
 supabase/migrations/004_contact_messages.sql
+supabase/migrations/005_site_scan_intelligence.sql
+supabase/migrations/006_site_events.sql
+supabase/migrations/007_dynamic_sandbox.sql
 ```
 
 This creates:
@@ -177,6 +203,8 @@ This creates:
 - `public.site_content_overrides`
 - `public.email_subscribers`
 - `public.contact_messages`
+- `public.site_events`
+- `public.site_scans.dynamic_sandbox`
 
 The API calls this RPC before calling Anthropic. If the request exceeds minute, hour,
 day, or monthly quota, the request stops before any model cost is incurred.
@@ -206,11 +234,13 @@ Start low, monitor, then increase.
 - Confirm `SCAN_USAGE_MODE=strict`.
 - Confirm Supabase RPC works before public launch.
 - Confirm Vercel logs do not print user code, emails, API keys, or Supabase errors to users.
-- Confirm the scanner does not execute submitted code.
+- Confirm Vercel does not execute submitted code; dynamic analysis uses only the isolated sandbox runner/provider.
 - Confirm privacy/terms say whether user-submitted code may be sent to a third-party AI provider.
+- Confirm privacy/terms say whether user-submitted code may be sent to a third-party sandbox provider.
 
 ## Current Known Limits
 
 - Free quota is currently IP-based, not account-based.
 - Enterprise/private scanning should add accounts, API keys, and org-level quotas.
 - The AI verdict should be supported by deterministic rules for stronger auditability.
+- Dynamic sandbox execution requires a separate isolated runner/provider; it is not performed inside Vercel.

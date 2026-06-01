@@ -5,7 +5,8 @@ Cyber-Guardian uses a hybrid detection model:
 1. A canonical 60-family threat registry.
 2. Deterministic static rules for every family.
 3. AI analysis for semantic review, explanation, and ambiguous cases.
-4. A merged verdict that never lets AI downgrade a high-confidence deterministic finding.
+4. Optional dynamic sandbox evidence from an external isolated runner/provider.
+5. A merged verdict that never lets AI downgrade a high-confidence deterministic finding.
 
 ## Canonical Registry
 
@@ -33,6 +34,7 @@ Every normalized scan response includes:
 - `coverage.static_families`: currently `60`.
 - `coverage.ai_families`: currently `60`.
 - `coverage.static_covered_families`: list of families with static rules.
+- `dynamic_sandbox`: optional evidence returned by an isolated sandbox runner.
 
 ## Rule Requirements
 
@@ -48,6 +50,10 @@ Every deterministic rule defines:
 
 The AI may add findings, improve explanation, or classify ambiguous behavior. It must not
 remove or downgrade deterministic findings.
+
+Dynamic sandbox evidence may raise a verdict when runtime behavior is suspicious or
+malicious. Untrusted code is not executed inside the Vercel API; dynamic execution belongs
+in a separate hardened runner/provider with strict time, network, and filesystem limits.
 
 ## Quality Notes
 

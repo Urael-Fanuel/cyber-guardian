@@ -18,6 +18,12 @@ function minIntEnv(name, fallback, minimum) {
   return Math.max(intEnv(name, fallback), minimum);
 }
 
+function boolEnv(name, fallback = false) {
+  const value = String(process.env[name] || "").trim().toLowerCase();
+  if (!value) return fallback;
+  return ["1", "true", "yes", "on"].includes(value);
+}
+
 function anthropicModelEnv() {
   const configured = String(process.env.ANTHROPIC_MODEL || "").trim();
   const aliases = {
@@ -57,6 +63,14 @@ const CONFIG = {
   USAGE_MODE: process.env.SCAN_USAGE_MODE || "fallback",
   ADMIN_BYPASS_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || "",
   ADMIN_TOKEN_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "",
+  DYNAMIC_SANDBOX_ENABLED: boolEnv("DYNAMIC_SANDBOX_ENABLED", false),
+  DYNAMIC_SANDBOX_WEBHOOK_URL: process.env.DYNAMIC_SANDBOX_WEBHOOK_URL || "",
+  DYNAMIC_SANDBOX_API_KEY: process.env.DYNAMIC_SANDBOX_API_KEY || "",
+  DYNAMIC_SANDBOX_PROVIDER: process.env.DYNAMIC_SANDBOX_PROVIDER || "external-isolated-runner",
+  DYNAMIC_SANDBOX_TIMEOUT_MS: intEnv("DYNAMIC_SANDBOX_TIMEOUT_MS", 4500),
+  DYNAMIC_SANDBOX_MIN_SCORE: Math.max(0, Math.min(100, parseInt(process.env.DYNAMIC_SANDBOX_MIN_SCORE || "0", 10) || 0)),
+  DYNAMIC_SANDBOX_SCOPES: (process.env.DYNAMIC_SANDBOX_SCOPES || "mcp,skill,extension,github_action,package,dependency")
+    .split(",").map(s => s.trim()).filter(Boolean),
 };
 
 const state = {
@@ -153,6 +167,16 @@ async function insertSiteScanWithFallback(sb, row) {
     return false;
   }
 
+  if (Object.prototype.hasOwnProperty.call(row, "dynamic_sandbox")) {
+    const enrichedRow = { ...row };
+    delete enrichedRow.dynamic_sandbox;
+    const enrichedRetry = await sb.from("site_scans").insert(enrichedRow);
+    if (!enrichedRetry.error) {
+      console.warn("[site-scan-save] saved enriched row without dynamic_sandbox; run supabase/migrations/007_dynamic_sandbox.sql");
+      return true;
+    }
+  }
+
   const legacyRow = {
     scope: row.scope,
     status: row.status,
@@ -185,6 +209,7 @@ async function saveSiteScan(scope, result, context = {}) {
     source_url: cleanText(context.source_url || "", 500),
     source_owner: cleanText(context.source_owner || "", 120),
     code_hash: cleanText(context.code_hash || "", 80),
+    dynamic_sandbox: normalizeDynamicSandboxEvidence(result.dynamic_sandbox),
     ...profile,
   };
 
@@ -247,11 +272,24 @@ async function isAdminBypassRequest(req) {
 }
 
 function hasAdminBypassHeader(req) {
-  return Boolean(String(getHeader(req, "x-cg-admin-secret") || "").trim() || String(getHeader(req, "x-cg-admin-token") || "").trim());
+  const auth = String(getHeader(req, "authorization") || "").trim();
+  return Boolean(
+    String(getHeader(req, "x-cg-admin-secret") || "").trim() ||
+    String(getHeader(req, "x-cg-admin-token") || "").trim() ||
+    /^Bearer\s+\S+/i.test(auth)
+  );
+}
+
+function getAdminToken(req) {
+  const direct = String(getHeader(req, "x-cg-admin-token") || "").trim();
+  if (direct) return direct;
+  const auth = String(getHeader(req, "authorization") || "").trim();
+  const match = auth.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : "";
 }
 
 function isAdminToken(req) {
-  const token = String(getHeader(req, "x-cg-admin-token") || "").trim();
+  const token = getAdminToken(req);
   if (!token || !CONFIG.ADMIN_TOKEN_SECRET) return false;
   const [payload, signature] = token.split(".");
   if (!payload || !signature) return false;
@@ -370,12 +408,20 @@ function saveToCache(hash, result) {
   }
 }
 
+function publicScanResponse(result, adminBypass, extra = {}) {
+  return {
+    ...result,
+    ...extra,
+    _admin_bypass: Boolean(adminBypass),
+  };
+}
+
 function setCors(res, origin) {
   if (origin && CONFIG.ALLOWED_ORIGINS.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CG-Admin-Secret, X-CG-Admin-Token");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CG-Admin-Secret, X-CG-Admin-Token");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Content-Type", "application/json");
 }
@@ -767,6 +813,168 @@ function normalizeResult(result) {
   return normalized;
 }
 
+function cleanDisplayList(value, maxItems = 10) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map(item => cleanText(item, 120))
+    .filter(Boolean)
+    .filter((item, index, arr) => arr.indexOf(item) === index)
+    .slice(0, maxItems);
+}
+
+function normalizeSandboxVerdict(value) {
+  const verdict = String(value || "").trim().toLowerCase();
+  if (["safe", "clean", "benign", "passed"].includes(verdict)) return "clean";
+  if (["suspicious", "review", "warning"].includes(verdict)) return "suspicious";
+  if (["malicious", "critical", "blocked", "unsafe"].includes(verdict)) return "malicious";
+  return "unknown";
+}
+
+function normalizeDynamicSandboxEvidence(value) {
+  if (!value || typeof value !== "object") return {};
+  const allowedStatuses = new Set(["disabled", "not_configured", "skipped", "submitted", "queued", "completed", "error"]);
+  const status = allowedStatuses.has(String(value.status || "").trim())
+    ? String(value.status).trim()
+    : "error";
+  const threatScore = Number.isFinite(value.threat_score)
+    ? value.threat_score
+    : parseInt(value.threat_score || "0", 10);
+
+  return {
+    enabled: Boolean(value.enabled),
+    provider: cleanText(value.provider || CONFIG.DYNAMIC_SANDBOX_PROVIDER, 80),
+    mode: "dynamic_sandbox",
+    status,
+    verdict: normalizeSandboxVerdict(value.verdict),
+    threat_score: Math.max(0, Math.min(100, Math.round(Number.isFinite(threatScore) ? threatScore : 0))),
+    summary: cleanText(value.summary || "", 500),
+    signals: cleanDisplayList(value.signals, 10),
+    report_url: cleanText(value.report_url || "", 500),
+    submitted_at: cleanText(value.submitted_at || "", 48),
+  };
+}
+
+function sandboxEvidence(status, overrides = {}) {
+  return normalizeDynamicSandboxEvidence({
+    enabled: CONFIG.DYNAMIC_SANDBOX_ENABLED,
+    provider: CONFIG.DYNAMIC_SANDBOX_PROVIDER,
+    mode: "dynamic_sandbox",
+    status,
+    verdict: "unknown",
+    threat_score: 0,
+    summary: "",
+    signals: [],
+    report_url: "",
+    submitted_at: new Date().toISOString(),
+    ...overrides,
+  });
+}
+
+async function runDynamicSandbox(scope, code, result, codeHash) {
+  if (!CONFIG.DYNAMIC_SANDBOX_ENABLED) return sandboxEvidence("disabled");
+  if (!CONFIG.DYNAMIC_SANDBOX_WEBHOOK_URL) {
+    return sandboxEvidence("not_configured", {
+      summary: "Dynamic sandbox runner is enabled but no isolated runner URL is configured.",
+    });
+  }
+  if (!CONFIG.DYNAMIC_SANDBOX_SCOPES.includes(scope)) {
+    return sandboxEvidence("skipped", {
+      summary: `Dynamic sandbox is not enabled for ${scope} scans.`,
+    });
+  }
+  if ((result?.threat_score || 0) < CONFIG.DYNAMIC_SANDBOX_MIN_SCORE) {
+    return sandboxEvidence("skipped", {
+      summary: `Dynamic sandbox was skipped because the static score is below ${CONFIG.DYNAMIC_SANDBOX_MIN_SCORE}.`,
+    });
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), CONFIG.DYNAMIC_SANDBOX_TIMEOUT_MS);
+  const submittedAt = new Date().toISOString();
+  const headers = {
+    "Content-Type": "application/json",
+    "User-Agent": "Cyber-Guardian-Dynamic-Sandbox/1.0",
+  };
+  if (CONFIG.DYNAMIC_SANDBOX_API_KEY) headers.Authorization = `Bearer ${CONFIG.DYNAMIC_SANDBOX_API_KEY}`;
+
+  try {
+    const response = await fetch(CONFIG.DYNAMIC_SANDBOX_WEBHOOK_URL, {
+      method: "POST",
+      signal: controller.signal,
+      headers,
+      body: JSON.stringify({
+        request_id: crypto.randomUUID ? crypto.randomUUID() : `${codeHash}-${Date.now()}`,
+        scope,
+        code,
+        code_hash: codeHash,
+        submitted_at: submittedAt,
+        static_status: result?.status || "STATUS_AMBIGUOUS",
+        static_threat_score: result?.threat_score || 0,
+        static_threats: Array.isArray(result?.threats) ? result.threats.slice(0, 10) : [],
+      }),
+    });
+    clearTimeout(timeoutId);
+
+    const text = await response.text().catch(() => "");
+    let data = {};
+    if (text) {
+      try { data = JSON.parse(text); } catch { data = { summary: text.slice(0, 500) }; }
+    }
+
+    if (!response.ok) {
+      return sandboxEvidence("error", {
+        summary: `Dynamic sandbox provider returned HTTP ${response.status}.`,
+        submitted_at: submittedAt,
+      });
+    }
+
+    return normalizeDynamicSandboxEvidence({
+      enabled: true,
+      provider: data.provider || CONFIG.DYNAMIC_SANDBOX_PROVIDER,
+      status: data.status || (response.status === 202 ? "queued" : "completed"),
+      verdict: data.verdict || data.result || "unknown",
+      threat_score: data.threat_score ?? data.score ?? 0,
+      summary: data.summary || data.message || "",
+      signals: data.signals || data.behavior_signals || data.findings || [],
+      report_url: data.report_url || data.reportUrl || data.url || "",
+      submitted_at: data.submitted_at || submittedAt,
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    return sandboxEvidence("error", {
+      summary: err?.name === "AbortError"
+        ? "Dynamic sandbox provider timed out before returning a result."
+        : "Dynamic sandbox provider did not return a usable result.",
+      submitted_at: submittedAt,
+    });
+  }
+}
+
+function mergeDynamicSandbox(result, sandboxResult) {
+  const merged = normalizeResult(result);
+  const sandbox = normalizeDynamicSandboxEvidence(sandboxResult);
+  merged.dynamic_sandbox = sandbox;
+
+  if (sandbox.status !== "completed") return merged;
+
+  if (sandbox.verdict === "malicious" || sandbox.threat_score >= 70) {
+    merged.status = "STATUS_CRITICAL";
+    merged.threat_score = Math.max(merged.threat_score, sandbox.threat_score, 70);
+    merged.recommendation = merged.recommendation || "Do not install. Dynamic sandbox behavior indicates high risk.";
+  } else if (sandbox.verdict === "suspicious" || sandbox.threat_score >= 20) {
+    if (merged.status === "STATUS_SAFE") merged.status = "STATUS_MODERATE";
+    merged.threat_score = Math.max(merged.threat_score, sandbox.threat_score, 20);
+    merged.recommendation = merged.recommendation || "Review before installing. Dynamic sandbox behavior requires investigation.";
+  }
+
+  return normalizeResult(merged);
+}
+
+async function attachDynamicSandbox(scope, code, result, codeHash) {
+  const sandbox = await runDynamicSandbox(scope, code, result, codeHash);
+  return mergeDynamicSandbox(result, sandbox);
+}
+
 const SYSTEM_PROMPT = `You are the Security Analyst for Cyber-Guardian AI — the first dedicated
 MCP (Model Context Protocol) security scanner. You also analyze AI Skills, IDE Extensions,
 GitHub Actions workflows, npm/PyPI packages, dependency manifests, and software supply-chain config.
@@ -1040,17 +1248,18 @@ async function handler(req, res) {
   const cached   = getFromCache(cacheKey);
   if (cached) {
     if (!skipPersist) await saveSiteScan(scope, cached, { code_hash: codeHash });
-    return res.status(200).json({ ...cached, _from_cache: true });
+    return res.status(200).json(publicScanResponse(cached, adminBypass, { _from_cache: true }));
   }
   const staticResult = runStaticScan(code);
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    const result = staticFallbackResult(staticResult, "ANTHROPIC_API_KEY missing");
+    let result = staticFallbackResult(staticResult, "ANTHROPIC_API_KEY missing");
+    result = await attachDynamicSandbox(scope, code, result, codeHash);
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
     saveToCache(cacheKey, result);
-    return res.status(200).json(result);
+    return res.status(200).json(publicScanResponse(result, adminBypass));
   }
 
   const controller = new AbortController();
@@ -1080,11 +1289,12 @@ async function handler(req, res) {
       }, "ai_response_parse_failed");
     }
     result = mergeStaticThreats(result, staticResult);
+    result = await attachDynamicSandbox(scope, code, result, codeHash);
 
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
     saveToCache(cacheKey, result);
-    return res.status(200).json(result);
+    return res.status(200).json(publicScanResponse(result, adminBypass));
 
   } catch (err) {
     clearTimeout(timeoutId);
@@ -1092,11 +1302,12 @@ async function handler(req, res) {
       return res.status(504).json({ error: "Scan timed out. Try again." });
     console.error("[scan-failed]", err.message);
     if (/Anthropic API/.test(err.message || "")) {
-      const result = staticFallbackResult(staticResult, err.message);
+      let result = staticFallbackResult(staticResult, err.message);
+      result = await attachDynamicSandbox(scope, code, result, codeHash);
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
       saveToCache(cacheKey, result);
-      return res.status(200).json(result);
+      return res.status(200).json(publicScanResponse(result, adminBypass));
     }
     return res.status(500).json({ error: "Scan failed. Try again." });
   }
@@ -1109,6 +1320,8 @@ if (process.env.NODE_ENV === "test") {
     runStaticScan,
     mergeStaticThreats,
     normalizeResult,
+    normalizeDynamicSandboxEvidence,
+    mergeDynamicSandbox,
     THREAT_FAMILIES,
     THREAT_FAMILY_DEFINITIONS,
     ALL_STATIC_RULES,
