@@ -57,7 +57,7 @@ const CONFIG = {
   MIN_INPUT_SIZE_CHARS: intEnv("SCAN_MIN_INPUT_SIZE_CHARS", 5),
   MAX_API_CALLS_PER_DAY: intEnv("SCAN_MAX_API_CALLS_PER_DAY", 5000),
   CACHE_TTL_SECONDS: intEnv("SCAN_CACHE_TTL_SECONDS", 3600),
-  ANTHROPIC_TIMEOUT_MS: intEnv("ANTHROPIC_TIMEOUT_MS", 55000),
+  ANTHROPIC_TIMEOUT_MS: Math.min(intEnv("ANTHROPIC_TIMEOUT_MS", 40000), 45000),
   MODEL: anthropicModelEnv(),
   MAX_TOKENS: intEnv("ANTHROPIC_MAX_TOKENS", 2500),
   USAGE_MODE: process.env.SCAN_USAGE_MODE || "fallback",
@@ -1298,8 +1298,14 @@ async function handler(req, res) {
 
   } catch (err) {
     clearTimeout(timeoutId);
-    if (err.name === "AbortError")
-      return res.status(504).json({ error: "Scan timed out. Try again." });
+    if (err.name === "AbortError") {
+      let result = staticFallbackResult(staticResult, "deep behavior review timed out");
+      result = await attachDynamicSandbox(scope, code, result, codeHash);
+      if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
+      if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
+      saveToCache(cacheKey, result);
+      return res.status(200).json(publicScanResponse(result, adminBypass));
+    }
     console.error("[scan-failed]", err.message);
     if (/Anthropic API/.test(err.message || "")) {
       let result = staticFallbackResult(staticResult, err.message);

@@ -49,7 +49,7 @@ const {
   normalizeScanScope,
 } = scan._test;
 
-global.fetch = async () => ({
+const successfulFetch = async () => ({
   ok: true,
   json: async () => ({
     content: [{
@@ -65,6 +65,7 @@ global.fetch = async () => ({
     }],
   }),
 });
+global.fetch = successfulFetch;
 
 function mockRes() {
   const res = { statusCode: 200, headers: {}, body: undefined, ended: false };
@@ -281,6 +282,39 @@ async function testAdminTokenBypassSkipsUsageLimits() {
   assert.equal(res.body._admin_bypass, true);
 }
 
+async function testProviderTimeoutFallsBackToCompletedScan() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const originalFetch = global.fetch;
+  global.fetch = async () => {
+    const err = new Error("aborted");
+    err.name = "AbortError";
+    throw err;
+  };
+
+  try {
+    const res = mockRes();
+    await scan({
+      method: "POST",
+      headers: {
+        origin: "https://cyberguardianscan.com",
+        host: "cyberguardianscan.com",
+        "x-forwarded-for": "203.0.113.50",
+      },
+      body: { code: 'console.log("provider timeout fallback test");', scope: "skill" },
+      url: "/api/scan",
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.status, "STATUS_MODERATE");
+    assert.ok(!res.body.error);
+    assert.equal(insertedRows.length, 1);
+    assert.equal(insertedRows[0].row.scope, "skill");
+  } finally {
+    global.fetch = originalFetch || successfulFetch;
+  }
+}
+
 async function testCachedScanStillPersistsCurrentScope() {
   insertedRows.length = 0;
   rpcCalls.length = 0;
@@ -372,6 +406,7 @@ testNormalizeAddsSixtyFamilyMetadata();
 testManualScanPersistsDashboardMetadata()
   .then(testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata)
   .then(testAdminTokenBypassSkipsUsageLimits)
+  .then(testProviderTimeoutFallsBackToCompletedScan)
   .then(testCachedScanStillPersistsCurrentScope)
   .then(testBatchScannerCanSkipApiPersistence)
   .then(testSupplyChainScopesPersist)
