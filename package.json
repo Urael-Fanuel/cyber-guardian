@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "node tests/scan-security.test.js",
-    "check": "node --check api/scan.js && node --check api/mcp-scan.js && node --check api/site-stats.js && node --check api/subscribe.js && node --check api/content.js && node --check api/contact.js && node --check api/track-event.js && node --check api/product-analytics.js && node --check api/admin-auth.js && node --check api/admin-leads.js && node --check api/create-checkout-session.js"
+    "check": "node --check api/scan.js && node --check api/mcp-scan.js && node --check api/site-stats.js && node --check api/subscribe.js && node --check api/content.js && node --check api/contact.js && node --check api/track-event.js && node --check api/product-analytics.js && node --check api/admin-auth.js && node --check api/admin-leads.js && node --check api/admin-accounts.js && node --check api/public-config.js && node --check api/account-status.js && node --check api/create-checkout-session.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

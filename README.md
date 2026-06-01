@@ -33,7 +33,7 @@ It checks 60 canonical threat families before a user decides whether to install 
 ## Production Security Controls
 
 - CORS allowlist via `ALLOWED_ORIGINS`
-- Server-side free beta quota of 10 scans per month and rate limits via Supabase
+- Server-side free beta quota of 10 scans per month, account plan quotas, and rate limits via Supabase
 - Global daily API cap
 - Submitted code is never executed inside the Vercel API
 - Optional dynamic sandbox evidence can be collected by a separate isolated runner/provider
@@ -69,6 +69,7 @@ Core variables:
 - `ANTHROPIC_API_KEY`
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_KEY`
+- `SUPABASE_ANON_KEY`
 - `ALLOWED_ORIGINS`
 - `SCAN_USAGE_MODE=strict`
 - Optional sandbox runner: `DYNAMIC_SANDBOX_ENABLED=true`, `DYNAMIC_SANDBOX_WEBHOOK_URL`, `DYNAMIC_SANDBOX_API_KEY`
@@ -79,7 +80,12 @@ Run this migration once in the Supabase SQL Editor:
 
 ```text
 supabase/migrations/001_scan_usage_limits.sql
+supabase/migrations/009_user_accounts_and_quotas.sql
 ```
+
+Enable Supabase Auth email/password if you want signed-in customer accounts.
+Customers can then use assigned monthly scan plans; plan assignment is manual in
+`/content-admin.html` until Stripe webhooks are connected.
 
 ## Security Engine
 

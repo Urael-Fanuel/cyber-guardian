@@ -99,6 +99,21 @@ h1 .hl { color: var(--cyan); }
 .stat-l { font-size: 9px; color: var(--text-dim); letter-spacing: 1.5px; margin-top: 2px; }
 
 /* ── SCANNER CARD ── */
+/* Account access */
+.account-panel { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 24px; padding: 0 20px; }
+.account-box { border: 1px solid var(--border); background: var(--bg2); border-radius: 4px; padding: 16px 18px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: center; }
+.account-title { font-family: var(--sans); font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.account-text { color: var(--text-dim); font-size: 11.5px; line-height: 1.6; }
+.account-form { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+.account-input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 3px; padding: 9px 10px; font-family: var(--mono); font-size: 11px; }
+.account-actions { display: flex; gap: 8px; flex-wrap: wrap; grid-column: 1 / -1; }
+.account-btn { border: 1px solid var(--border2); background: transparent; color: var(--cyan); border-radius: 3px; padding: 8px 13px; font-family: var(--mono); font-size: 10px; letter-spacing: 1px; cursor: pointer; }
+.account-btn.primary { background: var(--cyan); color: #000; border-color: var(--cyan); font-weight: 700; }
+.account-status { grid-column: 1 / -1; min-height: 18px; color: var(--text-dim); font-size: 11px; }
+.account-plan { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.account-pill { border: 1px solid var(--border2); color: var(--text); background: var(--bg); border-radius: 18px; padding: 4px 10px; font-size: 10px; }
+@media(max-width:760px){ .account-box { grid-template-columns: 1fr; } .account-form { grid-template-columns: 1fr; } }
+
 .wrap { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; animation: fu 0.5s 0.5s both; }
 .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
 .card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--bg3); }
@@ -373,6 +388,26 @@ footer a:hover { color: var(--cyan); }
   <div class="stat"><span class="stat-n">~3s</span><div class="stat-l" data-i18n="stat_speed">SCAN TIME</div></div>
   <div class="stat"><span class="stat-n">10</span><div class="stat-l" data-i18n="stat_free">FREE / MONTH</div></div>
 </div>
+
+<section class="account-panel" id="account-panel">
+  <div class="account-box">
+    <div>
+      <div class="account-title" data-i18n="account_title">Account access</div>
+      <div class="account-text" data-i18n="account_text">Sign in to use an assigned monthly scan plan. Visitors can still use the free monthly quota.</div>
+      <div class="account-plan" id="account-plan"></div>
+    </div>
+    <div class="account-form" id="account-form">
+      <input class="account-input" id="account-email" type="email" autocomplete="email" data-i18n-placeholder="account_email_placeholder" placeholder="email@example.com">
+      <input class="account-input" id="account-password" type="password" autocomplete="current-password" data-i18n-placeholder="account_password_placeholder" placeholder="Password">
+      <div class="account-actions">
+        <button type="button" class="account-btn primary" onclick="accountSignIn()" data-i18n="account_sign_in">Sign in</button>
+        <button type="button" class="account-btn" onclick="accountSignUp()" data-i18n="account_create">Create account</button>
+        <button type="button" class="account-btn" onclick="accountSignOut()" id="account-signout" style="display:none" data-i18n="account_sign_out">Sign out</button>
+      </div>
+      <div class="account-status" id="account-status"></div>
+    </div>
+  </div>
+</section>
 
 <div class="wrap" id="scanner">
   <div class="card">
@@ -673,6 +708,7 @@ footer a:hover { color: var(--cyan); }
 
 <script src="/locales/translations.js"></script>
 <script src="/analytics.js?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function buildLangSwitcher() {
   const container = document.getElementById('lang-switcher');
@@ -697,6 +733,125 @@ footer a:hover { color: var(--cyan); }
   });
 })();
 setLang(detectLang());
+
+let accountClient = null;
+let accountSession = null;
+
+function accountEls() {
+  return {
+    email: document.getElementById('account-email'),
+    password: document.getElementById('account-password'),
+    status: document.getElementById('account-status'),
+    plan: document.getElementById('account-plan'),
+    signout: document.getElementById('account-signout'),
+  };
+}
+
+function accountToken() {
+  return accountSession?.access_token || '';
+}
+
+function setAccountMessage(message, isError = false) {
+  const { status } = accountEls();
+  if (!status) return;
+  status.textContent = message || '';
+  status.style.color = isError ? 'var(--red)' : 'var(--text-dim)';
+}
+
+function renderAccountPlan(info) {
+  const { plan, signout } = accountEls();
+  if (!plan) return;
+  if (!info?.authenticated) {
+    plan.innerHTML = `<span class="account-pill">${t('account_free_badge')}</span>`;
+    if (signout) signout.style.display = 'none';
+    return;
+  }
+  if (signout) signout.style.display = 'inline-block';
+  plan.innerHTML = `
+    <span class="account-pill">${escHtml(info.email || '')}</span>
+    <span class="account-pill">${escHtml(info.plan_name || info.plan_code || 'Free')}</span>
+    <span class="account-pill">${Number(info.quota_remaining || 0).toLocaleString()} / ${Number(info.monthly_scan_limit || info.quota_limit || 0).toLocaleString()} ${t('account_scans_left')}</span>`;
+}
+
+async function loadAccountStatus() {
+  if (!accountSession) {
+    renderAccountPlan(null);
+    return;
+  }
+  try {
+    const response = await fetch('/api/account-status', {
+      headers: { 'X-CG-Account-Token': accountToken() }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      setAccountMessage(data.error || t('account_status_failed'), true);
+      return;
+    }
+    renderAccountPlan(data);
+    setAccountMessage(t('account_signed_in'));
+  } catch {
+    setAccountMessage(t('account_status_failed'), true);
+  }
+}
+
+async function initAccountAuth() {
+  renderAccountPlan(null);
+  try {
+    const config = await fetch('/api/public-config').then(r => r.json());
+    if (!config.supabase_configured || !window.supabase) {
+      setAccountMessage(t('account_not_configured'));
+      return;
+    }
+    accountClient = window.supabase.createClient(config.supabase_url, config.supabase_anon_key);
+    const { data } = await accountClient.auth.getSession();
+    accountSession = data?.session || null;
+    renderAccountPlan(accountSession?.user ? { authenticated: true, email: accountSession.user.email, plan_name: 'Loading', quota_remaining: 0, monthly_scan_limit: 0 } : null);
+    await loadAccountStatus();
+    accountClient.auth.onAuthStateChange((_event, session) => {
+      accountSession = session || null;
+      loadAccountStatus();
+    });
+  } catch {
+    setAccountMessage(t('account_status_failed'), true);
+  }
+}
+
+async function accountSignIn() {
+  const { email, password } = accountEls();
+  if (!accountClient) return setAccountMessage(t('account_not_configured'), true);
+  const emailValue = email.value.trim();
+  const passwordValue = password.value;
+  if (!emailValue || !passwordValue) return setAccountMessage(t('account_missing_fields'), true);
+  setAccountMessage(t('account_signing_in'));
+  const { data, error } = await accountClient.auth.signInWithPassword({ email: emailValue, password: passwordValue });
+  if (error) return setAccountMessage(error.message || t('account_sign_in_failed'), true);
+  accountSession = data?.session || null;
+  password.value = '';
+  await loadAccountStatus();
+}
+
+async function accountSignUp() {
+  const { email, password } = accountEls();
+  if (!accountClient) return setAccountMessage(t('account_not_configured'), true);
+  const emailValue = email.value.trim();
+  const passwordValue = password.value;
+  if (!emailValue || !passwordValue) return setAccountMessage(t('account_missing_fields'), true);
+  if (passwordValue.length < 8) return setAccountMessage(t('account_password_short'), true);
+  setAccountMessage(t('account_creating'));
+  const { data, error } = await accountClient.auth.signUp({ email: emailValue, password: passwordValue });
+  if (error) return setAccountMessage(error.message || t('account_create_failed'), true);
+  accountSession = data?.session || null;
+  password.value = '';
+  if (accountSession) await loadAccountStatus();
+  else setAccountMessage(t('account_check_email'));
+}
+
+async function accountSignOut() {
+  if (accountClient) await accountClient.auth.signOut();
+  accountSession = null;
+  renderAccountPlan(null);
+  setAccountMessage(t('account_signed_out'));
+}
 
 // Scope pill switching
 let currentScope = 'mcp';
@@ -765,6 +920,8 @@ function scanHeaders() {
   } else if (adminBypassSecret) {
     if (isAsciiHeaderValue(adminBypassSecret)) headers['X-CG-Admin-Secret'] = adminBypassSecret;
     else localStorage.removeItem('cg-admin-secret');
+  } else if (accountToken()) {
+    headers['X-CG-Account-Token'] = accountToken();
   }
   return headers;
 }
@@ -840,7 +997,17 @@ async function runScan() {
     }
 
     if (!result) result = await response.json();
-    if (result._admin_bypass || isDevMode()) resetLocalQuota();
+    if (result._account) {
+      renderAccountPlan({
+        authenticated: true,
+        email: result._account.email,
+        plan_name: result._account.plan_name,
+        quota_remaining: result._account.quota_remaining,
+        monthly_scan_limit: result._account.quota_limit,
+      });
+      setAccountMessage(t('account_quota_updated'));
+      resetLocalQuota();
+    } else if (result._admin_bypass || isDevMode()) resetLocalQuota();
     else incrementQuota();
     if (window.cgTrack) {
       window.cgTrack('scan_completed', {
@@ -1039,6 +1206,8 @@ async function subscribeEmail() {
 document.getElementById('code-input').addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runScan();
 });
+
+initAccountAuth();
 
 // Load mini stats
 (async function() {

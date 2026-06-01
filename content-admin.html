@@ -43,10 +43,18 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
 .lead-kind { color:#00d4ff; font-weight:800; text-transform:uppercase; font-size:12px; letter-spacing:.08em; }
 .lead-time { color:#7890a5; font-size:12px; white-space:nowrap; }
 .lead-meta { color:#8fa8bd; font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
-.lead-email { color:#dbeafe; font-weight:800; user-select:all; }
-.lead-message { margin-top:10px; color:#dbeafe; font-size:13px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
-.empty-state { border:1px dashed #203449; border-radius:8px; padding:14px; color:#8fa8bd; font-size:13px; }
-@media (max-width:900px) { .stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .analytics-lists { grid-template-columns:1fr; } }
+  .lead-email { color:#dbeafe; font-weight:800; user-select:all; }
+  .lead-message { margin-top:10px; color:#dbeafe; font-size:13px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .empty-state { border:1px dashed #203449; border-radius:8px; padding:14px; color:#8fa8bd; font-size:13px; }
+  .account-admin-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-top:14px; }
+  .account-card { border:1px solid #203449; background:#08111b; border-radius:8px; padding:14px; }
+  .account-row { display:grid; grid-template-columns:1.2fr .8fr .8fr .8fr 1fr; gap:12px; align-items:center; border-bottom:1px solid rgba(255,255,255,.06); padding:10px 0; font-size:13px; }
+  .account-row:last-child { border-bottom:0; }
+  .account-email { color:#dbeafe; font-weight:800; overflow-wrap:anywhere; user-select:all; }
+  .account-meta { color:#8fa8bd; font-size:12px; margin-top:4px; }
+  .account-pill { display:inline-block; border:1px solid #2a4158; color:#00d4ff; border-radius:999px; padding:3px 8px; font-size:12px; }
+  @media (max-width:900px) { .account-admin-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .account-row { grid-template-columns:1fr; } }
+  @media (max-width:900px) { .stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .analytics-lists { grid-template-columns:1fr; } }
 @media (max-width:720px) { .grid, .lead-grid { grid-template-columns:1fr; } }
 @media (max-width:520px) { .stats-grid { grid-template-columns:1fr; } }
 </style>
@@ -139,6 +147,50 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
     </div>
     <div class="status" id="leads-status"></div>
   </section>
+
+  <section class="panel hidden" id="accounts-panel">
+    <h2>Customer accounts and scan plans</h2>
+    <p class="muted">Use this to give a customer login access to a monthly scan plan. Payment is still handled manually until Stripe is connected.</p>
+    <div class="account-admin-grid">
+      <div>
+        <label for="customer-email">Customer email</label>
+        <input id="customer-email" type="email" autocomplete="off" placeholder="customer@example.com">
+      </div>
+      <div>
+        <label for="customer-password">Initial password</label>
+        <input id="customer-password" type="password" autocomplete="new-password" placeholder="Only for new users">
+      </div>
+      <div>
+        <label for="customer-plan">Plan</label>
+        <select id="customer-plan">
+          <option value="free">Free - 10 scans</option>
+          <option value="personal">Personal - 100 scans</option>
+          <option value="team">Team - 500 scans</option>
+          <option value="business">Business - 2,000 scans</option>
+          <option value="enterprise">Enterprise - 10,000 scans</option>
+        </select>
+      </div>
+      <div>
+        <label for="customer-status">Status</label>
+        <select id="customer-status">
+          <option value="manual">Manual active</option>
+          <option value="active">Active</option>
+          <option value="trialing">Trialing</option>
+          <option value="canceled">Canceled</option>
+        </select>
+      </div>
+      <div>
+        <label for="customer-days">Access days</label>
+        <input id="customer-days" type="number" min="1" max="366" value="30">
+      </div>
+    </div>
+    <div class="actions">
+      <button id="save-account">Save Account Access</button>
+      <button id="refresh-accounts" class="secondary">Refresh Accounts</button>
+    </div>
+    <div class="status" id="accounts-status"></div>
+    <div id="admin-accounts" style="margin-top:16px"></div>
+  </section>
 </main>
 
 <script src="/locales/translations.js"></script>
@@ -147,6 +199,7 @@ const loginPanel = document.getElementById('login-panel');
 const adminPanel = document.getElementById('admin-panel');
 const analyticsPanel = document.getElementById('analytics-panel');
 const leadsPanel = document.getElementById('leads-panel');
+const accountsPanel = document.getElementById('accounts-panel');
 const usernameEl = document.getElementById('username');
 const passwordEl = document.getElementById('password');
 const loginStatusEl = document.getElementById('login-status');
@@ -161,6 +214,13 @@ const adminAnalyticsEl = document.getElementById('admin-analytics');
 const analyticsStatusEl = document.getElementById('analytics-status');
 const adminLeadsEl = document.getElementById('admin-leads');
 const leadsStatusEl = document.getElementById('leads-status');
+const adminAccountsEl = document.getElementById('admin-accounts');
+const accountsStatusEl = document.getElementById('accounts-status');
+const customerEmailEl = document.getElementById('customer-email');
+const customerPasswordEl = document.getElementById('customer-password');
+const customerPlanEl = document.getElementById('customer-plan');
+const customerStatusEl = document.getElementById('customer-status');
+const customerDaysEl = document.getElementById('customer-days');
 let dashboardKeys = [];
 
 function getToken() { return localStorage.getItem('cg-admin-token') || ''; }
@@ -175,6 +235,7 @@ function updateAuthView() {
   adminPanel.classList.toggle('hidden', !signedIn);
   analyticsPanel.classList.toggle('hidden', !signedIn);
   leadsPanel.classList.toggle('hidden', !signedIn);
+  accountsPanel.classList.toggle('hidden', !signedIn);
 }
 
 function formatNumber(value) {
@@ -478,6 +539,118 @@ async function loadLeads() {
   }
 }
 
+function planLabel(plan) {
+  const price = plan.price_usd == null ? 'custom' : `$${Number(plan.price_usd).toLocaleString()}/mo`;
+  return `${plan.display_name} - ${Number(plan.monthly_scan_limit || 0).toLocaleString()} scans - ${price}`;
+}
+
+function populatePlanOptions(plans) {
+  if (!Array.isArray(plans) || !plans.length) return;
+  const selected = customerPlanEl.value;
+  customerPlanEl.innerHTML = plans.map(plan =>
+    `<option value="${escapeHtml(plan.plan_code)}">${escapeHtml(planLabel(plan))}</option>`
+  ).join('');
+  if (plans.some(plan => plan.plan_code === selected)) customerPlanEl.value = selected;
+}
+
+function renderAccounts(data) {
+  if (!data?.configured) {
+    adminAccountsEl.innerHTML = emptyState('Account plans are not configured yet. Run migration 009 in Supabase.');
+    return;
+  }
+  populatePlanOptions(data.plans);
+  const rows = data.rows || [];
+  if (!rows.length) {
+    adminAccountsEl.innerHTML = emptyState('No customer accounts yet.');
+    return;
+  }
+  adminAccountsEl.innerHTML = `
+    <div class="account-card">
+      ${rows.map(row => `
+        <div class="account-row">
+          <div>
+            <div class="account-email">${escapeHtml(row.email)}</div>
+            <div class="account-meta">Created: ${escapeHtml(formatDateTime(row.created_at))}</div>
+          </div>
+          <div><span class="account-pill">${escapeHtml(row.plan_name || row.plan_code)}</span></div>
+          <div>${escapeHtml(row.status || 'free')}</div>
+          <div>${formatNumber(row.quota_used)} / ${formatNumber(row.quota_limit)}</div>
+          <div>
+            <div>${formatNumber(row.quota_remaining)} scans left</div>
+            <div class="account-meta">Ends: ${escapeHtml(formatDateTime(row.current_period_end) || 'free/no period')}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+async function loadAccounts() {
+  const token = getToken();
+  if (!token) return;
+  accountsStatusEl.className = 'status';
+  accountsStatusEl.textContent = 'Loading customer accounts...';
+  try {
+    const response = await fetch('/api/admin-accounts', {
+      headers: { 'X-CG-Admin-Token': token }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      clearToken();
+      updateAuthView();
+      loginStatusEl.textContent = 'Session expired. Sign in again.';
+      loginStatusEl.className = 'status error';
+      return;
+    }
+    if (!response.ok) {
+      accountsStatusEl.textContent = data.error || 'Account management unavailable.';
+      accountsStatusEl.className = 'status error';
+      return;
+    }
+    renderAccounts(data);
+    accountsStatusEl.className = 'status';
+    accountsStatusEl.textContent = `Loaded customer accounts at ${formatDateTime(data.generated_at || new Date().toISOString())}.`;
+  } catch {
+    accountsStatusEl.textContent = 'Account management unavailable.';
+    accountsStatusEl.className = 'status error';
+  }
+}
+
+async function saveAccountAccess() {
+  const token = getToken();
+  if (!token) return;
+  const email = customerEmailEl.value.trim();
+  const password = customerPasswordEl.value;
+  accountsStatusEl.className = 'status';
+  accountsStatusEl.textContent = 'Saving customer account...';
+  try {
+    const response = await fetch('/api/admin-accounts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CG-Admin-Token': token },
+      body: JSON.stringify({
+        email,
+        password,
+        plan_code: customerPlanEl.value,
+        status: customerStatusEl.value,
+        duration_days: customerDaysEl.value,
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      accountsStatusEl.textContent = data.error || 'Could not save customer account.';
+      accountsStatusEl.className = 'status error';
+      return;
+    }
+    customerPasswordEl.value = '';
+    accountsStatusEl.className = 'status';
+    accountsStatusEl.textContent = data.created
+      ? 'Customer account created and plan assigned.'
+      : 'Customer plan updated.';
+    await loadAccounts();
+  } catch {
+    accountsStatusEl.textContent = 'Could not save customer account.';
+    accountsStatusEl.className = 'status error';
+  }
+}
+
 async function login() {
   loginStatusEl.textContent = '';
   loginStatusEl.className = 'status';
@@ -506,6 +679,7 @@ async function login() {
   populateKeys();
   loadAnalytics();
   loadLeads();
+  loadAccounts();
 }
 
 async function getDashboardKeys() {
@@ -580,12 +754,15 @@ document.getElementById('open-site').onclick = () => window.open('/', '_blank');
 document.getElementById('open-dashboard').onclick = () => window.open('/dashboard.html', '_blank');
 document.getElementById('refresh-analytics').onclick = loadAnalytics;
 document.getElementById('refresh-leads').onclick = loadLeads;
+document.getElementById('refresh-accounts').onclick = loadAccounts;
+document.getElementById('save-account').onclick = saveAccountAccess;
 document.getElementById('logout').onclick = () => { clearToken(); updateAuthView(); };
 updateAuthView();
 if (getToken()) {
   populateKeys();
   loadAnalytics();
   loadLeads();
+  loadAccounts();
 }
 </script>
 </body>

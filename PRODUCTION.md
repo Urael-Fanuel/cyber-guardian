@@ -15,6 +15,7 @@ ANTHROPIC_TIMEOUT_MS=60000
 
 SUPABASE_URL=...
 SUPABASE_SERVICE_KEY=...
+SUPABASE_ANON_KEY=...
 
 ALLOWED_ORIGINS=https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app
 CG_ADMIN_BYPASS_SECRET=generate-a-long-random-secret
@@ -73,6 +74,28 @@ in Stripe and copy their price IDs into the relevant variables, for example:
 The existing `/api/create-checkout-session` endpoint can create a Stripe Checkout
 subscription session once public payment buttons are enabled. Keep
 `STRIPE_SECRET_KEY` server-side only in Vercel environment variables.
+
+## Account Plans
+
+Run `supabase/migrations/009_user_accounts_and_quotas.sql` in Supabase to enable
+customer accounts, monthly plan quotas, and account-level scan usage.
+
+The public site uses Supabase Auth email/password login. A signed-in account sends
+its Supabase session token to `/api/scan`, and the server consumes that user's
+monthly scan quota instead of the anonymous visitor quota.
+
+Until Stripe webhooks are connected, customer access is assigned manually in
+`/content-admin.html` after admin login. Use the "Customer accounts and scan
+plans" panel to create/update a customer email, set an initial password for new
+users, choose the plan, and set the access period.
+
+Required setup:
+
+- Add `SUPABASE_ANON_KEY` in Vercel. This is the public Supabase anon key, not the
+  service key.
+- Keep `SUPABASE_SERVICE_KEY` server-side only.
+- Enable Supabase Auth email/password sign-in in the Supabase dashboard.
+- Run migration `009_user_accounts_and_quotas.sql`.
 
 ## Email Lead Notifications
 
@@ -209,6 +232,7 @@ supabase/migrations/005_site_scan_intelligence.sql
 supabase/migrations/006_site_events.sql
 supabase/migrations/007_dynamic_sandbox.sql
 supabase/migrations/008_site_event_actor.sql
+supabase/migrations/009_user_accounts_and_quotas.sql
 ```
 
 This creates:
@@ -221,6 +245,10 @@ This creates:
 - `public.site_events`
 - `public.site_events.actor`
 - `public.site_scans.dynamic_sandbox`
+- `public.cg_account_plans`
+- `public.cg_user_subscriptions`
+- `public.cg_user_scan_usage`
+- `public.cg_consume_user_scan_usage(...)`
 
 The API calls this RPC before calling Anthropic. If the request exceeds minute, hour,
 day, or monthly quota, the request stops before any model cost is incurred.
@@ -256,7 +284,9 @@ Start low, monitor, then increase.
 
 ## Current Known Limits
 
-- Free quota is currently IP-based, not account-based.
-- Enterprise/private scanning should add accounts, API keys, and org-level quotas.
+- Anonymous visitor quota is IP-based; signed-in customer quotas are account-based.
+- Stripe payment webhooks are not connected yet, so paid plan assignment is manual
+  in the admin page.
+- Enterprise/private scanning should add API keys and org-level quotas.
 - The AI verdict should be supported by deterministic rules for stronger auditability.
 - Dynamic sandbox execution requires a separate isolated runner/provider; it is not performed inside Vercel.

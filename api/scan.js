@@ -305,6 +305,116 @@ function isAdminToken(req) {
   }
 }
 
+function getAccountToken(req) {
+  return String(getHeader(req, "x-cg-account-token") || "").trim();
+}
+
+function tableMissing(error) {
+  return /relation .* does not exist|schema cache|Could not find/i.test(error?.message || "");
+}
+
+async function getAccountUser(req) {
+  const token = getAccountToken(req);
+  if (!token) return null;
+
+  const sb = getSupabase();
+  if (!sb) return { error: "Account login is temporarily unavailable." };
+
+  const { data, error } = await sb.auth.getUser(token);
+  if (error || !data?.user) return { error: "Account session expired. Sign in again." };
+  return { user: data.user };
+}
+
+async function getAccountPlan(sb, userId) {
+  const { data: subscription, error: subError } = await sb
+    .from("cg_user_subscriptions")
+    .select("plan_code,status,current_period_end")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (subError) {
+    if (tableMissing(subError)) return { error: "Account plans are not configured. Run migration 009." };
+    throw subError;
+  }
+
+  const now = Date.now();
+  const isActive = subscription &&
+    ["active", "trialing", "manual"].includes(subscription.status) &&
+    (!subscription.current_period_end || new Date(subscription.current_period_end).getTime() > now);
+  const planCode = isActive ? subscription.plan_code : "free";
+
+  const { data: plan, error: planError } = await sb
+    .from("cg_account_plans")
+    .select("plan_code,display_name,monthly_scan_limit")
+    .eq("plan_code", planCode)
+    .maybeSingle();
+
+  if (planError) {
+    if (tableMissing(planError)) return { error: "Account plans are not configured. Run migration 009." };
+    throw planError;
+  }
+
+  return {
+    plan_code: plan?.plan_code || "free",
+    plan_name: plan?.display_name || "Free",
+    monthly_scan_limit: plan?.monthly_scan_limit || CONFIG.MAX_FREE_SCANS_PER_MONTH,
+  };
+}
+
+async function consumeAccountUsage(user) {
+  const sb = getSupabase();
+  if (!sb) return { error: "Account quota is temporarily unavailable." };
+
+  const plan = await getAccountPlan(sb, user.id);
+  if (plan.error) return { error: plan.error };
+
+  const { data, error } = await sb.rpc("cg_consume_user_scan_usage", {
+    p_user_id: user.id,
+    p_month_key: getMonthKey(),
+    p_plan_code: plan.plan_code,
+    p_quota_limit: plan.monthly_scan_limit,
+  });
+
+  if (error) {
+    if (tableMissing(error)) return { error: "Account quotas are not configured. Run migration 009." };
+    console.error("[account-usage]", error.message);
+    return { error: "Account quota is temporarily unavailable." };
+  }
+
+  const result = Array.isArray(data) ? data[0] : data;
+  if (!result?.ok) {
+    return {
+      ok: false,
+      reason: result?.reason || "month_limit",
+      quota_used: result?.quota_used || 0,
+      quota_limit: result?.quota_limit || plan.monthly_scan_limit,
+      plan,
+    };
+  }
+
+  return {
+    ok: true,
+    quota_used: result.quota_used,
+    quota_limit: result.quota_limit,
+    plan,
+  };
+}
+
+function accountResponse(user, usage) {
+  if (!user || !usage?.plan) return {};
+  return {
+    _account: {
+      authenticated: true,
+      email: user.email,
+      plan_code: usage.plan.plan_code,
+      plan_name: usage.plan.plan_name,
+      quota_used: usage.quota_used,
+      quota_limit: usage.quota_limit,
+      quota_remaining: Math.max((usage.quota_limit || 0) - (usage.quota_used || 0), 0),
+    },
+  };
+}
+
 async function checkSupabaseUsage(ip) {
   const sb = getSupabase();
   if (!sb) {
@@ -421,7 +531,7 @@ function setCors(res, origin) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CG-Admin-Secret, X-CG-Admin-Token");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CG-Admin-Secret, X-CG-Admin-Token, X-CG-Account-Token");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Content-Type", "application/json");
 }
@@ -1195,6 +1305,8 @@ async function handler(req, res) {
 
   const adminBypass = await isAdminBypassRequest(req);
   const skipPersist = String(getHeader(req, "x-cg-skip-persist") || "").trim() === "1";
+  let accountUser = null;
+  let accountUsage = null;
 
   if (!adminBypass && hasAdminBypassHeader(req)) {
     return res.status(401).json({
@@ -1203,26 +1315,11 @@ async function handler(req, res) {
   }
 
   if (!adminBypass) {
-    const usageCheck = await checkSupabaseUsage(ip);
-    usingSupabaseUsage = !usageCheck.fallback;
+    const account = await getAccountUser(req);
+    if (account?.error) return res.status(401).json({ error: account.error });
+    accountUser = account?.user || null;
 
-    if (usingSupabaseUsage) {
-      if (!usageCheck.ok) {
-        if (usageCheck.reason === "usage_store_unavailable") {
-          res.setHeader("Retry-After", String(usageCheck.retryAfter));
-          return res.status(503).json({ error: "Usage limits temporarily unavailable. Try again soon." });
-        }
-        if (usageCheck.reason === "month_limit") {
-          return res.status(429).json({
-            error: "Free scan quota exceeded.",
-            quota_used: usageCheck.quotaUsed,
-            quota_limit: usageCheck.quotaLimit,
-          });
-        }
-        res.setHeader("Retry-After", String(usageCheck.retryAfter));
-        return res.status(429).json({ error: "Too many requests.", retry_after: usageCheck.retryAfter });
-      }
-    } else {
+    if (accountUser) {
       if (!checkDailyCap())
         return res.status(503).json({ error: "Service at capacity. Try again tomorrow." });
 
@@ -1232,13 +1329,55 @@ async function handler(req, res) {
         return res.status(429).json({ error: "Too many requests.", retry_after: rateCheck.retryAfter });
       }
 
-      const quotaCheck = checkMonthlyQuota(ip);
-      if (!quotaCheck.ok) {
+      accountUsage = await consumeAccountUsage(accountUser);
+      if (accountUsage.error) return res.status(503).json({ error: accountUsage.error });
+      if (!accountUsage.ok) {
         return res.status(429).json({
-          error: "Free scan quota exceeded.",
-          quota_used: quotaCheck.used,
-          quota_limit: quotaCheck.limit,
+          error: "Plan scan quota exceeded.",
+          plan_code: accountUsage.plan?.plan_code || "free",
+          quota_used: accountUsage.quota_used,
+          quota_limit: accountUsage.quota_limit,
         });
+      }
+      usingSupabaseUsage = true;
+    } else {
+      const usageCheck = await checkSupabaseUsage(ip);
+      usingSupabaseUsage = !usageCheck.fallback;
+
+      if (usingSupabaseUsage) {
+        if (!usageCheck.ok) {
+          if (usageCheck.reason === "usage_store_unavailable") {
+            res.setHeader("Retry-After", String(usageCheck.retryAfter));
+            return res.status(503).json({ error: "Usage limits temporarily unavailable. Try again soon." });
+          }
+          if (usageCheck.reason === "month_limit") {
+            return res.status(429).json({
+              error: "Free scan quota exceeded.",
+              quota_used: usageCheck.quotaUsed,
+              quota_limit: usageCheck.quotaLimit,
+            });
+          }
+          res.setHeader("Retry-After", String(usageCheck.retryAfter));
+          return res.status(429).json({ error: "Too many requests.", retry_after: usageCheck.retryAfter });
+        }
+      } else {
+        if (!checkDailyCap())
+          return res.status(503).json({ error: "Service at capacity. Try again tomorrow." });
+
+        const rateCheck = checkRateLimit(ip);
+        if (!rateCheck.ok) {
+          res.setHeader("Retry-After", String(rateCheck.retryAfter));
+          return res.status(429).json({ error: "Too many requests.", retry_after: rateCheck.retryAfter });
+        }
+
+        const quotaCheck = checkMonthlyQuota(ip);
+        if (!quotaCheck.ok) {
+          return res.status(429).json({
+            error: "Free scan quota exceeded.",
+            quota_used: quotaCheck.used,
+            quota_limit: quotaCheck.limit,
+          });
+        }
       }
     }
   }
@@ -1248,7 +1387,7 @@ async function handler(req, res) {
   const cached   = getFromCache(cacheKey);
   if (cached) {
     if (!skipPersist) await saveSiteScan(scope, cached, { code_hash: codeHash });
-    return res.status(200).json(publicScanResponse(cached, adminBypass, { _from_cache: true }));
+    return res.status(200).json(publicScanResponse(cached, adminBypass, { _from_cache: true, ...accountResponse(accountUser, accountUsage) }));
   }
   const staticResult = runStaticScan(code);
 
@@ -1259,7 +1398,7 @@ async function handler(req, res) {
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
     saveToCache(cacheKey, result);
-    return res.status(200).json(publicScanResponse(result, adminBypass));
+    return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
   }
 
   const controller = new AbortController();
@@ -1294,7 +1433,7 @@ async function handler(req, res) {
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
     saveToCache(cacheKey, result);
-    return res.status(200).json(publicScanResponse(result, adminBypass));
+    return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
 
   } catch (err) {
     clearTimeout(timeoutId);
@@ -1304,7 +1443,7 @@ async function handler(req, res) {
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
       saveToCache(cacheKey, result);
-      return res.status(200).json(publicScanResponse(result, adminBypass));
+      return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
     }
     console.error("[scan-failed]", err.message);
     if (/Anthropic API/.test(err.message || "")) {
@@ -1313,7 +1452,7 @@ async function handler(req, res) {
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
       saveToCache(cacheKey, result);
-      return res.status(200).json(publicScanResponse(result, adminBypass));
+      return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
     }
     return res.status(500).json({ error: "Scan failed. Try again." });
   }
