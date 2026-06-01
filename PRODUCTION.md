@@ -83,6 +83,7 @@ notification is sent to `SUBSCRIBE_NOTIFY_TO` (default:
 
 Resend requires an API key and a verified sending domain before production email
 delivery. Keep `RESEND_API_KEY` server-side only in Vercel environment variables.
+Recent subscribers are also visible in `/content-admin.html` after admin login.
 
 ## Contact Form
 
@@ -93,6 +94,8 @@ notifications through Resend.
 
 Sales and enterprise requests go to `CONTACT_SALES_TO`; support and security
 requests go to `CONTACT_SUPPORT_TO`.
+Recent contact messages are also visible in `/content-admin.html` after admin
+login.
 
 ## Product Analytics
 

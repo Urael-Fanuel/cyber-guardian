@@ -36,8 +36,18 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
 .analytics-row:last-child { border-bottom:0; }
 .analytics-row span:first-child { color:#8fa8bd; overflow-wrap:anywhere; }
 .analytics-row span:last-child { color:#fff; font-weight:800; }
+.lead-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:14px; }
+.lead-list { display:flex; flex-direction:column; gap:10px; }
+.lead-card { border:1px solid #203449; background:#08111b; border-radius:8px; padding:14px; }
+.lead-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; margin-bottom:8px; }
+.lead-kind { color:#00d4ff; font-weight:800; text-transform:uppercase; font-size:12px; letter-spacing:.08em; }
+.lead-time { color:#7890a5; font-size:12px; white-space:nowrap; }
+.lead-meta { color:#8fa8bd; font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+.lead-email { color:#dbeafe; font-weight:800; user-select:all; }
+.lead-message { margin-top:10px; color:#dbeafe; font-size:13px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; }
+.empty-state { border:1px dashed #203449; border-radius:8px; padding:14px; color:#8fa8bd; font-size:13px; }
 @media (max-width:900px) { .stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .analytics-lists { grid-template-columns:1fr; } }
-@media (max-width:720px) { .grid { grid-template-columns:1fr; } }
+@media (max-width:720px) { .grid, .lead-grid { grid-template-columns:1fr; } }
 @media (max-width:520px) { .stats-grid { grid-template-columns:1fr; } }
 </style>
 </head>
@@ -119,6 +129,16 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
     </div>
     <div class="status" id="analytics-status"></div>
   </section>
+
+  <section class="panel hidden" id="leads-panel">
+    <h2>Messages and subscribers</h2>
+    <p class="muted">Visible only after admin login. Shows recent contact-form messages and threat-alert email subscribers saved in Supabase.</p>
+    <div id="admin-leads"></div>
+    <div class="actions">
+      <button id="refresh-leads" class="secondary">Refresh Messages</button>
+    </div>
+    <div class="status" id="leads-status"></div>
+  </section>
 </main>
 
 <script src="/locales/translations.js"></script>
@@ -126,6 +146,7 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
 const loginPanel = document.getElementById('login-panel');
 const adminPanel = document.getElementById('admin-panel');
 const analyticsPanel = document.getElementById('analytics-panel');
+const leadsPanel = document.getElementById('leads-panel');
 const usernameEl = document.getElementById('username');
 const passwordEl = document.getElementById('password');
 const loginStatusEl = document.getElementById('login-status');
@@ -138,6 +159,8 @@ const statusEl = document.getElementById('status');
 const keysEl = document.getElementById('keys');
 const adminAnalyticsEl = document.getElementById('admin-analytics');
 const analyticsStatusEl = document.getElementById('analytics-status');
+const adminLeadsEl = document.getElementById('admin-leads');
+const leadsStatusEl = document.getElementById('leads-status');
 let dashboardKeys = [];
 
 function getToken() { return localStorage.getItem('cg-admin-token') || ''; }
@@ -151,6 +174,7 @@ function updateAuthView() {
   loginPanel.classList.toggle('hidden', signedIn);
   adminPanel.classList.toggle('hidden', !signedIn);
   analyticsPanel.classList.toggle('hidden', !signedIn);
+  leadsPanel.classList.toggle('hidden', !signedIn);
 }
 
 function formatNumber(value) {
@@ -223,6 +247,13 @@ function analyticsList(title, items) {
 
 function percent(value) {
   return `${Number(value || 0).toLocaleString()}%`;
+}
+
+function formatDateTime(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString();
 }
 
 function escapeHtml(value) {
@@ -343,6 +374,110 @@ async function loadAnalytics() {
   }
 }
 
+function emptyState(text) {
+  return `<div class="empty-state">${escapeHtml(text)}</div>`;
+}
+
+function renderContactMessages(section) {
+  if (!section?.configured) {
+    return emptyState('The contact_messages table is not configured yet.');
+  }
+  const rows = section.rows || [];
+  if (!rows.length) return emptyState('No contact messages yet.');
+  return `<div class="lead-list">${rows.map(row => `
+    <div class="lead-card">
+      <div class="lead-top">
+        <div class="lead-kind">${escapeHtml(row.kind || 'contact')}</div>
+        <div class="lead-time">${escapeHtml(formatDateTime(row.created_at))}</div>
+      </div>
+      <div class="lead-meta">
+        <div><span class="lead-email">${escapeHtml(row.email)}</span></div>
+        <div>${escapeHtml(row.name || 'No name')}${row.company ? ` · ${escapeHtml(row.company)}` : ''}</div>
+        ${row.origin ? `<div>Origin: ${escapeHtml(row.origin)}</div>` : ''}
+      </div>
+      <div class="lead-message">${escapeHtml(row.message || '')}</div>
+    </div>`).join('')}</div>`;
+}
+
+function renderSubscribers(section) {
+  if (!section?.configured) {
+    return emptyState('The email_subscribers table is not configured yet.');
+  }
+  const rows = section.rows || [];
+  if (!rows.length) return emptyState('No email subscribers yet.');
+  return `<div class="lead-list">${rows.map(row => `
+    <div class="lead-card">
+      <div class="lead-top">
+        <div class="lead-kind">${escapeHtml(row.source || 'subscriber')}</div>
+        <div class="lead-time">${escapeHtml(formatDateTime(row.updated_at || row.created_at))}</div>
+      </div>
+      <div class="lead-meta">
+        <div><span class="lead-email">${escapeHtml(row.email)}</span></div>
+        ${row.origin ? `<div>Origin: ${escapeHtml(row.origin)}</div>` : ''}
+        <div>Created: ${escapeHtml(formatDateTime(row.created_at))}</div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function renderLeads(data) {
+  const contactCount = data?.contacts?.rows?.length || 0;
+  const subscriberCount = data?.subscribers?.rows?.length || 0;
+  adminLeadsEl.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Recent contact messages</div>
+        <div class="stat-num">${formatNumber(contactCount)}</div>
+        <div class="stat-sub">Latest 50 saved in Supabase</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Email subscribers</div>
+        <div class="stat-num">${formatNumber(subscriberCount)}</div>
+        <div class="stat-sub">Latest 100 saved in Supabase</div>
+      </div>
+    </div>
+    <div class="lead-grid">
+      <div>
+        <div class="analytics-section-title">Contact messages</div>
+        ${renderContactMessages(data?.contacts)}
+      </div>
+      <div>
+        <div class="analytics-section-title">Email subscribers</div>
+        ${renderSubscribers(data?.subscribers)}
+      </div>
+    </div>`;
+  leadsStatusEl.className = 'status';
+  leadsStatusEl.textContent = `Loaded messages and subscribers at ${formatDateTime(data?.generated_at || new Date().toISOString())}.`;
+}
+
+async function loadLeads() {
+  const token = getToken();
+  if (!token) return;
+  leadsStatusEl.className = 'status';
+  leadsStatusEl.textContent = 'Loading messages and subscribers...';
+  try {
+    const response = await fetch('/api/admin-leads', {
+      headers: { 'X-CG-Admin-Token': token }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      clearToken();
+      updateAuthView();
+      loginStatusEl.textContent = 'Session expired. Sign in again.';
+      loginStatusEl.className = 'status error';
+      return;
+    }
+    if (!response.ok) {
+      leadsStatusEl.textContent = data.error || 'Messages unavailable.';
+      leadsStatusEl.className = 'status error';
+      return;
+    }
+    renderLeads(data);
+  } catch {
+    leadsStatusEl.textContent = 'Messages unavailable.';
+    leadsStatusEl.className = 'status error';
+  }
+}
+
 async function login() {
   loginStatusEl.textContent = '';
   loginStatusEl.className = 'status';
@@ -370,6 +505,7 @@ async function login() {
   updateAuthView();
   populateKeys();
   loadAnalytics();
+  loadLeads();
 }
 
 async function getDashboardKeys() {
@@ -443,11 +579,13 @@ document.getElementById('save').onclick = saveText;
 document.getElementById('open-site').onclick = () => window.open('/', '_blank');
 document.getElementById('open-dashboard').onclick = () => window.open('/dashboard.html', '_blank');
 document.getElementById('refresh-analytics').onclick = loadAnalytics;
+document.getElementById('refresh-leads').onclick = loadLeads;
 document.getElementById('logout').onclick = () => { clearToken(); updateAuthView(); };
 updateAuthView();
 if (getToken()) {
   populateKeys();
   loadAnalytics();
+  loadLeads();
 }
 </script>
 </body>
