@@ -103,7 +103,9 @@ failed scans, Sales clicks, contact form submissions, and email signups in
 
 Raw IP addresses are not stored. Country, region, and city are taken from Vercel
 geo headers when available. The detailed analytics endpoint requires the signed
-admin token, so business metrics are visible only after the owner logs in.
+admin token, so business metrics are visible only after the owner logs in at
+`/content-admin.html`. The public dashboard must not load or render product
+analytics.
 Run `supabase/migrations/008_site_event_actor.sql` to separate owner activity
 from public visitor analytics. The separation is trusted only when events include
 a valid signed admin token; older events may still be mixed.

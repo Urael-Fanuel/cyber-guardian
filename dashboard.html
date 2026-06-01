@@ -1654,8 +1654,6 @@ function render(d) {
       </div>
     </div>
 
-    ${analyticsHtml(d.analytics)}
-
     <!-- RECENT FEED -->
     <div class="recent">
       <div class="section-hdr">${t('recent_hdr')}</div>
@@ -1839,16 +1837,9 @@ function render(d) {
 // ── Fetch ────────────────────────────────────────────────────────────
 async function loadData() {
   try {
-    const adminToken = localStorage.getItem('cg-admin-token') || '';
-    const [res, analyticsRes] = await Promise.all([
-      fetch('/api/site-stats'),
-      adminToken
-        ? fetch('/api/product-analytics', { headers: { 'X-CG-Admin-Token': adminToken } }).catch(() => null)
-        : Promise.resolve(null)
-    ]);
+    const res = await fetch('/api/site-stats');
     if (!res.ok) throw new Error('API error');
     const data = await res.json();
-    if (analyticsRes && analyticsRes.ok) data.analytics = await analyticsRes.json();
     render(data);
   } catch (err) {
     document.getElementById('main-content').innerHTML = `

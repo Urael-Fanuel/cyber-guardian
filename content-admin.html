@@ -23,7 +23,21 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
 .error { color:#fca5a5; }
 .muted { font-size:13px; color:#7890a5; }
 .hidden { display:none; }
+.stats-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:16px; }
+.stat-card { border:1px solid #203449; background:#08111b; border-radius:8px; padding:14px; }
+.stat-label { color:#8fa8bd; font-size:12px; text-transform:uppercase; letter-spacing:.08em; min-height:30px; }
+.stat-num { color:#00d4ff; font-size:30px; font-weight:800; margin-top:8px; }
+.stat-sub { color:#7890a5; font-size:12px; margin-top:6px; }
+.analytics-lists { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
+.analytics-list { border:1px solid #203449; background:#08111b; border-radius:8px; padding:14px; }
+.analytics-list h3 { margin:0 0 8px; font-size:14px; color:#dbeafe; }
+.analytics-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid rgba(255,255,255,.06); padding:7px 0; color:#dbeafe; font-size:13px; }
+.analytics-row:last-child { border-bottom:0; }
+.analytics-row span:first-child { color:#8fa8bd; overflow-wrap:anywhere; }
+.analytics-row span:last-child { color:#fff; font-weight:800; }
+@media (max-width:900px) { .stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .analytics-lists { grid-template-columns:1fr; } }
 @media (max-width:720px) { .grid { grid-template-columns:1fr; } }
+@media (max-width:520px) { .stats-grid { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -94,12 +108,23 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
     </div>
     <div class="status" id="status"></div>
   </section>
+
+  <section class="panel hidden" id="analytics-panel">
+    <h2>Private product analytics</h2>
+    <p class="muted">Visible only after admin login. These metrics are not shown on the public dashboard.</p>
+    <div id="admin-analytics"></div>
+    <div class="actions">
+      <button id="refresh-analytics" class="secondary">Refresh Analytics</button>
+    </div>
+    <div class="status" id="analytics-status"></div>
+  </section>
 </main>
 
 <script src="/locales/translations.js"></script>
 <script>
 const loginPanel = document.getElementById('login-panel');
 const adminPanel = document.getElementById('admin-panel');
+const analyticsPanel = document.getElementById('analytics-panel');
 const usernameEl = document.getElementById('username');
 const passwordEl = document.getElementById('password');
 const loginStatusEl = document.getElementById('login-status');
@@ -110,6 +135,8 @@ const valueEl = document.getElementById('value');
 const fallbackEl = document.getElementById('fallback');
 const statusEl = document.getElementById('status');
 const keysEl = document.getElementById('keys');
+const adminAnalyticsEl = document.getElementById('admin-analytics');
+const analyticsStatusEl = document.getElementById('analytics-status');
 let dashboardKeys = [];
 
 function getToken() { return localStorage.getItem('cg-admin-token') || ''; }
@@ -122,6 +149,110 @@ function updateAuthView() {
   const signedIn = Boolean(getToken());
   loginPanel.classList.toggle('hidden', signedIn);
   adminPanel.classList.toggle('hidden', !signedIn);
+  analyticsPanel.classList.toggle('hidden', !signedIn);
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString();
+}
+
+function formatAnalyticsKey(value) {
+  return String(value || 'unknown')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function analyticsRows(items) {
+  if (!Array.isArray(items) || !items.length) {
+    return '<div class="analytics-row"><span>-</span><span>0</span></div>';
+  }
+  return items.slice(0, 8).map(item => `
+    <div class="analytics-row">
+      <span>${escapeHtml(formatAnalyticsKey(item.key))}</span>
+      <span>${formatNumber(item.count)}</span>
+    </div>`).join('');
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[ch]));
+}
+
+function renderAnalytics(data) {
+  if (!data || data.configured === false) {
+    adminAnalyticsEl.innerHTML = '<p class="muted">Product analytics are not configured yet.</p>';
+    return;
+  }
+  adminAnalyticsEl.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Public visitors today</div>
+        <div class="stat-num">${formatNumber(data.visitors_today)}</div>
+        <div class="stat-sub">7 days: ${formatNumber(data.visitors_7d)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Public completed scans</div>
+        <div class="stat-num">${formatNumber(data.scans_30d)}</div>
+        <div class="stat-sub">30 days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Owner completed scans</div>
+        <div class="stat-num">${formatNumber(data.owner_scans_30d)}</div>
+        <div class="stat-sub">Owner events: ${formatNumber(data.owner_events_30d)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">All tracked events</div>
+        <div class="stat-num">${formatNumber(data.all_events_30d)}</div>
+        <div class="stat-sub">Public events: ${formatNumber(data.events_30d)}</div>
+      </div>
+    </div>
+    <div class="analytics-lists">
+      <div class="analytics-list">
+        <h3>Top public countries</h3>
+        ${analyticsRows(data.by_country)}
+      </div>
+      <div class="analytics-list">
+        <h3>Public scan interest</h3>
+        ${analyticsRows(data.by_scan_scope)}
+      </div>
+      <div class="analytics-list">
+        <h3>Public events</h3>
+        ${analyticsRows(data.by_event)}
+      </div>
+    </div>`;
+  analyticsStatusEl.textContent = data.actor_filter_active === false
+    ? 'Owner/public separation will become accurate after migration 008 is active.'
+    : 'Loaded private product analytics.';
+}
+
+async function loadAnalytics() {
+  const token = getToken();
+  if (!token) return;
+  analyticsStatusEl.textContent = 'Loading analytics...';
+  try {
+    const response = await fetch('/api/product-analytics', {
+      headers: { 'X-CG-Admin-Token': token }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      clearToken();
+      updateAuthView();
+      loginStatusEl.textContent = 'Session expired. Sign in again.';
+      loginStatusEl.className = 'status error';
+      return;
+    }
+    if (!response.ok) {
+      analyticsStatusEl.textContent = data.error || 'Analytics unavailable.';
+      analyticsStatusEl.className = 'status error';
+      return;
+    }
+    analyticsStatusEl.className = 'status';
+    renderAnalytics(data);
+  } catch {
+    analyticsStatusEl.textContent = 'Analytics unavailable.';
+    analyticsStatusEl.className = 'status error';
+  }
 }
 
 async function login() {
@@ -150,6 +281,7 @@ async function login() {
   passwordEl.value = '';
   updateAuthView();
   populateKeys();
+  loadAnalytics();
 }
 
 async function getDashboardKeys() {
@@ -222,9 +354,13 @@ document.getElementById('load').onclick = loadCurrent;
 document.getElementById('save').onclick = saveText;
 document.getElementById('open-site').onclick = () => window.open('/', '_blank');
 document.getElementById('open-dashboard').onclick = () => window.open('/dashboard.html', '_blank');
+document.getElementById('refresh-analytics').onclick = loadAnalytics;
 document.getElementById('logout').onclick = () => { clearToken(); updateAuthView(); };
 updateAuthView();
-if (getToken()) populateKeys();
+if (getToken()) {
+  populateKeys();
+  loadAnalytics();
+}
 </script>
 </body>
 </html>
