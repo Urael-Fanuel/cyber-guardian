@@ -102,7 +102,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
 </main>
 
 <script src="/locales/static-pages.js"></script>
-<script src="/analytics.js?v=1"></script>
+<script src="/analytics.js?v=2"></script>
 <script>
 const params = new URLSearchParams(window.location.search);
 const initialType = params.get('type') || params.get('kind');
@@ -143,6 +143,10 @@ document.getElementById('contact-form').addEventListener('submit', async (event)
       document.getElementById('kind').value = initialType;
     }
   } catch (error) {
+    if (window.cgTrack) window.cgTrack('contact_form_failed', {
+      type: payload.kind,
+      error: error.message || 'unknown'
+    });
     msg.className = 'msg error';
     const rawMessage = error.message || '';
     if (rawMessage.includes('valid email')) msg.textContent = staticText('invalid_email');

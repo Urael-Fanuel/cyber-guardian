@@ -25,6 +25,31 @@
     return out;
   }
 
+  function currentLang() {
+    try {
+      return localStorage.getItem("cg-lang") || document.documentElement.lang || (navigator.language || "en").slice(0, 2);
+    } catch {
+      return document.documentElement.lang || "en";
+    }
+  }
+
+  function deviceType() {
+    const width = window.innerWidth || 0;
+    if (width && width < 640) return "mobile";
+    if (width && width < 1024) return "tablet";
+    return "desktop";
+  }
+
+  function baseMetadata() {
+    return {
+      lang: currentLang(),
+      dir: document.documentElement.dir || "ltr",
+      device: deviceType(),
+      viewport: `${window.innerWidth || 0}x${window.innerHeight || 0}`,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+    };
+  }
+
   function getAdminToken() {
     try {
       const token = localStorage.getItem("cg-admin-token") || "";
@@ -51,7 +76,7 @@
       visitor_id: visitorId(),
       scan_scope: metadata && metadata.scope,
       actor_hint: adminToken ? "owner" : "public",
-      metadata: cleanMetadata(metadata),
+      metadata: cleanMetadata({ ...baseMetadata(), ...(metadata || {}) }),
     };
 
     try {
@@ -80,10 +105,18 @@
     if (!link) return;
     const href = link.getAttribute("href") || "";
     const text = (link.textContent || "").toLowerCase();
-    if (href.includes("type=sales") || text.includes("sales")) {
-      track("contact_sales_clicked", { href, label: text.slice(0, 80) });
+    const typeMatch = href.match(/[?&]type=([^&#]+)/i);
+    const contactType = typeMatch ? decodeURIComponent(typeMatch[1]).toLowerCase() : "";
+    if (contactType === "sales" || text.includes("sales")) {
+      track("contact_sales_clicked", { href, label: text.slice(0, 80), type: "sales" });
+    } else if (contactType === "enterprise") {
+      track("contact_enterprise_clicked", { href, label: text.slice(0, 80), type: "enterprise" });
+    } else if (contactType === "support") {
+      track("contact_support_clicked", { href, label: text.slice(0, 80), type: "support" });
+    } else if (contactType === "security") {
+      track("contact_security_clicked", { href, label: text.slice(0, 80), type: "security" });
     } else if (href.includes("contact.html")) {
-      track("contact_clicked", { href, label: text.slice(0, 80) });
+      track("contact_clicked", { href, label: text.slice(0, 80), type: contactType || "general" });
     }
   });
 

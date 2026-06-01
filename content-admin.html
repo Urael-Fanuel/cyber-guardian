@@ -31,6 +31,7 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
 .analytics-lists { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
 .analytics-list { border:1px solid #203449; background:#08111b; border-radius:8px; padding:14px; }
 .analytics-list h3 { margin:0 0 8px; font-size:14px; color:#dbeafe; }
+.analytics-section-title { margin:20px 0 10px; color:#dbeafe; font-size:16px; font-weight:800; }
 .analytics-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid rgba(255,255,255,.06); padding:7px 0; color:#dbeafe; font-size:13px; }
 .analytics-row:last-child { border-bottom:0; }
 .analytics-row span:first-child { color:#8fa8bd; overflow-wrap:anywhere; }
@@ -157,7 +158,46 @@ function formatNumber(value) {
 }
 
 function formatAnalyticsKey(value) {
-  return String(value || 'unknown')
+  const labels = {
+    public_visitors: 'Public visitors',
+    scan_started: 'Scans started',
+    scan_completed: 'Scans completed',
+    contact_or_signup: 'Sales contact or signup',
+    ok_to_install: 'OK to install',
+    security_review: 'Security review',
+    do_not_install: 'Do not install',
+    unknown: 'Unknown',
+    mcp: 'MCP',
+    skill: 'AI Skill',
+    extension: 'IDE extension',
+    github_action: 'GitHub Action',
+    package: 'npm/PyPI package',
+    dependency: 'Dependency',
+    contact_sales_clicked: 'Clicked Sales',
+    contact_enterprise_clicked: 'Clicked Enterprise',
+    contact_support_clicked: 'Clicked Support',
+    contact_security_clicked: 'Clicked Security',
+    contact_clicked: 'Clicked Contact',
+    contact_form_submitted: 'Contact form sent',
+    contact_form_failed: 'Contact form failed',
+    email_submitted: 'Email signup',
+    email_submit_failed: 'Email signup failed',
+    page_view: 'Page view',
+    scan_scope_selected: 'Scan type selected',
+    scan_failed: 'Scan failed',
+    scan_started: 'Scan started',
+    scan_completed: 'Scan completed',
+    under_500: 'Under 500 chars',
+    '500_1999': '500-1,999 chars',
+    '2000_9999': '2,000-9,999 chars',
+    '10000_plus': '10,000+ chars',
+    '0_19_low_risk': '0-19 low risk',
+    '20_69_review': '20-69 review',
+    '70_100_high_risk': '70-100 high risk'
+  };
+  const raw = String(value || 'unknown');
+  if (labels[raw]) return labels[raw];
+  return raw
     .replace(/_/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -171,6 +211,18 @@ function analyticsRows(items) {
       <span>${escapeHtml(formatAnalyticsKey(item.key))}</span>
       <span>${formatNumber(item.count)}</span>
     </div>`).join('');
+}
+
+function analyticsList(title, items) {
+  return `
+    <div class="analytics-list">
+      <h3>${escapeHtml(title)}</h3>
+      ${analyticsRows(items)}
+    </div>`;
+}
+
+function percent(value) {
+  return `${Number(value || 0).toLocaleString()}%`;
 }
 
 function escapeHtml(value) {
@@ -189,12 +241,32 @@ function renderAnalytics(data) {
       <div class="stat-card">
         <div class="stat-label">Public visitors today</div>
         <div class="stat-num">${formatNumber(data.visitors_today)}</div>
-        <div class="stat-sub">7 days: ${formatNumber(data.visitors_7d)}</div>
+        <div class="stat-sub">7 days: ${formatNumber(data.visitors_7d)} · 30 days: ${formatNumber(data.visitors_30d)}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Public completed scans</div>
         <div class="stat-num">${formatNumber(data.scans_30d)}</div>
-        <div class="stat-sub">30 days</div>
+        <div class="stat-sub">Started: ${formatNumber(data.scan_starts_30d)} · completion: ${percent(data.scan_completion_rate)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Sales interest</div>
+        <div class="stat-num">${formatNumber(data.business_intent_30d)}</div>
+        <div class="stat-sub">Visitor to intent: ${percent(data.visitor_to_business_intent_rate)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Scan demand</div>
+        <div class="stat-num">${percent(data.visitor_to_scan_rate)}</div>
+        <div class="stat-sub">Public visitors who started a scan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Contact clicks</div>
+        <div class="stat-num">${formatNumber(data.contact_clicks_30d)}</div>
+        <div class="stat-sub">Forms sent: ${formatNumber(data.contact_forms_30d)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Email signups</div>
+        <div class="stat-num">${formatNumber(data.email_submits_30d)}</div>
+        <div class="stat-sub">Failures: ${formatNumber(data.email_failures_30d)}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Owner completed scans</div>
@@ -207,19 +279,35 @@ function renderAnalytics(data) {
         <div class="stat-sub">Public events: ${formatNumber(data.events_30d)}</div>
       </div>
     </div>
+    <div class="analytics-section-title">Business funnel</div>
     <div class="analytics-lists">
-      <div class="analytics-list">
-        <h3>Top public countries</h3>
-        ${analyticsRows(data.by_country)}
-      </div>
-      <div class="analytics-list">
-        <h3>Public scan interest</h3>
-        ${analyticsRows(data.by_scan_scope)}
-      </div>
-      <div class="analytics-list">
-        <h3>Public events</h3>
-        ${analyticsRows(data.by_event)}
-      </div>
+      ${analyticsList('Visitor funnel', data.funnel)}
+      ${analyticsList('Contact by type', data.contact_by_type)}
+      ${analyticsList('Public events', data.by_event)}
+    </div>
+    <div class="analytics-section-title">Scans</div>
+    <div class="analytics-lists">
+      ${analyticsList('Completed scans by type', data.completed_by_scope)}
+      ${analyticsList('Started scans by type', data.started_by_scope)}
+      ${analyticsList('Failed scans by type', data.failed_by_scope)}
+      ${analyticsList('Scan verdicts', data.scan_statuses)}
+      ${analyticsList('Risk score buckets', data.scan_score_buckets)}
+      ${analyticsList('Completed scans by country', data.scans_by_country)}
+      ${analyticsList('Country + scan type', data.scans_by_country_scope)}
+      ${analyticsList('Public scan interest', data.by_scan_scope)}
+      ${analyticsList('Owner scan types', data.owner_by_scan_scope)}
+    </div>
+    <div class="analytics-section-title">Audience</div>
+    <div class="analytics-lists">
+      ${analyticsList('Top public countries', data.by_country)}
+      ${analyticsList('Languages', data.by_language)}
+      ${analyticsList('Devices', data.by_device)}
+      ${analyticsList('Browsers', data.by_browser)}
+      ${analyticsList('Top pages', data.top_pages)}
+      ${analyticsList('Top referrers', data.top_referrers)}
+      ${analyticsList('Contact countries', data.contact_by_country)}
+      ${analyticsList('Email signup countries', data.email_by_country)}
+      ${analyticsList('Owner events', data.owner_by_event)}
     </div>`;
   analyticsStatusEl.textContent = data.actor_filter_active === false
     ? 'Owner/public separation will become accurate after migration 008 is active.'

@@ -672,7 +672,7 @@ footer a:hover { color: var(--cyan); }
 </footer>
 
 <script src="/locales/translations.js"></script>
-<script src="/analytics.js?v=1"></script>
+<script src="/analytics.js?v=2"></script>
 <script>
 (function buildLangSwitcher() {
   const container = document.getElementById('lang-switcher');
@@ -700,12 +700,19 @@ setLang(detectLang());
 
 // Scope pill switching
 let currentScope = 'mcp';
-function setScope(scope) {
+function inputLengthBucket(length) {
+  if (length < 500) return 'under_500';
+  if (length < 2000) return '500_1999';
+  if (length < 10000) return '2000_9999';
+  return '10000_plus';
+}
+function setScope(scope, trackSelection = true) {
   const target = document.querySelector(`.scope-pill[data-scope="${scope}"]`);
   if (!target) return;
   document.querySelectorAll('.scope-pill').forEach(p => p.classList.remove('active'));
   target.classList.add('active');
   currentScope = scope;
+  if (trackSelection && window.cgTrack) window.cgTrack('scan_scope_selected', { scope });
 }
 function setScopeAndScroll(scope) {
   setScope(scope);
@@ -780,7 +787,11 @@ async function runScan() {
     ta.focus(); return;
   }
 
-  if (window.cgTrack) window.cgTrack('scan_started', { scope: currentScope, input_length: code.length });
+  if (window.cgTrack) window.cgTrack('scan_started', {
+    scope: currentScope,
+    input_length: code.length,
+    input_bucket: inputLengthBucket(code.length)
+  });
 
   btn.disabled = true;
   btn.innerHTML = '<span>' + t('btn_scanning') + '</span>';
@@ -837,12 +848,18 @@ async function runScan() {
         status: result.status,
         threat_score: result.threat_score || 0,
         threat_count: result.threat_count || 0,
+        decision: result.decision || '',
+        input_bucket: inputLengthBucket(code.length),
         from_cache: Boolean(result._from_cache)
       });
     }
 
   } catch (err) {
-    if (window.cgTrack) window.cgTrack('scan_failed', { scope: currentScope, error: err.message || 'unknown' });
+    if (window.cgTrack) window.cgTrack('scan_failed', {
+      scope: currentScope,
+      error: err.message || 'unknown',
+      input_bucket: inputLengthBucket(code.length)
+    });
     sl.classList.remove('on');
     btn.disabled = false;
     btn.innerHTML = '▶ &nbsp;<span>' + t('btn_scan_again') + '</span>';
@@ -1008,10 +1025,12 @@ async function subscribeEmail() {
       msg.textContent = data.message || 'Subscribed!';
       msg.className = 'email-msg success'; input.value = '';
     } else {
+      if (window.cgTrack) window.cgTrack('email_submit_failed', { area: 'threat_alerts', error: data.error || 'unknown' });
       msg.textContent = data.error || 'Subscription failed';
       msg.className = 'email-msg error';
     }
   } catch {
+    if (window.cgTrack) window.cgTrack('email_submit_failed', { area: 'threat_alerts', error: 'connection_error' });
     msg.textContent = 'Connection error';
     msg.className = 'email-msg error';
   }

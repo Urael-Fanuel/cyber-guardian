@@ -78,6 +78,11 @@ function uniqueCount(rows, key) {
   return new Set(rows.map(row => row[key]).filter(Boolean)).size;
 }
 
+function pct(part, total) {
+  if (!total) return 0;
+  return Math.round((part / total) * 100);
+}
+
 function eventRowsByActor(rows, actor) {
   return rows.filter(row => (row.actor || "public") === actor);
 }
@@ -102,6 +107,84 @@ function byDay(rows) {
     if (row.event_name === "scan_completed") day.scans++;
   }
   return days.map(day => ({ date: day.date, events: day.events, visitors: day.visitors.size, scans: day.scans }));
+}
+
+function metadata(row, key) {
+  const value = row?.metadata && typeof row.metadata === "object" ? row.metadata[key] : "";
+  return String(value ?? "").trim();
+}
+
+function scanScope(row) {
+  return row.scan_scope || metadata(row, "scope") || "unknown";
+}
+
+function scanStatus(row) {
+  const raw = metadata(row, "status").toUpperCase();
+  if (raw.includes("CRITICAL")) return "do_not_install";
+  if (raw.includes("MODERATE") || raw.includes("AMBIGUOUS")) return "security_review";
+  if (raw.includes("SAFE")) return "ok_to_install";
+  return "unknown";
+}
+
+function scoreBucket(row) {
+  const score = Number(metadata(row, "threat_score") || 0);
+  if (score >= 70) return "70_100_high_risk";
+  if (score >= 20) return "20_69_review";
+  return "0_19_low_risk";
+}
+
+function contactType(row) {
+  const type = (metadata(row, "type") || row.event_name.replace(/^contact_/, "").replace(/_clicked$/, "")).toLowerCase();
+  if (["sales", "enterprise", "support", "security"].includes(type)) return type;
+  return row.event_name === "email_submitted" ? "email_signup" : "general";
+}
+
+function referrerDomain(row) {
+  const referrer = String(row.referrer || "").trim();
+  if (!referrer) return "direct";
+  try {
+    const url = new URL(referrer);
+    return url.hostname.replace(/^www\./, "");
+  } catch {
+    return "other";
+  }
+}
+
+function deviceFromRow(row) {
+  const explicit = metadata(row, "device").toLowerCase();
+  if (["mobile", "tablet", "desktop"].includes(explicit)) return explicit;
+  const ua = String(row.user_agent || "").toLowerCase();
+  if (/mobile|iphone|android/.test(ua)) return "mobile";
+  if (/ipad|tablet/.test(ua)) return "tablet";
+  return ua ? "desktop" : "unknown";
+}
+
+function browserFromRow(row) {
+  const ua = String(row.user_agent || "").toLowerCase();
+  if (!ua) return "unknown";
+  if (ua.includes("edg/")) return "edge";
+  if (ua.includes("chrome/") && !ua.includes("chromium")) return "chrome";
+  if (ua.includes("firefox/")) return "firefox";
+  if (ua.includes("safari/") && !ua.includes("chrome/")) return "safari";
+  return "other";
+}
+
+function compactPath(path) {
+  const value = String(path || "/").trim() || "/";
+  return value === "/" ? "home" : value.replace(/^\//, "") || "home";
+}
+
+function countryScopeKey(row) {
+  return `${row.country || "unknown"} · ${scanScope(row)}`;
+}
+
+function contactIntentRows(rows) {
+  return rows.filter(row =>
+    row.event_name === "contact_sales_clicked" ||
+    row.event_name === "contact_enterprise_clicked" ||
+    row.event_name === "email_submitted" ||
+    (row.event_name === "contact_form_submitted" && ["sales", "enterprise"].includes(contactType(row)))
+  );
 }
 
 module.exports = async function handler(req, res) {
@@ -154,6 +237,18 @@ module.exports = async function handler(req, res) {
     const week = publicRows.filter(row => new Date(row.created_at) >= weekStart);
     const scanEvents = publicRows.filter(row => ["scan_started", "scan_completed", "scan_failed"].includes(row.event_name));
     const ownerScanEvents = ownerRows.filter(row => ["scan_started", "scan_completed", "scan_failed"].includes(row.event_name));
+    const pageViews = publicRows.filter(row => row.event_name === "page_view");
+    const scanStarted = publicRows.filter(row => row.event_name === "scan_started");
+    const scanCompleted = publicRows.filter(row => row.event_name === "scan_completed");
+    const scanFailed = publicRows.filter(row => row.event_name === "scan_failed");
+    const contactClicks = publicRows.filter(row => /^contact_.*_clicked$/.test(row.event_name) || row.event_name === "contact_clicked");
+    const contactForms = publicRows.filter(row => row.event_name === "contact_form_submitted");
+    const contactFailures = publicRows.filter(row => row.event_name === "contact_form_failed");
+    const emailSubmits = publicRows.filter(row => row.event_name === "email_submitted");
+    const emailFailures = publicRows.filter(row => row.event_name === "email_submit_failed");
+    const contactIntent = contactIntentRows(publicRows);
+    const publicVisitors = uniqueCount(publicRows, "visitor_id");
+    const publicScanVisitors = uniqueCount(scanStarted, "visitor_id");
 
     return res.status(200).json({
       configured: true,
@@ -164,9 +259,22 @@ module.exports = async function handler(req, res) {
       visitors_30d: uniqueCount(publicRows, "visitor_id"),
       visitors_today: uniqueCount(today, "visitor_id"),
       visitors_7d: uniqueCount(week, "visitor_id"),
-      scans_30d: publicRows.filter(row => row.event_name === "scan_completed").length,
+      page_views_30d: pageViews.length,
+      scan_starts_30d: scanStarted.length,
+      scans_30d: scanCompleted.length,
+      scan_failures_30d: scanFailed.length,
+      scan_completion_rate: pct(scanCompleted.length, scanStarted.length),
+      scan_failure_rate: pct(scanFailed.length, scanStarted.length),
+      public_scan_visitors_30d: publicScanVisitors,
+      visitor_to_scan_rate: pct(publicScanVisitors, publicVisitors),
       sales_clicks_30d: publicRows.filter(row => row.event_name === "contact_sales_clicked").length,
-      email_submits_30d: publicRows.filter(row => row.event_name === "email_submitted").length,
+      contact_clicks_30d: contactClicks.length,
+      contact_forms_30d: contactForms.length,
+      contact_failures_30d: contactFailures.length,
+      email_submits_30d: emailSubmits.length,
+      email_failures_30d: emailFailures.length,
+      business_intent_30d: contactIntent.length,
+      visitor_to_business_intent_rate: pct(uniqueCount(contactIntent, "visitor_id"), publicVisitors),
       owner_events_30d: ownerRows.length,
       owner_scans_30d: ownerRows.filter(row => row.event_name === "scan_completed").length,
       owner_visitors_30d: uniqueCount(ownerRows, "visitor_id"),
@@ -175,9 +283,30 @@ module.exports = async function handler(req, res) {
       all_scans_30d: all.filter(row => row.event_name === "scan_completed").length,
       by_country: topCounts(countBy(publicRows, row => row.country || "unknown"), 12),
       by_event: topCounts(countBy(publicRows, row => row.event_name), 12),
-      by_scan_scope: topCounts(countBy(scanEvents, row => row.scan_scope || row.metadata?.scope || "unknown"), 10),
+      by_scan_scope: topCounts(countBy(scanEvents, scanScope), 10),
+      completed_by_scope: topCounts(countBy(scanCompleted, scanScope), 10),
+      started_by_scope: topCounts(countBy(scanStarted, scanScope), 10),
+      failed_by_scope: topCounts(countBy(scanFailed, scanScope), 10),
+      scans_by_country: topCounts(countBy(scanCompleted, row => row.country || "unknown"), 12),
+      scans_by_country_scope: topCounts(countBy(scanCompleted, countryScopeKey), 16),
+      scan_statuses: topCounts(countBy(scanCompleted, scanStatus), 8),
+      scan_score_buckets: topCounts(countBy(scanCompleted, scoreBucket), 8),
+      contact_by_type: topCounts(countBy([...contactClicks, ...contactForms], contactType), 10),
+      contact_by_country: topCounts(countBy([...contactClicks, ...contactForms], row => row.country || "unknown"), 12),
+      email_by_country: topCounts(countBy(emailSubmits, row => row.country || "unknown"), 12),
+      top_pages: topCounts(countBy(pageViews, row => compactPath(row.page_path)), 12),
+      top_referrers: topCounts(countBy(pageViews, referrerDomain), 12),
+      by_language: topCounts(countBy(publicRows, row => metadata(row, "lang") || "unknown"), 10),
+      by_device: topCounts(countBy(publicRows, deviceFromRow), 8),
+      by_browser: topCounts(countBy(publicRows, browserFromRow), 8),
+      funnel: [
+        { key: "public_visitors", count: publicVisitors },
+        { key: "scan_started", count: scanStarted.length },
+        { key: "scan_completed", count: scanCompleted.length },
+        { key: "contact_or_signup", count: contactIntent.length },
+      ],
       owner_by_event: topCounts(countBy(ownerRows, row => row.event_name), 8),
-      owner_by_scan_scope: topCounts(countBy(ownerScanEvents, row => row.scan_scope || row.metadata?.scope || "unknown"), 8),
+      owner_by_scan_scope: topCounts(countBy(ownerScanEvents, scanScope), 8),
       trend: byDay(publicRows),
       recent: publicRows.slice(0, 20).map(row => ({
         event_name: row.event_name,

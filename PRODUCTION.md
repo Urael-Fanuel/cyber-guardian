@@ -106,6 +106,12 @@ geo headers when available. The detailed analytics endpoint requires the signed
 admin token, so business metrics are visible only after the owner logs in at
 `/content-admin.html`. The public dashboard must not load or render product
 analytics.
+
+The private admin analytics view aggregates public usage by country, scan type,
+scan status, score bucket, contact intent, email signup, selected language,
+device/browser class, referrer domain, and top pages. These fields are stored as
+anonymous event metadata in `site_events.metadata`, so this reporting expansion
+does not require an additional database migration.
 Run `supabase/migrations/008_site_event_actor.sql` to separate owner activity
 from public visitor analytics. The separation is trusted only when events include
 a valid signed admin token; older events may still be mixed.
