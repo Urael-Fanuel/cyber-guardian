@@ -104,6 +104,9 @@ failed scans, Sales clicks, contact form submissions, and email signups in
 Raw IP addresses are not stored. Country, region, and city are taken from Vercel
 geo headers when available. The detailed analytics endpoint requires the signed
 admin token, so business metrics are visible only after the owner logs in.
+Run `supabase/migrations/008_site_event_actor.sql` to separate owner activity
+from public visitor analytics. The separation is trusted only when events include
+a valid signed admin token; older events may still be mixed.
 
 ## Dynamic Sandbox
 
@@ -194,6 +197,7 @@ supabase/migrations/004_contact_messages.sql
 supabase/migrations/005_site_scan_intelligence.sql
 supabase/migrations/006_site_events.sql
 supabase/migrations/007_dynamic_sandbox.sql
+supabase/migrations/008_site_event_actor.sql
 ```
 
 This creates:
@@ -204,6 +208,7 @@ This creates:
 - `public.email_subscribers`
 - `public.contact_messages`
 - `public.site_events`
+- `public.site_events.actor`
 - `public.site_scans.dynamic_sandbox`
 
 The API calls this RPC before calling Anthropic. If the request exceeds minute, hour,

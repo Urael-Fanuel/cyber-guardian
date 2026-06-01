@@ -25,26 +25,47 @@
     return out;
   }
 
+  function getAdminToken() {
+    try {
+      const token = localStorage.getItem("cg-admin-token") || "";
+      if (!token) return "";
+      const payload = token.split(".")[0];
+      if (!payload) return "";
+      const parsed = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+      if (parsed.role !== "admin" || Number(parsed.exp || 0) <= Math.floor(Date.now() / 1000)) {
+        localStorage.removeItem("cg-admin-token");
+        return "";
+      }
+      return token;
+    } catch {
+      return "";
+    }
+  }
+
   function track(eventName, metadata) {
+    const adminToken = getAdminToken();
     const payload = {
       event_name: eventName,
       page_path: location.pathname,
       referrer: document.referrer || "",
       visitor_id: visitorId(),
       scan_scope: metadata && metadata.scope,
+      actor_hint: adminToken ? "owner" : "public",
       metadata: cleanMetadata(metadata),
     };
 
     try {
       const body = JSON.stringify(payload);
-      if (navigator.sendBeacon) {
+      if (!adminToken && navigator.sendBeacon) {
         const blob = new Blob([body], { type: "application/json" });
         navigator.sendBeacon(endpoint, blob);
         return;
       }
+      const headers = { "Content-Type": "application/json" };
+      if (adminToken) headers["X-CG-Admin-Token"] = adminToken;
       fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body,
         keepalive: true,
       }).catch(() => {});

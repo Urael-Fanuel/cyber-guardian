@@ -607,12 +607,17 @@ const DASH_ANALYTICS_COPY = {
     analytics_visitors_today: 'Visitors today',
     analytics_visitors_7d: 'Visitors 7 days',
     analytics_events_30d: 'Events 30 days',
-    analytics_scans_30d: 'Completed scans',
+    analytics_scans_30d: 'Public completed scans',
+    analytics_owner_events_30d: 'Owner events',
+    analytics_owner_scans_30d: 'Owner completed scans',
+    analytics_all_events_30d: 'All events',
     analytics_sales_30d: 'Sales clicks',
     analytics_email_30d: 'Email signups',
-    analytics_top_countries: 'Top countries',
-    analytics_scan_interest: 'Scan interest',
-    analytics_top_events: 'Top events',
+    analytics_top_countries: 'Top public countries',
+    analytics_scan_interest: 'Public scan interest',
+    analytics_top_events: 'Public events',
+    analytics_public_note: 'Public visitor analytics. Owner activity is excluded when the owner is signed in.',
+    analytics_legacy_note: 'Owner/public separation starts after migration 008 is deployed; older events may still be mixed.',
     analytics_unavailable: 'Run supabase/migrations/006_site_events.sql to enable product analytics.'
   },
   he: {
@@ -620,13 +625,98 @@ const DASH_ANALYTICS_COPY = {
     analytics_visitors_today: 'מבקרים היום',
     analytics_visitors_7d: 'מבקרים ב-7 ימים',
     analytics_events_30d: 'אירועים ב-30 יום',
-    analytics_scans_30d: 'סריקות שהושלמו',
+    analytics_scans_30d: 'סריקות ציבוריות שהושלמו',
+    analytics_owner_events_30d: 'אירועי בעלים',
+    analytics_owner_scans_30d: 'סריקות בעלים שהושלמו',
+    analytics_all_events_30d: 'כל האירועים',
     analytics_sales_30d: 'לחיצות Sales',
     analytics_email_30d: 'נרשמים למייל',
-    analytics_top_countries: 'מדינות מובילות',
-    analytics_scan_interest: 'עניין לפי סוג סריקה',
-    analytics_top_events: 'אירועים מובילים',
+    analytics_top_countries: 'מדינות מובילות - ציבורי',
+    analytics_scan_interest: 'עניין ציבורי לפי סוג סריקה',
+    analytics_top_events: 'אירועים ציבוריים',
+    analytics_public_note: 'אנליטיקה של מבקרים ציבוריים. פעילות שלך כבעלים מוחרגת כאשר אתה מחובר.',
+    analytics_legacy_note: 'הפרדת בעלים/ציבור מתחילה אחרי פריסת migration 008; אירועים ישנים עדיין עשויים להיות מעורבבים.',
     analytics_unavailable: 'יש להריץ את supabase/migrations/006_site_events.sql כדי להפעיל אנליטיקת מוצר.'
+  },
+  de: {
+    analytics_hdr: 'Produktanalyse',
+    analytics_visitors_today: 'Besucher heute',
+    analytics_visitors_7d: 'Besucher 7 Tage',
+    analytics_events_30d: 'Events 30 Tage',
+    analytics_scans_30d: 'Oeffentliche abgeschlossene Scans',
+    analytics_owner_events_30d: 'Owner-Events',
+    analytics_owner_scans_30d: 'Owner abgeschlossene Scans',
+    analytics_all_events_30d: 'Alle Events',
+    analytics_top_countries: 'Top-Laender - oeffentlich',
+    analytics_scan_interest: 'Oeffentliches Scan-Interesse',
+    analytics_top_events: 'Oeffentliche Events',
+    analytics_public_note: 'Oeffentliche Besucheranalyse. Owner-Aktivitaet wird ausgeschlossen, wenn der Owner angemeldet ist.',
+    analytics_legacy_note: 'Die Trennung Owner/Oeffentlich beginnt nach Migration 008; aeltere Events koennen noch gemischt sein.',
+    analytics_unavailable: 'Fuehren Sie supabase/migrations/006_site_events.sql aus, um Produktanalyse zu aktivieren.'
+  },
+  ja: {
+    analytics_hdr: 'プロダクト分析',
+    analytics_visitors_today: '本日の訪問者',
+    analytics_visitors_7d: '7日間の訪問者',
+    analytics_events_30d: '30日間のイベント',
+    analytics_scans_30d: '公開ユーザーの完了スキャン',
+    analytics_owner_events_30d: 'オーナーイベント',
+    analytics_owner_scans_30d: 'オーナー完了スキャン',
+    analytics_all_events_30d: '全イベント',
+    analytics_top_countries: '公開ユーザーの上位国',
+    analytics_scan_interest: '公開ユーザーのスキャン関心',
+    analytics_top_events: '公開イベント',
+    analytics_public_note: '公開訪問者の分析です。オーナーがログインしている場合、その活動は除外されます。',
+    analytics_legacy_note: 'オーナー/公開の分離は migration 008 の適用後に開始されます。古いイベントは混在している可能性があります。',
+    analytics_unavailable: 'プロダクト分析を有効にするには supabase/migrations/006_site_events.sql を実行してください。'
+  },
+  ko: {
+    analytics_hdr: '제품 분석',
+    analytics_visitors_today: '오늘 방문자',
+    analytics_visitors_7d: '7일 방문자',
+    analytics_events_30d: '30일 이벤트',
+    analytics_scans_30d: '공개 방문자 완료 스캔',
+    analytics_owner_events_30d: '소유자 이벤트',
+    analytics_owner_scans_30d: '소유자 완료 스캔',
+    analytics_all_events_30d: '전체 이벤트',
+    analytics_top_countries: '공개 방문자 상위 국가',
+    analytics_scan_interest: '공개 스캔 관심도',
+    analytics_top_events: '공개 이벤트',
+    analytics_public_note: '공개 방문자 분석입니다. 소유자가 로그인한 경우 소유자 활동은 제외됩니다.',
+    analytics_legacy_note: '소유자/공개 분리는 migration 008 배포 후 시작됩니다. 이전 이벤트는 아직 섞여 있을 수 있습니다.',
+    analytics_unavailable: '제품 분석을 활성화하려면 supabase/migrations/006_site_events.sql 을 실행하세요.'
+  },
+  fr: {
+    analytics_hdr: 'Analyse produit',
+    analytics_visitors_today: "Visiteurs aujourd'hui",
+    analytics_visitors_7d: 'Visiteurs 7 jours',
+    analytics_events_30d: 'Evenements 30 jours',
+    analytics_scans_30d: 'Scans publics termines',
+    analytics_owner_events_30d: 'Evenements owner',
+    analytics_owner_scans_30d: 'Scans owner termines',
+    analytics_all_events_30d: 'Tous les evenements',
+    analytics_top_countries: 'Pays principaux - public',
+    analytics_scan_interest: 'Interet public par type de scan',
+    analytics_top_events: 'Evenements publics',
+    analytics_public_note: "Analyse des visiteurs publics. L'activite owner est exclue quand l'owner est connecte.",
+    analytics_legacy_note: 'La separation owner/public commence apres la migration 008; les anciens evenements peuvent encore etre melanges.',
+    analytics_unavailable: 'Executez supabase/migrations/006_site_events.sql pour activer l analyse produit.'
+  },
+  pt: {
+    analytics_hdr: 'Analise de produto',
+    analytics_visitors_today: 'Visitantes hoje',
+    analytics_visitors_7d: 'Visitantes 7 dias',
+    analytics_events_30d: 'Eventos 30 dias',
+    analytics_scans_30d: 'Scans publicos concluidos',
+    analytics_owner_events_30d: 'Eventos do owner',
+    analytics_owner_scans_30d: 'Scans do owner concluidos',
+    analytics_all_events_30d: 'Todos os eventos',
+    analytics_top_countries: 'Principais paises - publico',
+    analytics_scan_interest: 'Interesse publico por scan',
+    analytics_top_events: 'Eventos publicos',
+    analytics_public_note: 'Analise de visitantes publicos. A atividade do owner e excluida quando o owner esta logado.',
+    analytics_legacy_note: 'A separacao owner/publico comeca apos a migration 008; eventos antigos ainda podem estar misturados.',
+    analytics_unavailable: 'Execute supabase/migrations/006_site_events.sql para ativar a analise de produto.'
   }
 };
 
@@ -1424,6 +1514,7 @@ function analyticsHtml(analytics) {
   }
   return `
     <div class="section-hdr">${t('analytics_hdr')}</div>
+    <div class="decision-note">${escapeHtml(analytics.actor_filter_active === false ? t('analytics_legacy_note') : t('analytics_public_note'))}</div>
     <div class="analytics-grid">
       <div class="analytics-card">
         <div class="analytics-label">${t('analytics_visitors_today')}</div>
@@ -1436,14 +1527,14 @@ function analyticsHtml(analytics) {
         <div class="analytics-sub">${t('analytics_events_30d')}: ${Number(analytics.events_30d || 0).toLocaleString()}</div>
       </div>
       <div class="analytics-card">
-        <div class="analytics-label">${t('analytics_sales_30d')}</div>
-        <div class="analytics-number">${Number(analytics.sales_clicks_30d || 0).toLocaleString()}</div>
-        <div class="analytics-sub">30d</div>
+        <div class="analytics-label">${t('analytics_owner_events_30d')}</div>
+        <div class="analytics-number">${Number(analytics.owner_events_30d || 0).toLocaleString()}</div>
+        <div class="analytics-sub">${t('analytics_owner_scans_30d')}: ${Number(analytics.owner_scans_30d || 0).toLocaleString()}</div>
       </div>
       <div class="analytics-card">
-        <div class="analytics-label">${t('analytics_email_30d')}</div>
-        <div class="analytics-number">${Number(analytics.email_submits_30d || 0).toLocaleString()}</div>
-        <div class="analytics-sub">30d</div>
+        <div class="analytics-label">${t('analytics_all_events_30d')}</div>
+        <div class="analytics-number">${Number(analytics.all_events_30d || 0).toLocaleString()}</div>
+        <div class="analytics-sub">${t('analytics_events_30d')}: ${Number(analytics.events_30d || 0).toLocaleString()}</div>
       </div>
     </div>
     <div class="analytics-lists">

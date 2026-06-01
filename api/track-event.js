@@ -1,7 +1,9 @@
 const { createClient } = require("@supabase/supabase-js");
+const crypto = require("crypto");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const ADMIN_TOKEN_SECRET = process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "";
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
   .split(",")
   .map(s => s.trim())
@@ -31,7 +33,7 @@ function setCors(req, res) {
     res.setHeader("Vary", "Origin");
   }
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CG-Admin-Token, Authorization");
   res.setHeader("Content-Type", "application/json");
 }
 
@@ -76,6 +78,46 @@ function header(req, name) {
   return req.headers[name.toLowerCase()] || req.headers[name] || "";
 }
 
+function adminToken(req) {
+  const direct = String(header(req, "x-cg-admin-token") || "").trim();
+  if (direct) return direct;
+  const auth = String(header(req, "authorization") || "").trim();
+  const match = auth.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : "";
+}
+
+function isAdminToken(req) {
+  const token = adminToken(req);
+  if (!token || !ADMIN_TOKEN_SECRET) return false;
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature) return false;
+  const expected = crypto.createHmac("sha256", ADMIN_TOKEN_SECRET).update(payload).digest("base64url");
+  const left = Buffer.from(signature);
+  const right = Buffer.from(expected);
+  if (left.length !== right.length || !crypto.timingSafeEqual(left, right)) return false;
+  try {
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return parsed.role === "admin" && Number(parsed.exp || 0) > Math.floor(Date.now() / 1000);
+  } catch {
+    return false;
+  }
+}
+
+async function insertEventWithFallback(sb, row) {
+  const { error } = await sb.from("site_events").insert(row);
+  if (!error) return true;
+  if (/column .* does not exist|schema cache|Could not find/i.test(error.message || "") && Object.prototype.hasOwnProperty.call(row, "actor")) {
+    const legacy = { ...row };
+    delete legacy.actor;
+    const retry = await sb.from("site_events").insert(legacy);
+    if (!retry.error) return true;
+    console.error("[track-event]", retry.error.message);
+    return false;
+  }
+  console.error("[track-event]", error.message);
+  return false;
+}
+
 module.exports = async function handler(req, res) {
   setCors(req, res);
   if (req.method === "OPTIONS") {
@@ -96,6 +138,7 @@ module.exports = async function handler(req, res) {
 
   const eventName = cleanText(body?.event_name || body?.event, 80).toLowerCase().replace(/[^a-z0-9_.:-]/g, "_");
   if (!eventName) return res.status(400).json({ error: "event_name is required" });
+  const actor = isAdminToken(req) ? "owner" : "public";
 
   const row = {
     event_name: eventName,
@@ -107,14 +150,12 @@ module.exports = async function handler(req, res) {
     city: cleanText(header(req, "x-vercel-ip-city"), 120) || null,
     user_agent: cleanText(header(req, "user-agent"), 500),
     visitor_id: cleanText(body?.visitor_id || body?.session_id || "", 80) || null,
+    actor,
     metadata: cleanMetadata(body?.metadata),
   };
 
-  const { error } = await sb.from("site_events").insert(row);
-  if (error) {
-    console.error("[track-event]", error.message);
-    return res.status(202).json({ ok: false, stored: false });
-  }
+  const stored = await insertEventWithFallback(sb, row);
+  if (!stored) return res.status(202).json({ ok: false, stored: false });
 
-  return res.status(200).json({ ok: true, stored: true });
+  return res.status(200).json({ ok: true, stored: true, actor });
 };

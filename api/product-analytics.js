@@ -78,6 +78,10 @@ function uniqueCount(rows, key) {
   return new Set(rows.map(row => row[key]).filter(Boolean)).size;
 }
 
+function eventRowsByActor(rows, actor) {
+  return rows.filter(row => (row.actor || "public") === actor);
+}
+
 function since(days) {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 }
@@ -113,48 +117,74 @@ module.exports = async function handler(req, res) {
 
   try {
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: rows, error } = await sb
+    let { data: rows, error } = await sb
       .from("site_events")
-      .select("event_name,page_path,scan_scope,country,visitor_id,metadata,created_at")
+      .select("event_name,page_path,scan_scope,country,visitor_id,metadata,actor,created_at")
       .gte("created_at", since(30).toISOString())
       .order("created_at", { ascending: false })
       .limit(5000);
 
+    let actorFilterActive = true;
     if (error) {
       if (/relation .* does not exist|schema cache|Could not find/i.test(error.message || "")) {
-        return res.status(200).json({ configured: false, events_30d: 0, visitors_30d: 0 });
+        if (/actor/i.test(error.message || "")) {
+          const legacy = await sb
+            .from("site_events")
+            .select("event_name,page_path,scan_scope,country,visitor_id,metadata,created_at")
+            .gte("created_at", since(30).toISOString())
+            .order("created_at", { ascending: false })
+            .limit(5000);
+          rows = legacy.data;
+          error = legacy.error;
+          actorFilterActive = false;
+        } else {
+          return res.status(200).json({ configured: false, events_30d: 0, visitors_30d: 0 });
+        }
       }
-      throw error;
+      if (error) throw error;
     }
 
-    const all = rows || [];
+    const all = (rows || []).map(row => ({ ...row, actor: row.actor || "public" }));
+    const publicRows = eventRowsByActor(all, "public");
+    const ownerRows = eventRowsByActor(all, "owner");
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const weekStart = since(7);
-    const today = all.filter(row => new Date(row.created_at) >= todayStart);
-    const week = all.filter(row => new Date(row.created_at) >= weekStart);
-    const scanEvents = all.filter(row => ["scan_started", "scan_completed", "scan_failed"].includes(row.event_name));
+    const today = publicRows.filter(row => new Date(row.created_at) >= todayStart);
+    const week = publicRows.filter(row => new Date(row.created_at) >= weekStart);
+    const scanEvents = publicRows.filter(row => ["scan_started", "scan_completed", "scan_failed"].includes(row.event_name));
+    const ownerScanEvents = ownerRows.filter(row => ["scan_started", "scan_completed", "scan_failed"].includes(row.event_name));
 
     return res.status(200).json({
       configured: true,
-      events_30d: all.length,
+      actor_filter_active: actorFilterActive,
+      events_30d: publicRows.length,
       events_today: today.length,
       events_7d: week.length,
-      visitors_30d: uniqueCount(all, "visitor_id"),
+      visitors_30d: uniqueCount(publicRows, "visitor_id"),
       visitors_today: uniqueCount(today, "visitor_id"),
       visitors_7d: uniqueCount(week, "visitor_id"),
-      scans_30d: all.filter(row => row.event_name === "scan_completed").length,
-      sales_clicks_30d: all.filter(row => row.event_name === "contact_sales_clicked").length,
-      email_submits_30d: all.filter(row => row.event_name === "email_submitted").length,
-      by_country: topCounts(countBy(all, row => row.country || "unknown"), 12),
-      by_event: topCounts(countBy(all, row => row.event_name), 12),
+      scans_30d: publicRows.filter(row => row.event_name === "scan_completed").length,
+      sales_clicks_30d: publicRows.filter(row => row.event_name === "contact_sales_clicked").length,
+      email_submits_30d: publicRows.filter(row => row.event_name === "email_submitted").length,
+      owner_events_30d: ownerRows.length,
+      owner_scans_30d: ownerRows.filter(row => row.event_name === "scan_completed").length,
+      owner_visitors_30d: uniqueCount(ownerRows, "visitor_id"),
+      all_events_30d: all.length,
+      all_visitors_30d: uniqueCount(all, "visitor_id"),
+      all_scans_30d: all.filter(row => row.event_name === "scan_completed").length,
+      by_country: topCounts(countBy(publicRows, row => row.country || "unknown"), 12),
+      by_event: topCounts(countBy(publicRows, row => row.event_name), 12),
       by_scan_scope: topCounts(countBy(scanEvents, row => row.scan_scope || row.metadata?.scope || "unknown"), 10),
-      trend: byDay(all),
-      recent: all.slice(0, 20).map(row => ({
+      owner_by_event: topCounts(countBy(ownerRows, row => row.event_name), 8),
+      owner_by_scan_scope: topCounts(countBy(ownerScanEvents, row => row.scan_scope || row.metadata?.scope || "unknown"), 8),
+      trend: byDay(publicRows),
+      recent: publicRows.slice(0, 20).map(row => ({
         event_name: row.event_name,
         page_path: row.page_path,
         scan_scope: row.scan_scope,
         country: row.country,
+        actor: row.actor,
         created_at: row.created_at,
       })),
     });
