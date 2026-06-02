@@ -408,6 +408,8 @@ footer a:hover { color: var(--cyan); }
       <div class="account-actions">
         <button type="button" class="account-btn primary" onclick="accountSignIn()" data-i18n="account_sign_in">Sign in</button>
         <button type="button" class="account-btn" onclick="accountSignUp()" data-i18n="account_create">Create account</button>
+        <button type="button" class="account-btn" onclick="accountResetPassword()" data-i18n="account_reset_password">Forgot password?</button>
+        <button type="button" class="account-btn primary" onclick="accountUpdatePassword()" id="account-update-password" style="display:none" data-i18n="account_update_password">Update password</button>
         <button type="button" class="account-btn" onclick="accountSignOut()" id="account-signout" style="display:none" data-i18n="account_sign_out">Sign out</button>
       </div>
       <div class="account-status" id="account-status"></div>
@@ -742,6 +744,7 @@ setLang(detectLang());
 
 let accountClient = null;
 let accountSession = null;
+let accountPasswordRecovery = false;
 
 function accountEls() {
   return {
@@ -750,6 +753,7 @@ function accountEls() {
     status: document.getElementById('account-status'),
     plan: document.getElementById('account-plan'),
     signout: document.getElementById('account-signout'),
+    updatePassword: document.getElementById('account-update-password'),
   };
 }
 
@@ -762,6 +766,13 @@ function setAccountMessage(message, isError = false) {
   if (!status) return;
   status.textContent = message || '';
   status.style.color = isError ? 'var(--red)' : 'var(--text-dim)';
+}
+
+function setAccountRecoveryMode(enabled) {
+  accountPasswordRecovery = enabled;
+  const { updatePassword, password } = accountEls();
+  if (updatePassword) updatePassword.style.display = enabled ? 'inline-block' : 'none';
+  if (password) password.setAttribute('autocomplete', enabled ? 'new-password' : 'current-password');
 }
 
 function renderAccountPlan(info) {
@@ -802,6 +813,7 @@ async function loadAccountStatus() {
 
 async function initAccountAuth() {
   renderAccountPlan(null);
+  setAccountRecoveryMode(false);
   try {
     const config = await fetch('/api/account?mode=config').then(r => r.json());
     if (!config.supabase_configured || !window.supabase) {
@@ -813,8 +825,16 @@ async function initAccountAuth() {
     accountSession = data?.session || null;
     renderAccountPlan(accountSession?.user ? { authenticated: true, email: accountSession.user.email, plan_name: 'Loading', quota_remaining: 0, monthly_scan_limit: 0 } : null);
     await loadAccountStatus();
-    accountClient.auth.onAuthStateChange((_event, session) => {
+    accountClient.auth.onAuthStateChange((event, session) => {
       accountSession = session || null;
+      if (event === 'PASSWORD_RECOVERY') {
+        setAccountRecoveryMode(true);
+        renderAccountPlan(accountSession?.user ? { authenticated: true, email: accountSession.user.email, plan_name: 'Recovery', quota_remaining: 0, monthly_scan_limit: 0 } : null);
+        setAccountMessage(t('account_recovery_ready'));
+        return;
+      }
+      if (event === 'SIGNED_OUT') setAccountRecoveryMode(false);
+      if (event === 'SIGNED_IN' && !accountPasswordRecovery) setAccountRecoveryMode(false);
       loadAccountStatus();
     });
   } catch {
@@ -832,6 +852,7 @@ async function accountSignIn() {
   const { data, error } = await accountClient.auth.signInWithPassword({ email: emailValue, password: passwordValue });
   if (error) return setAccountMessage(error.message || t('account_sign_in_failed'), true);
   accountSession = data?.session || null;
+  setAccountRecoveryMode(false);
   password.value = '';
   await loadAccountStatus();
 }
@@ -841,6 +862,12 @@ function accountRedirectUrl() {
     ? window.location.origin
     : 'https://cyberguardianscan.com';
   return `${origin}/index.html`;
+}
+
+function accountLooksRegistered(data, error) {
+  const message = String(error?.message || '');
+  return /already.*registered|already.*exists|user.*exists|duplicate/i.test(message) ||
+    (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0);
 }
 
 async function accountSignUp() {
@@ -856,6 +883,7 @@ async function accountSignUp() {
     password: passwordValue,
     options: { emailRedirectTo: accountRedirectUrl() }
   });
+  if (accountLooksRegistered(data, error)) return setAccountMessage(t('account_email_exists'), true);
   if (error) return setAccountMessage(error.message || t('account_create_failed'), true);
   accountSession = data?.session || null;
   password.value = '';
@@ -863,9 +891,37 @@ async function accountSignUp() {
   else setAccountMessage(t('account_check_email'));
 }
 
+async function accountResetPassword() {
+  const { email } = accountEls();
+  if (!accountClient) return setAccountMessage(t('account_not_configured'), true);
+  const emailValue = email.value.trim();
+  if (!emailValue) return setAccountMessage(t('account_reset_email_required'), true);
+  setAccountMessage(t('account_reset_sending'));
+  const { error } = await accountClient.auth.resetPasswordForEmail(emailValue, {
+    redirectTo: accountRedirectUrl()
+  });
+  if (error) return setAccountMessage(error.message || t('account_reset_failed'), true);
+  setAccountMessage(t('account_reset_sent'));
+}
+
+async function accountUpdatePassword() {
+  const { password } = accountEls();
+  if (!accountClient || !accountSession) return setAccountMessage(t('account_recovery_ready'), true);
+  const passwordValue = password.value;
+  if (passwordValue.length < 8) return setAccountMessage(t('account_password_short'), true);
+  setAccountMessage(t('account_updating_password'));
+  const { error } = await accountClient.auth.updateUser({ password: passwordValue });
+  if (error) return setAccountMessage(error.message || t('account_update_password_failed'), true);
+  password.value = '';
+  setAccountRecoveryMode(false);
+  await loadAccountStatus();
+  setAccountMessage(t('account_password_updated'));
+}
+
 async function accountSignOut() {
   if (accountClient) await accountClient.auth.signOut();
   accountSession = null;
+  setAccountRecoveryMode(false);
   renderAccountPlan(null);
   setAccountMessage(t('account_signed_out'));
 }

@@ -1765,6 +1765,104 @@ Object.entries(FREE_ACCOUNT_SCAN_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const ACCOUNT_RECOVERY_COPY = {
+  en: {
+    account_reset_password: "Forgot password?",
+    account_update_password: "Update password",
+    account_email_exists: "If this email is already registered, sign in or use Forgot password to recover access.",
+    account_reset_email_required: "Enter your email first, then click Forgot password.",
+    account_reset_sending: "Sending password reset email...",
+    account_reset_sent: "If this email is registered, a password reset link was sent.",
+    account_reset_failed: "Password reset failed.",
+    account_recovery_ready: "Enter a new password and click Update password.",
+    account_updating_password: "Updating password...",
+    account_update_password_failed: "Password update failed.",
+    account_password_updated: "Password updated. You are signed in."
+  },
+  he: {
+    account_reset_password: "שכחת סיסמה?",
+    account_update_password: "עדכון סיסמה",
+    account_email_exists: "אם האימייל הזה כבר רשום, התחבר או לחץ על שכחת סיסמה כדי לשחזר גישה.",
+    account_reset_email_required: "הזן קודם אימייל, ואז לחץ על שכחת סיסמה.",
+    account_reset_sending: "שולח מייל לאיפוס סיסמה...",
+    account_reset_sent: "אם האימייל הזה רשום, נשלח אליו קישור לאיפוס סיסמה.",
+    account_reset_failed: "איפוס הסיסמה נכשל.",
+    account_recovery_ready: "הזן סיסמה חדשה ולחץ על עדכון סיסמה.",
+    account_updating_password: "מעדכן סיסמה...",
+    account_update_password_failed: "עדכון הסיסמה נכשל.",
+    account_password_updated: "הסיסמה עודכנה. אתה מחובר."
+  },
+  de: {
+    account_reset_password: "Passwort vergessen?",
+    account_update_password: "Passwort aktualisieren",
+    account_email_exists: "Wenn diese E-Mail bereits registriert ist, melden Sie sich an oder nutzen Sie Passwort vergessen.",
+    account_reset_email_required: "Geben Sie zuerst Ihre E-Mail ein und klicken Sie dann auf Passwort vergessen.",
+    account_reset_sending: "Passwort-Reset-E-Mail wird gesendet...",
+    account_reset_sent: "Falls diese E-Mail registriert ist, wurde ein Reset-Link gesendet.",
+    account_reset_failed: "Passwort-Reset fehlgeschlagen.",
+    account_recovery_ready: "Geben Sie ein neues Passwort ein und klicken Sie auf Passwort aktualisieren.",
+    account_updating_password: "Passwort wird aktualisiert...",
+    account_update_password_failed: "Passwort-Aktualisierung fehlgeschlagen.",
+    account_password_updated: "Passwort aktualisiert. Sie sind angemeldet."
+  },
+  ja: {
+    account_reset_password: "パスワードを忘れた場合",
+    account_update_password: "パスワード更新",
+    account_email_exists: "このメールが登録済みの場合は、サインインするかパスワードをリセットしてください。",
+    account_reset_email_required: "先にメールアドレスを入力してから、パスワードリセットを押してください。",
+    account_reset_sending: "パスワードリセットメールを送信中...",
+    account_reset_sent: "このメールが登録済みの場合、リセットリンクを送信しました。",
+    account_reset_failed: "パスワードリセットに失敗しました。",
+    account_recovery_ready: "新しいパスワードを入力し、パスワード更新を押してください。",
+    account_updating_password: "パスワードを更新中...",
+    account_update_password_failed: "パスワード更新に失敗しました。",
+    account_password_updated: "パスワードを更新しました。サインイン済みです。"
+  },
+  ko: {
+    account_reset_password: "비밀번호를 잊으셨나요?",
+    account_update_password: "비밀번호 업데이트",
+    account_email_exists: "이 이메일이 이미 등록되어 있다면 로그인하거나 비밀번호 찾기를 사용하세요.",
+    account_reset_email_required: "먼저 이메일을 입력한 뒤 비밀번호 찾기를 누르세요.",
+    account_reset_sending: "비밀번호 재설정 이메일 전송 중...",
+    account_reset_sent: "이 이메일이 등록되어 있다면 재설정 링크가 전송되었습니다.",
+    account_reset_failed: "비밀번호 재설정에 실패했습니다.",
+    account_recovery_ready: "새 비밀번호를 입력하고 비밀번호 업데이트를 누르세요.",
+    account_updating_password: "비밀번호 업데이트 중...",
+    account_update_password_failed: "비밀번호 업데이트에 실패했습니다.",
+    account_password_updated: "비밀번호가 업데이트되었습니다. 로그인되었습니다."
+  },
+  fr: {
+    account_reset_password: "Mot de passe oublie ?",
+    account_update_password: "Mettre a jour le mot de passe",
+    account_email_exists: "Si cet email est deja inscrit, connectez-vous ou utilisez Mot de passe oublie.",
+    account_reset_email_required: "Saisissez d'abord votre email, puis cliquez sur Mot de passe oublie.",
+    account_reset_sending: "Envoi de l'email de reinitialisation...",
+    account_reset_sent: "Si cet email est inscrit, un lien de reinitialisation a ete envoye.",
+    account_reset_failed: "Echec de la reinitialisation.",
+    account_recovery_ready: "Saisissez un nouveau mot de passe puis cliquez sur Mettre a jour.",
+    account_updating_password: "Mise a jour du mot de passe...",
+    account_update_password_failed: "Echec de la mise a jour du mot de passe.",
+    account_password_updated: "Mot de passe mis a jour. Vous etes connecte."
+  },
+  pt: {
+    account_reset_password: "Esqueceu a senha?",
+    account_update_password: "Atualizar senha",
+    account_email_exists: "Se este email ja estiver registrado, entre ou use Esqueceu a senha para recuperar o acesso.",
+    account_reset_email_required: "Digite seu email primeiro e depois clique em Esqueceu a senha.",
+    account_reset_sending: "Enviando email de redefinicao de senha...",
+    account_reset_sent: "Se este email estiver registrado, um link de redefinicao foi enviado.",
+    account_reset_failed: "Falha ao redefinir a senha.",
+    account_recovery_ready: "Digite uma nova senha e clique em Atualizar senha.",
+    account_updating_password: "Atualizando senha...",
+    account_update_password_failed: "Falha ao atualizar a senha.",
+    account_password_updated: "Senha atualizada. Voce esta conectado."
+  }
+};
+
+Object.entries(ACCOUNT_RECOVERY_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const LANGS = {
   en: { name: "English",    flag: "🇺🇸", dir: "ltr" },
   de: { name: "Deutsch",    flag: "🇩🇪", dir: "ltr" },
