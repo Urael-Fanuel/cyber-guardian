@@ -1723,6 +1723,48 @@ Object.entries(NAV_ACCOUNT_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const FREE_ACCOUNT_SCAN_COPY = {
+  en: {
+    account_text: "Create a free account to scan real code. Free accounts include 10 scans/month. No credit card required.",
+    account_free_badge: "Free account: 10 scans/month",
+    account_scan_required: "To scan real code, sign in or create a free account. You get 10 scans/month, with no credit card required."
+  },
+  he: {
+    account_text: "כדי לסרוק קוד אמיתי, התחבר או צור חשבון חינמי. החשבון החינמי כולל 10 סריקות בחודש, ללא כרטיס אשראי.",
+    account_free_badge: "חשבון חינמי: 10 סריקות בחודש",
+    account_scan_required: "כדי לסרוק קוד אמיתי, התחבר או צור חשבון חינמי. תקבל 10 סריקות בחודש, ללא כרטיס אשראי."
+  },
+  de: {
+    account_text: "Erstellen Sie ein kostenloses Konto, um echten Code zu scannen. Kostenlose Konten enthalten 10 Scans pro Monat. Keine Kreditkarte erforderlich.",
+    account_free_badge: "Kostenloses Konto: 10 Scans/Monat",
+    account_scan_required: "Um echten Code zu scannen, melden Sie sich an oder erstellen Sie ein kostenloses Konto. Sie erhalten 10 Scans pro Monat, ohne Kreditkarte."
+  },
+  ja: {
+    account_text: "実際のコードをスキャンするには、無料アカウントを作成またはサインインしてください。無料アカウントには月10回のスキャンが含まれ、クレジットカードは不要です。",
+    account_free_badge: "無料アカウント: 月10回スキャン",
+    account_scan_required: "実際のコードをスキャンするには、サインインするか無料アカウントを作成してください。月10回までスキャンでき、クレジットカードは不要です。"
+  },
+  ko: {
+    account_text: "실제 코드를 스캔하려면 무료 계정을 만들거나 로그인하세요. 무료 계정에는 월 10회 스캔이 포함되며 신용카드는 필요 없습니다.",
+    account_free_badge: "무료 계정: 월 10회 스캔",
+    account_scan_required: "실제 코드를 스캔하려면 로그인하거나 무료 계정을 만드세요. 월 10회 스캔할 수 있으며 신용카드는 필요 없습니다."
+  },
+  fr: {
+    account_text: "Creez un compte gratuit pour scanner du vrai code. Le compte gratuit inclut 10 scans par mois, sans carte bancaire.",
+    account_free_badge: "Compte gratuit : 10 scans/mois",
+    account_scan_required: "Pour scanner du vrai code, connectez-vous ou creez un compte gratuit. Vous obtenez 10 scans par mois, sans carte bancaire."
+  },
+  pt: {
+    account_text: "Crie uma conta gratuita para escanear codigo real. A conta gratuita inclui 10 scans por mes, sem cartao de credito.",
+    account_free_badge: "Conta gratuita: 10 scans/mes",
+    account_scan_required: "Para escanear codigo real, entre ou crie uma conta gratuita. Voce recebe 10 scans por mes, sem cartao de credito."
+  }
+};
+
+Object.entries(FREE_ACCOUNT_SCAN_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const LANGS = {
   en: { name: "English",    flag: "🇺🇸", dir: "ltr" },
   de: { name: "Deutsch",    flag: "🇩🇪", dir: "ltr" },

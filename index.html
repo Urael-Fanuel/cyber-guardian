@@ -104,6 +104,7 @@ h1 .hl { color: var(--cyan); }
 /* Account access */
 .account-panel { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 24px; padding: 0 20px; }
 .account-box { border: 1px solid var(--border); background: var(--bg2); border-radius: 4px; padding: 16px 18px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; align-items: center; }
+.account-box.needs-attention { border-color: var(--yellow); box-shadow: 0 0 0 1px rgba(255, 170, 0, 0.35), 0 0 22px rgba(255, 170, 0, 0.12); }
 .account-title { font-family: var(--sans); font-size: 17px; font-weight: 800; color: #fff; margin-bottom: 4px; }
 .account-text { color: var(--text-dim); font-size: 11.5px; line-height: 1.6; }
 .account-form { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
@@ -396,7 +397,7 @@ footer a:hover { color: var(--cyan); }
   <div class="account-box">
     <div>
       <div class="account-title" data-i18n="account_title">Account access</div>
-      <div class="account-text" data-i18n="account_text">Sign in to use an assigned monthly scan plan. Visitors can still use the free monthly quota.</div>
+      <div class="account-text" data-i18n="account_text">Create a free account to scan real code. Free accounts include 10 scans/month. No credit card required.</div>
       <div class="account-plan" id="account-plan"></div>
     </div>
     <div class="account-form" id="account-form">
@@ -929,6 +930,31 @@ function scanHeaders() {
   return headers;
 }
 
+function hasScanAccess() {
+  return Boolean(accountToken() || getAdminToken().trim() || getAdminBypassSecret().trim() || isDevMode());
+}
+
+function focusAccountAccess() {
+  const accountPanel = document.getElementById('account-panel');
+  const accountEmail = document.getElementById('account-email');
+  if (accountPanel) {
+    accountPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const accountBox = accountPanel.querySelector('.account-box');
+    accountBox?.classList.add('needs-attention');
+    setTimeout(() => accountBox?.classList.remove('needs-attention'), 1800);
+  }
+  setTimeout(() => accountEmail?.focus({ preventScroll: true }), 400);
+}
+
+function requireScanAccess() {
+  if (hasScanAccess()) return true;
+  const message = t('account_scan_required');
+  setAccountMessage(message, true);
+  focusAccountAccess();
+  if (window.cgTrack) window.cgTrack('scan_blocked_login_required', { scope: currentScope });
+  return false;
+}
+
 function openContact(type = 'sales') {
   if (window.cgTrack) window.cgTrack(type === 'sales' ? 'contact_sales_clicked' : 'contact_clicked', { type });
   window.location.href = `/contact.html?type=${encodeURIComponent(type)}`;
@@ -946,6 +972,8 @@ async function runScan() {
     setTimeout(() => ta.style.borderColor = 'var(--border)', 1200);
     ta.focus(); return;
   }
+
+  if (!requireScanAccess()) return;
 
   if (window.cgTrack) window.cgTrack('scan_started', {
     scope: currentScope,
