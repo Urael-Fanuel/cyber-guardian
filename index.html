@@ -61,6 +61,8 @@ nav {
 @keyframes hexPulse { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.3)} }
 .nav-tag { font-size: 10px; color: var(--cyan); letter-spacing: 2px; border: 1px solid var(--border2); padding: 4px 10px; border-radius: 2px; }
 .nav-right { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; min-width: 0; }
+.nav-link { font-size:11px; color:var(--cyan); text-decoration:none; border:1px solid var(--border2); padding:5px 12px; border-radius:2px; letter-spacing:1px; transition:all 0.15s; background:transparent; font-family:var(--mono); display:inline-flex; align-items:center; min-height:30px; }
+.nav-link:hover { border-color:var(--cyan); background:var(--cyan-dim); color:var(--cyan); }
 .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: p 2s infinite; }
 @keyframes p { 0%,100%{opacity:1} 50%{opacity:0.2} }
 .pulse-txt { font-size: 10px; color: var(--green); letter-spacing: 1.5px; }
@@ -372,7 +374,8 @@ footer a:hover { color: var(--cyan); }
     <div class="lang-switcher" id="lang-switcher"></div>
     <div class="pulse"></div>
     <span class="pulse-txt" data-i18n="nav_live">LIVE</span>
-    <a href="/dashboard.html" style="font-size:11px;color:var(--cyan);text-decoration:none;border:1px solid var(--border2);padding:5px 12px;border-radius:2px;letter-spacing:1px;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--cyan)';this.style.background='var(--cyan-dim)'" onmouseout="this.style.borderColor='var(--border2)';this.style.background='transparent'">📊 Stats</a>
+    <a class="nav-link" href="#account-panel" data-i18n="nav_customer_login">Customer login</a>
+    <a class="nav-link" href="/dashboard.html" data-i18n="nav_stats">Stats</a>
   </div>
 </nav>
 

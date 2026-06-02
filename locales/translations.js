@@ -1709,6 +1709,20 @@ Object.entries(ACCOUNT_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const NAV_ACCOUNT_COPY = {
+  en: { nav_customer_login: "Customer login", nav_stats: "Stats" },
+  he: { nav_customer_login: "כניסת לקוחות", nav_stats: "דשבורד" },
+  de: { nav_customer_login: "Kundenlogin", nav_stats: "Dashboard" },
+  ja: { nav_customer_login: "顧客ログイン", nav_stats: "ダッシュボード" },
+  ko: { nav_customer_login: "고객 로그인", nav_stats: "대시보드" },
+  fr: { nav_customer_login: "Accès client", nav_stats: "Dashboard" },
+  pt: { nav_customer_login: "Login do cliente", nav_stats: "Dashboard" }
+};
+
+Object.entries(NAV_ACCOUNT_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const LANGS = {
   en: { name: "English",    flag: "🇺🇸", dir: "ltr" },
   de: { name: "Deutsch",    flag: "🇩🇪", dir: "ltr" },
