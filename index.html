@@ -836,6 +836,13 @@ async function accountSignIn() {
   await loadAccountStatus();
 }
 
+function accountRedirectUrl() {
+  const origin = window.location.origin && window.location.origin !== 'null'
+    ? window.location.origin
+    : 'https://cyberguardianscan.com';
+  return `${origin}/index.html`;
+}
+
 async function accountSignUp() {
   const { email, password } = accountEls();
   if (!accountClient) return setAccountMessage(t('account_not_configured'), true);
@@ -844,7 +851,11 @@ async function accountSignUp() {
   if (!emailValue || !passwordValue) return setAccountMessage(t('account_missing_fields'), true);
   if (passwordValue.length < 8) return setAccountMessage(t('account_password_short'), true);
   setAccountMessage(t('account_creating'));
-  const { data, error } = await accountClient.auth.signUp({ email: emailValue, password: passwordValue });
+  const { data, error } = await accountClient.auth.signUp({
+    email: emailValue,
+    password: passwordValue,
+    options: { emailRedirectTo: accountRedirectUrl() }
+  });
   if (error) return setAccountMessage(error.message || t('account_create_failed'), true);
   accountSession = data?.session || null;
   password.value = '';
