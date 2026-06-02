@@ -31,3 +31,22 @@ This consolidation is a deployment-limit workaround, not the preferred long-term
 architecture. When the project moves to a plan/environment that allows more API
 functions, split these back into separate focused endpoints for clearer
 maintenance.
+
+## Future Model Routing
+
+Remember this product direction for future implementation: Cyber-Guardian
+should eventually route each scan to the right analysis agent/model based on
+the code type, risk, and complexity.
+
+Examples:
+
+- simple deterministic or low-risk scans can use cheaper/faster models
+- complex MCP, skill, IDE extension, package, dependency, or GitHub Actions
+  scans can use stronger models
+- very complex or high-risk scans should be routed to the strongest available
+  model, such as Anthropic Opus when appropriate, or a newer/better model when
+  one is released
+
+The goal is not to lock the product to one model. The long-term architecture
+should support multiple scan modules and model providers, with clear routing
+logic, cost control, and auditability.

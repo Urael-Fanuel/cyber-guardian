@@ -804,6 +804,135 @@ function coverageMetadata() {
   };
 }
 
+const DIRECT_MALICIOUS_FAMILIES = new Set([
+  "REVERSE_SHELL",
+  "BIND_SHELL",
+  "C2_CALLBACK",
+  "CREDENTIAL_THEFT",
+  "CLOUD_CREDENTIAL_THEFT",
+  "KEYLOGGER_PATTERN",
+  "CRYPTO_MINING",
+  "RANSOMWARE_PATTERN",
+  "WIPER_PATTERN",
+  "FORK_BOMB",
+]);
+
+const HIGH_IMPACT_FAMILIES = new Set([
+  ...DIRECT_MALICIOUS_FAMILIES,
+  "API_KEY_THEFT",
+  "ENV_VAR_THEFT",
+  "MCP_CREDENTIAL_EXFILTRATION",
+  "DATA_EXFILTRATION",
+  "CONTEXT_EXFILTRATION",
+  "DNS_EXFILTRATION",
+  "PRIVILEGE_ESCALATION",
+  "SUDO_ABUSE",
+  "SUID_ABUSE",
+  "OS_COMMAND_EXECUTION",
+]);
+
+function threatSeverityRank(severity) {
+  const value = String(severity || "").toUpperCase();
+  if (value === "CRITICAL") return 4;
+  if (value === "HIGH") return 3;
+  if (value === "MEDIUM") return 2;
+  if (value === "LOW") return 1;
+  return 0;
+}
+
+function remediationKeyForFamily(family) {
+  const name = String(family || "").toUpperCase();
+  if (/(REVERSE_SHELL|BIND_SHELL|C2_CALLBACK|KEYLOGGER|RANSOMWARE|WIPER|CRYPTO_MINING|FORK_BOMB)/.test(name)) return "fix_remove_malicious_behavior";
+  if (/(CREDENTIAL|API_KEY|SECRET|TOKEN|ENV_VAR|COOKIE|CLOUD_CREDENTIAL)/.test(name)) return "fix_protect_secrets";
+  if (/(OS_COMMAND|DYNAMIC_EVAL|CODE_INJECTION|SHELL_ESCAPE|TEMPLATE_INJECTION|DESERIALIZATION|INSECURE_DESERIALIZATION)/.test(name)) return "fix_remove_dynamic_execution";
+  if (/(PROMPT|JAILBREAK|ROLE_CONFUSION|SYSTEM_OVERRIDE|TOOL_POISONING|TOOL_DESCRIPTION|TOOL_RESULT|CONTEXT_MANIPULATION)/.test(name)) return "fix_harden_instructions";
+  if (/(PATH|DIRECTORY|FILE_SYSTEM|SYMLINK|CLIPBOARD|SCREEN_CAPTURE|DATA_HARVESTING)/.test(name)) return "fix_limit_file_access";
+  if (/(NETWORK|SSRF|DNS|EXFILTRATION|CALLBACK|BROWSER_HIJACK)/.test(name)) return "fix_limit_network_access";
+  if (/(SUPPLY|DEPENDENCY|TYPOSQUATTING|PACKAGE)/.test(name)) return "fix_review_dependency_source";
+  if (/(RESOURCE|MEMORY|ZIP_BOMB|REGEX_DOS|BILLION_LAUGHS|RECURSIVE_BOMB)/.test(name)) return "fix_add_resource_limits";
+  if (/(BASE64|UNICODE|CHAR_CODE|HEX|ROT|XOR|STEGANOGRAPHY|ZERO_WIDTH|HOMOGLYPH)/.test(name)) return "fix_remove_obfuscation";
+  return "fix_default_review";
+}
+
+function buildFixSuggestions(threats) {
+  return threats.slice(0, 6).map(threat => ({
+    family: cleanText(threat.family || "UNCLASSIFIED", 80),
+    severity: cleanText(threat.severity || "MEDIUM", 20).toUpperCase() || "MEDIUM",
+    line_hint: cleanText(threat.line_hint || "", 220),
+    evidence: cleanText(threat.evidence || "", 160),
+    guidance_key: remediationKeyForFamily(threat.family),
+  }));
+}
+
+function buildDecisionDetails(result) {
+  const threats = Array.isArray(result.threats) ? result.threats : [];
+  const families = threats.map(t => String(t?.family || "").toUpperCase()).filter(Boolean);
+  const maxSeverityRank = threats.reduce((max, threat) => Math.max(max, threatSeverityRank(threat?.severity)), 0);
+  const hasDirectMalicious = families.some(family => DIRECT_MALICIOUS_FAMILIES.has(family));
+  const hasHighImpact = families.some(family => HIGH_IMPACT_FAMILIES.has(family)) || maxSeverityRank >= 3;
+  const score = result.threat_score || 0;
+
+  if (result.status === "STATUS_SAFE" && threats.length === 0 && score < 20) {
+    return {
+      decision: "install_ok",
+      risk_type: "clean",
+      title_key: "decision_install_ok_title",
+      reason_key: "decision_install_ok_reason",
+      action_key: "decision_install_ok_action",
+      next_step_keys: ["next_verify_source", "next_keep_permissions_minimal"],
+      fix_suggestions: [],
+    };
+  }
+
+  if (hasDirectMalicious || (result.status === "STATUS_CRITICAL" && score >= 85)) {
+    return {
+      decision: "do_not_install",
+      risk_type: "malicious_behavior",
+      title_key: "decision_do_not_install_title",
+      reason_key: "decision_do_not_install_reason",
+      action_key: "decision_do_not_install_action",
+      next_step_keys: ["next_do_not_run", "next_choose_alternative", "next_send_to_author"],
+      fix_suggestions: buildFixSuggestions(threats),
+    };
+  }
+
+  if (result.status === "STATUS_CRITICAL" || hasHighImpact || score >= 55) {
+    return {
+      decision: "fix_before_use",
+      risk_type: "security_weakness",
+      title_key: "decision_fix_before_use_title",
+      reason_key: "decision_fix_before_use_reason",
+      action_key: "decision_fix_before_use_action",
+      next_step_keys: ["next_fix_findings", "next_rescan_after_fix", "next_ask_author"],
+      fix_suggestions: buildFixSuggestions(threats),
+    };
+  }
+
+  if (threats.length > 0 || result.status === "STATUS_MODERATE") {
+    return {
+      decision: threats.length > 0 ? "install_with_caution" : "security_review",
+      risk_type: threats.length > 0 ? "security_weakness" : "insufficient_context",
+      title_key: threats.length > 0 ? "decision_caution_title" : "decision_review_title",
+      reason_key: threats.length > 0 ? "decision_caution_reason" : "decision_review_reason",
+      action_key: threats.length > 0 ? "decision_caution_action" : "decision_review_action",
+      next_step_keys: threats.length > 0
+        ? ["next_review_permissions", "next_rescan_after_fix"]
+        : ["next_scan_full_context", "next_review_manually"],
+      fix_suggestions: buildFixSuggestions(threats),
+    };
+  }
+
+  return {
+    decision: "security_review",
+    risk_type: "insufficient_context",
+    title_key: "decision_review_title",
+    reason_key: "decision_review_reason",
+    action_key: "decision_review_action",
+    next_step_keys: ["next_scan_full_context", "next_review_manually"],
+    fix_suggestions: [],
+  };
+}
+
 function lineHintFor(content, index) {
   const line = content.slice(0, index).split("\n").length;
   const snippet = content.slice(Math.max(0, index - 80), index + 120).replace(/\s+/g, " ").trim();
@@ -920,6 +1049,10 @@ function normalizeResult(result) {
     }
     return threat;
   });
+  normalized.decision_details = buildDecisionDetails(normalized);
+  normalized.decision = normalized.decision_details.decision === "do_not_install"
+    ? "blocked"
+    : (normalized.decision_details.decision === "install_ok" ? "safe" : "review");
   return normalized;
 }
 
