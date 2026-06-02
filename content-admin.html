@@ -222,6 +222,228 @@ const customerPlanEl = document.getElementById('customer-plan');
 const customerStatusEl = document.getElementById('customer-status');
 const customerDaysEl = document.getElementById('customer-days');
 let dashboardKeys = [];
+let lastAnalyticsData = null;
+let lastLeadsData = null;
+let lastAccountsData = null;
+
+const ADMIN_LOCALES = {
+  en: "en-US",
+  de: "de-DE",
+  ja: "ja-JP",
+  ko: "ko-KR",
+  fr: "fr-FR",
+  pt: "pt-BR",
+  he: "he-IL"
+};
+
+const ADMIN_COPY = {
+  en: {
+    admin_intro: "Sign in to edit public text on the site and dashboard. Your password is not stored in the browser.",
+    sign_in_title: "Sign in", username: "Username", password: "Password", sign_in_button: "Sign In",
+    content_editor_title: "Content editor", content_editor_desc: "Changes are saved in Supabase and appear after refresh.",
+    area: "Area", main_site: "Main site", dashboard: "Dashboard", language: "Language", text_key: "Text key",
+    text_key_placeholder: "Example: hero_title_1", new_text: "New text", new_text_placeholder: "Write the replacement text here",
+    save_text: "Save Text", load_current: "Load Current", open_site: "Open Site", open_dashboard: "Open Dashboard", sign_out: "Sign Out",
+    analytics_title: "Private product analytics", analytics_desc: "Visible only after admin login. These metrics are not shown on the public dashboard.",
+    refresh_analytics: "Refresh Analytics", leads_title: "Messages and subscribers", leads_desc: "Visible only after admin login. Shows recent contact-form messages and threat-alert email subscribers saved in Supabase.",
+    refresh_messages: "Refresh Messages", accounts_title: "Customer accounts and scan plans", accounts_desc: "Use this to give a customer login access to a monthly scan plan. Payment is still handled manually until Stripe is connected.",
+    customer_email: "Customer email", initial_password: "Initial password", plan: "Plan", status: "Status", access_days: "Access days",
+    customer_email_placeholder: "customer@example.com", customer_password_placeholder: "Only for new users",
+    status_manual: "Manual active", status_active: "Active", status_trialing: "Trialing", status_canceled: "Canceled",
+    save_account: "Save Account Access", refresh_accounts: "Refresh Accounts",
+    public_visitors_today: "Public visitors today", public_completed_scans: "Public completed scans", sales_interest: "Sales interest", scan_demand: "Scan demand",
+    contact_clicks: "Contact clicks", email_signups: "Email signups", owner_completed_scans: "Owner completed scans", all_tracked_events: "All tracked events",
+    seven_days: "7 days: {a} - 30 days: {b}", scans_started_completion: "Started: {a} - completion: {b}", visitor_to_intent: "Visitor to intent: {a}",
+    scan_demand_sub: "Public visitors who started a scan", forms_sent: "Forms sent: {a}", failures: "Failures: {a}", owner_events: "Owner events: {a}", public_events_count: "Public events: {a}",
+    business_funnel: "Business funnel", visitor_funnel: "Visitor funnel", contact_by_type: "Contact by type", public_events: "Public events", scans: "Scans",
+    completed_scans_by_type: "Completed scans by type", started_scans_by_type: "Started scans by type", failed_scans_by_type: "Failed scans by type",
+    scan_verdicts: "Scan verdicts", risk_score_buckets: "Risk score buckets", completed_scans_by_country: "Completed scans by country", country_scan_type: "Country + scan type",
+    public_scan_interest: "Public scan interest", owner_scan_types: "Owner scan types", audience: "Audience", top_public_countries: "Top public countries",
+    languages: "Languages", devices: "Devices", browsers: "Browsers", top_pages: "Top pages", top_referrers: "Top referrers", contact_countries: "Contact countries",
+    email_signup_countries: "Email signup countries", owner_events_title: "Owner events", product_not_configured: "Product analytics are not configured yet.",
+    owner_sep_pending: "Owner/public separation will become accurate after migration 008 is active.", loaded_private_analytics: "Loaded private product analytics.",
+    loading_analytics: "Loading analytics...", analytics_unavailable: "Analytics unavailable.", session_expired: "Session expired. Sign in again.",
+    contact_table_missing: "The contact_messages table is not configured yet.", no_contact_messages: "No contact messages yet.", subscribers_table_missing: "The email_subscribers table is not configured yet.",
+    no_email_subscribers: "No email subscribers yet.", no_name: "No name", origin: "Origin", created: "Created", recent_contact_messages: "Recent contact messages",
+    latest50: "Latest 50 saved in Supabase", latest100: "Latest 100 saved in Supabase", contact_messages: "Contact messages", email_subscribers: "Email subscribers",
+    loaded_messages: "Loaded messages and subscribers at {time}.", loading_messages: "Loading messages and subscribers...", messages_unavailable: "Messages unavailable.",
+    custom_price: "custom", monthly_suffix: "mo", scans_word: "scans", account_plans_missing: "Account plans are not configured yet. Run migration 009 in Supabase.",
+    no_customer_accounts: "No customer accounts yet.", scans_left: "scans left", ends: "Ends", free_no_period: "free/no period", loading_accounts: "Loading customer accounts...",
+    loaded_accounts: "Loaded customer accounts at {time}.", account_management_unavailable: "Account management unavailable.", saving_account: "Saving customer account...",
+    could_not_save_account: "Could not save customer account.", customer_created: "Customer account created and plan assigned.", customer_updated: "Customer plan updated.",
+    login_required_fields: "Username and password are required.", login_failed: "Login failed.", login_key_text_required: "Login, key, and text are required.",
+    save_failed: "Save failed.", saved_text: "Saved {key}.", loaded_saved_override: "Loaded saved override.", loaded_default_text: "Loaded default text.", no_default_text: "No default text found for this key."
+  },
+  he: {
+    admin_intro: "התחבר כדי לערוך טקסטים ציבוריים באתר ובדשבורד. הסיסמה שלך לא נשמרת בדפדפן.",
+    sign_in_title: "התחברות", username: "שם משתמש", password: "סיסמה", sign_in_button: "התחבר",
+    content_editor_title: "עורך תוכן", content_editor_desc: "השינויים נשמרים ב-Supabase ומופיעים לאחר רענון.",
+    area: "אזור", main_site: "האתר הראשי", dashboard: "דשבורד", language: "שפה", text_key: "מפתח טקסט",
+    text_key_placeholder: "לדוגמה: hero_title_1", new_text: "טקסט חדש", new_text_placeholder: "כתוב כאן את הטקסט החלופי",
+    save_text: "שמור טקסט", load_current: "טען נוכחי", open_site: "פתח אתר", open_dashboard: "פתח דשבורד", sign_out: "התנתק",
+    analytics_title: "אנליטיקת מוצר פרטית", analytics_desc: "מוצג רק לאחר כניסת אדמין. המדדים האלה לא מוצגים בדשבורד הציבורי.",
+    refresh_analytics: "רענן אנליטיקה", leads_title: "הודעות ונרשמים", leads_desc: "מוצג רק לאחר כניסת אדמין. מציג הודעות מטופס יצירת קשר ונרשמים להתראות שנשמרו ב-Supabase.",
+    refresh_messages: "רענן הודעות", accounts_title: "חשבונות לקוחות ומסלולי סריקה", accounts_desc: "כאן נותנים ללקוח גישה למסלול סריקות חודשי. התשלום עדיין מנוהל ידנית עד חיבור Stripe.",
+    customer_email: "אימייל לקוח", initial_password: "סיסמה ראשונית", plan: "מסלול", status: "סטטוס", access_days: "ימי גישה",
+    customer_email_placeholder: "customer@example.com", customer_password_placeholder: "רק עבור משתמש חדש",
+    status_manual: "פעיל ידנית", status_active: "פעיל", status_trialing: "ניסיון", status_canceled: "מבוטל",
+    save_account: "שמור גישת חשבון", refresh_accounts: "רענן חשבונות",
+    public_visitors_today: "מבקרים ציבוריים היום", public_completed_scans: "סריקות ציבוריות שהושלמו", sales_interest: "עניין במכירות", scan_demand: "ביקוש לסריקות",
+    contact_clicks: "לחיצות ליצירת קשר", email_signups: "נרשמים באימייל", owner_completed_scans: "סריקות שהבעלים השלים", all_tracked_events: "כל האירועים שנמדדו",
+    seven_days: "7 ימים: {a} - 30 ימים: {b}", scans_started_completion: "התחילו: {a} - השלמה: {b}", visitor_to_intent: "מבקר לעניין עסקי: {a}",
+    scan_demand_sub: "מבקרים ציבוריים שהתחילו סריקה", forms_sent: "טפסים שנשלחו: {a}", failures: "כשלים: {a}", owner_events: "אירועי בעלים: {a}", public_events_count: "אירועים ציבוריים: {a}",
+    business_funnel: "משפך עסקי", visitor_funnel: "משפך מבקרים", contact_by_type: "יצירת קשר לפי סוג", public_events: "אירועים ציבוריים", scans: "סריקות",
+    completed_scans_by_type: "סריקות שהושלמו לפי סוג", started_scans_by_type: "סריקות שהתחילו לפי סוג", failed_scans_by_type: "סריקות שנכשלו לפי סוג",
+    scan_verdicts: "החלטות סריקה", risk_score_buckets: "טווחי ציון סיכון", completed_scans_by_country: "סריקות שהושלמו לפי מדינה", country_scan_type: "מדינה וסוג סריקה",
+    public_scan_interest: "עניין ציבורי בסריקות", owner_scan_types: "סוגי סריקות של הבעלים", audience: "קהל", top_public_countries: "מדינות ציבוריות מובילות",
+    languages: "שפות", devices: "מכשירים", browsers: "דפדפנים", top_pages: "עמודים מובילים", top_referrers: "מקורות הפניה מובילים", contact_countries: "מדינות יצירת קשר",
+    email_signup_countries: "מדינות נרשמים באימייל", owner_events_title: "אירועי בעלים", product_not_configured: "אנליטיקת מוצר עדיין לא מוגדרת.",
+    owner_sep_pending: "הפרדת בעלים/ציבור תהיה מדויקת אחרי שמיגרציה 008 פעילה.", loaded_private_analytics: "אנליטיקת מוצר פרטית נטענה.",
+    loading_analytics: "טוען אנליטיקה...", analytics_unavailable: "האנליטיקה לא זמינה.", session_expired: "החיבור פג. התחבר שוב.",
+    contact_table_missing: "הטבלה contact_messages עדיין לא מוגדרת.", no_contact_messages: "אין עדיין הודעות יצירת קשר.", subscribers_table_missing: "הטבלה email_subscribers עדיין לא מוגדרת.",
+    no_email_subscribers: "אין עדיין נרשמים באימייל.", no_name: "ללא שם", origin: "מקור", created: "נוצר", recent_contact_messages: "הודעות יצירת קשר אחרונות",
+    latest50: "50 האחרונות שנשמרו ב-Supabase", latest100: "100 האחרונים שנשמרו ב-Supabase", contact_messages: "הודעות יצירת קשר", email_subscribers: "נרשמים באימייל",
+    loaded_messages: "הודעות ונרשמים נטענו בשעה {time}.", loading_messages: "טוען הודעות ונרשמים...", messages_unavailable: "ההודעות לא זמינות.",
+    custom_price: "מותאם", monthly_suffix: "חודש", scans_word: "סריקות", account_plans_missing: "מסלולי החשבונות עדיין לא מוגדרים. צריך להריץ מיגרציה 009 ב-Supabase.",
+    no_customer_accounts: "אין עדיין חשבונות לקוחות.", scans_left: "סריקות נותרו", ends: "מסתיים", free_no_period: "חינם/ללא תקופה", loading_accounts: "טוען חשבונות לקוחות...",
+    loaded_accounts: "חשבונות הלקוחות נטענו בשעה {time}.", account_management_unavailable: "ניהול החשבונות לא זמין.", saving_account: "שומר חשבון לקוח...",
+    could_not_save_account: "לא ניתן לשמור את חשבון הלקוח.", customer_created: "חשבון הלקוח נוצר והמסלול הוקצה.", customer_updated: "מסלול הלקוח עודכן.",
+    login_required_fields: "צריך להזין שם משתמש וסיסמה.", login_failed: "ההתחברות נכשלה.", login_key_text_required: "צריך להיות מחובר ולהזין מפתח וטקסט.",
+    save_failed: "השמירה נכשלה.", saved_text: "{key} נשמר.", loaded_saved_override: "נטען טקסט שמור.", loaded_default_text: "נטען טקסט ברירת מחדל.", no_default_text: "לא נמצא טקסט ברירת מחדל למפתח הזה."
+  }
+};
+
+["de", "ja", "ko", "fr", "pt"].forEach(code => {
+  ADMIN_COPY[code] = { ...ADMIN_COPY.en };
+});
+
+Object.assign(ADMIN_COPY.de, {
+  admin_intro: "Melden Sie sich an, um öffentliche Texte der Website und des Dashboards zu bearbeiten.",
+  sign_in_title: "Anmelden", username: "Benutzername", password: "Passwort", sign_in_button: "Anmelden",
+  content_editor_title: "Content-Editor", content_editor_desc: "Änderungen werden in Supabase gespeichert und erscheinen nach dem Aktualisieren.",
+  area: "Bereich", main_site: "Hauptseite", dashboard: "Dashboard", language: "Sprache", text_key: "Textschlüssel", new_text: "Neuer Text",
+  save_text: "Text speichern", load_current: "Aktuellen laden", open_site: "Website öffnen", open_dashboard: "Dashboard öffnen", sign_out: "Abmelden",
+  analytics_title: "Private Produktanalyse", analytics_desc: "Nur nach Admin-Login sichtbar. Diese Daten erscheinen nicht im öffentlichen Dashboard.",
+  leads_title: "Nachrichten und Abonnenten", accounts_title: "Kundenkonten und Scan-Pläne", customer_email: "Kunden-E-Mail", initial_password: "Startpasswort",
+  plan: "Plan", status: "Status", access_days: "Zugangstage", save_account: "Kontozugang speichern", refresh_accounts: "Konten aktualisieren",
+  public_visitors_today: "Öffentliche Besucher heute", public_completed_scans: "Abgeschlossene öffentliche Scans", sales_interest: "Vertriebsinteresse",
+  scan_demand: "Scan-Nachfrage", contact_clicks: "Kontakt-Klicks", email_signups: "E-Mail-Anmeldungen", business_funnel: "Business-Funnel",
+  scans: "Scans", audience: "Zielgruppe", loading_analytics: "Analyse wird geladen...", loading_messages: "Nachrichten werden geladen...", loading_accounts: "Kundenkonten werden geladen..."
+});
+
+Object.assign(ADMIN_COPY.ja, {
+  admin_intro: "サイトとダッシュボードの公開テキストを編集するにはサインインしてください。",
+  sign_in_title: "サインイン", username: "ユーザー名", password: "パスワード", sign_in_button: "サインイン",
+  content_editor_title: "コンテンツ編集", content_editor_desc: "変更はSupabaseに保存され、更新後に表示されます。",
+  area: "範囲", main_site: "メインサイト", dashboard: "ダッシュボード", language: "言語", text_key: "テキストキー", new_text: "新しいテキスト",
+  save_text: "保存", load_current: "現在値を読み込む", open_site: "サイトを開く", open_dashboard: "ダッシュボードを開く", sign_out: "サインアウト",
+  analytics_title: "非公開プロダクト分析", analytics_desc: "管理者ログイン後のみ表示されます。公開ダッシュボードには表示されません。",
+  leads_title: "メッセージと購読者", accounts_title: "顧客アカウントとスキャンプラン", customer_email: "顧客メール", initial_password: "初期パスワード",
+  plan: "プラン", status: "状態", access_days: "アクセス日数", save_account: "アカウント権限を保存", refresh_accounts: "アカウント更新",
+  public_visitors_today: "本日の公開訪問者", public_completed_scans: "完了した公開スキャン", sales_interest: "営業関心",
+  scan_demand: "スキャン需要", contact_clicks: "問い合わせクリック", email_signups: "メール登録", business_funnel: "ビジネス導線",
+  scans: "スキャン", audience: "利用者", loading_analytics: "分析を読み込み中...", loading_messages: "メッセージを読み込み中...", loading_accounts: "顧客アカウントを読み込み中..."
+});
+
+Object.assign(ADMIN_COPY.ko, {
+  admin_intro: "사이트와 대시보드의 공개 텍스트를 수정하려면 로그인하세요.",
+  sign_in_title: "로그인", username: "사용자 이름", password: "비밀번호", sign_in_button: "로그인",
+  content_editor_title: "콘텐츠 편집기", content_editor_desc: "변경 사항은 Supabase에 저장되며 새로고침 후 표시됩니다.",
+  area: "영역", main_site: "메인 사이트", dashboard: "대시보드", language: "언어", text_key: "텍스트 키", new_text: "새 텍스트",
+  save_text: "텍스트 저장", load_current: "현재 값 불러오기", open_site: "사이트 열기", open_dashboard: "대시보드 열기", sign_out: "로그아웃",
+  analytics_title: "비공개 제품 분석", analytics_desc: "관리자 로그인 후에만 표시됩니다. 공개 대시보드에는 표시되지 않습니다.",
+  leads_title: "메시지와 구독자", accounts_title: "고객 계정 및 스캔 플랜", customer_email: "고객 이메일", initial_password: "초기 비밀번호",
+  plan: "플랜", status: "상태", access_days: "접근 일수", save_account: "계정 접근 저장", refresh_accounts: "계정 새로고침",
+  public_visitors_today: "오늘 공개 방문자", public_completed_scans: "완료된 공개 스캔", sales_interest: "영업 관심",
+  scan_demand: "스캔 수요", contact_clicks: "문의 클릭", email_signups: "이메일 가입", business_funnel: "비즈니스 퍼널",
+  scans: "스캔", audience: "사용자", loading_analytics: "분석 불러오는 중...", loading_messages: "메시지 불러오는 중...", loading_accounts: "고객 계정 불러오는 중..."
+});
+
+Object.assign(ADMIN_COPY.fr, {
+  admin_intro: "Connectez-vous pour modifier les textes publics du site et du dashboard.",
+  sign_in_title: "Connexion", username: "Nom d'utilisateur", password: "Mot de passe", sign_in_button: "Connexion",
+  content_editor_title: "Éditeur de contenu", content_editor_desc: "Les changements sont enregistrés dans Supabase et apparaissent après actualisation.",
+  area: "Zone", main_site: "Site principal", dashboard: "Dashboard", language: "Langue", text_key: "Clé de texte", new_text: "Nouveau texte",
+  save_text: "Enregistrer", load_current: "Charger l'actuel", open_site: "Ouvrir le site", open_dashboard: "Ouvrir le dashboard", sign_out: "Déconnexion",
+  analytics_title: "Analyse produit privée", analytics_desc: "Visible seulement après connexion admin. Ces données ne sont pas affichées publiquement.",
+  leads_title: "Messages et abonnés", accounts_title: "Comptes clients et plans de scan", customer_email: "Email client", initial_password: "Mot de passe initial",
+  plan: "Plan", status: "Statut", access_days: "Jours d'accès", save_account: "Enregistrer l'accès", refresh_accounts: "Actualiser les comptes",
+  public_visitors_today: "Visiteurs publics aujourd'hui", public_completed_scans: "Scans publics terminés", sales_interest: "Intérêt commercial",
+  scan_demand: "Demande de scans", contact_clicks: "Clics contact", email_signups: "Inscriptions email", business_funnel: "Tunnel business",
+  scans: "Scans", audience: "Audience", loading_analytics: "Chargement des analyses...", loading_messages: "Chargement des messages...", loading_accounts: "Chargement des comptes..."
+});
+
+Object.assign(ADMIN_COPY.pt, {
+  admin_intro: "Entre para editar textos públicos do site e do dashboard.",
+  sign_in_title: "Entrar", username: "Usuário", password: "Senha", sign_in_button: "Entrar",
+  content_editor_title: "Editor de conteúdo", content_editor_desc: "Alterações são salvas no Supabase e aparecem após atualizar.",
+  area: "Área", main_site: "Site principal", dashboard: "Dashboard", language: "Idioma", text_key: "Chave de texto", new_text: "Novo texto",
+  save_text: "Salvar texto", load_current: "Carregar atual", open_site: "Abrir site", open_dashboard: "Abrir dashboard", sign_out: "Sair",
+  analytics_title: "Analytics privado do produto", analytics_desc: "Visível apenas após login de admin. Esses dados não aparecem no dashboard público.",
+  leads_title: "Mensagens e inscritos", accounts_title: "Contas de clientes e planos de scan", customer_email: "Email do cliente", initial_password: "Senha inicial",
+  plan: "Plano", status: "Status", access_days: "Dias de acesso", save_account: "Salvar acesso", refresh_accounts: "Atualizar contas",
+  public_visitors_today: "Visitantes públicos hoje", public_completed_scans: "Scans públicos concluídos", sales_interest: "Interesse comercial",
+  scan_demand: "Demanda por scans", contact_clicks: "Cliques de contato", email_signups: "Inscrições por email", business_funnel: "Funil de negócios",
+  scans: "Scans", audience: "Público", loading_analytics: "Carregando analytics...", loading_messages: "Carregando mensagens...", loading_accounts: "Carregando contas..."
+});
+
+const ADMIN_KEY_LABELS = {
+  en: {
+    public_visitors: "Public visitors", scan_started: "Scan started", scan_completed: "Scan completed", contact_or_signup: "Sales contact or signup",
+    ok_to_install: "OK to install", security_review: "Security review", do_not_install: "Do not install", unknown: "Unknown", mcp: "MCP", skill: "AI Skill",
+    extension: "IDE extension", github_action: "GitHub Action", package: "npm/PyPI package", dependency: "Dependency", contact_sales_clicked: "Clicked Sales",
+    contact_enterprise_clicked: "Clicked Enterprise", contact_support_clicked: "Clicked Support", contact_security_clicked: "Clicked Security", contact_clicked: "Clicked Contact",
+    contact_form_submitted: "Contact form sent", contact_form_failed: "Contact form failed", email_submitted: "Email signup", email_submit_failed: "Email signup failed",
+    page_view: "Page view", scan_scope_selected: "Scan type selected", scan_failed: "Scan failed", under_500: "Under 500 chars", "500_1999": "500-1,999 chars",
+    "2000_9999": "2,000-9,999 chars", "10000_plus": "10,000+ chars", "0_19_low_risk": "0-19 low risk", "20_69_review": "20-69 review", "70_100_high_risk": "70-100 high risk",
+    contact: "Contact", subscriber: "Subscriber", free: "Free", manual: "Manual active", active: "Active", trialing: "Trialing", canceled: "Canceled"
+  },
+  he: {
+    public_visitors: "מבקרים ציבוריים", scan_started: "סריקה התחילה", scan_completed: "סריקה הושלמה", contact_or_signup: "יצירת קשר או הרשמה",
+    ok_to_install: "בטוח להתקנה", security_review: "נדרשת בדיקת אבטחה", do_not_install: "לא להתקין", unknown: "לא ידוע", mcp: "MCP", skill: "סקיל AI",
+    extension: "הרחבת IDE", github_action: "GitHub Action", package: "חבילת npm/PyPI", dependency: "תלות", contact_sales_clicked: "לחיצה על מכירות",
+    contact_enterprise_clicked: "לחיצה על ארגונים", contact_support_clicked: "לחיצה על תמיכה", contact_security_clicked: "לחיצה על אבטחה", contact_clicked: "לחיצה על יצירת קשר",
+    contact_form_submitted: "טופס יצירת קשר נשלח", contact_form_failed: "טופס יצירת קשר נכשל", email_submitted: "הרשמה באימייל", email_submit_failed: "הרשמה באימייל נכשלה",
+    page_view: "צפייה בעמוד", scan_scope_selected: "נבחר סוג סריקה", scan_failed: "סריקה נכשלה", under_500: "עד 500 תווים", "500_1999": "500-1,999 תווים",
+    "2000_9999": "2,000-9,999 תווים", "10000_plus": "10,000+ תווים", "0_19_low_risk": "0-19 סיכון נמוך", "20_69_review": "20-69 לבדיקה", "70_100_high_risk": "70-100 סיכון גבוה",
+    contact: "יצירת קשר", subscriber: "נרשם", free: "חינם", manual: "פעיל ידנית", active: "פעיל", trialing: "ניסיון", canceled: "מבוטל"
+  }
+};
+
+["de", "ja", "ko", "fr", "pt"].forEach(code => {
+  ADMIN_KEY_LABELS[code] = ADMIN_KEY_LABELS.en;
+});
+
+Object.assign(ADMIN_KEY_LABELS.de, {
+  public_visitors: "Öffentliche Besucher", scan_started: "Scan gestartet", scan_completed: "Scan abgeschlossen", contact_or_signup: "Kontakt oder Anmeldung",
+  ok_to_install: "Installierbar", security_review: "Sicherheitsprüfung", do_not_install: "Nicht installieren", unknown: "Unbekannt", skill: "AI Skill",
+  extension: "IDE-Erweiterung", github_action: "GitHub Action", package: "npm/PyPI-Paket", dependency: "Dependency", contact: "Kontakt", subscriber: "Abonnent",
+  free: "Kostenlos", manual: "Manuell aktiv", active: "Aktiv", trialing: "Testphase", canceled: "Gekündigt"
+});
+Object.assign(ADMIN_KEY_LABELS.ja, {
+  public_visitors: "公開訪問者", scan_started: "スキャン開始", scan_completed: "スキャン完了", contact_or_signup: "問い合わせまたは登録",
+  ok_to_install: "インストール可", security_review: "セキュリティ確認", do_not_install: "インストール不可", unknown: "不明", skill: "AI Skill",
+  extension: "IDE拡張", github_action: "GitHub Action", package: "npm/PyPIパッケージ", dependency: "依存関係", contact: "問い合わせ", subscriber: "購読者",
+  free: "無料", manual: "手動有効", active: "有効", trialing: "試用", canceled: "キャンセル"
+});
+Object.assign(ADMIN_KEY_LABELS.ko, {
+  public_visitors: "공개 방문자", scan_started: "스캔 시작", scan_completed: "스캔 완료", contact_or_signup: "문의 또는 가입",
+  ok_to_install: "설치 가능", security_review: "보안 검토", do_not_install: "설치 금지", unknown: "알 수 없음", skill: "AI Skill",
+  extension: "IDE 확장", github_action: "GitHub Action", package: "npm/PyPI 패키지", dependency: "의존성", contact: "문의", subscriber: "구독자",
+  free: "무료", manual: "수동 활성", active: "활성", trialing: "체험", canceled: "취소됨"
+});
+Object.assign(ADMIN_KEY_LABELS.fr, {
+  public_visitors: "Visiteurs publics", scan_started: "Scan démarré", scan_completed: "Scan terminé", contact_or_signup: "Contact ou inscription",
+  ok_to_install: "Installable", security_review: "Revue sécurité", do_not_install: "Ne pas installer", unknown: "Inconnu", skill: "AI Skill",
+  extension: "Extension IDE", github_action: "GitHub Action", package: "Paquet npm/PyPI", dependency: "Dépendance", contact: "Contact", subscriber: "Abonné",
+  free: "Gratuit", manual: "Actif manuel", active: "Actif", trialing: "Essai", canceled: "Annulé"
+});
+Object.assign(ADMIN_KEY_LABELS.pt, {
+  public_visitors: "Visitantes públicos", scan_started: "Scan iniciado", scan_completed: "Scan concluído", contact_or_signup: "Contato ou inscrição",
+  ok_to_install: "Pode instalar", security_review: "Revisão de segurança", do_not_install: "Não instalar", unknown: "Desconhecido", skill: "AI Skill",
+  extension: "Extensão IDE", github_action: "GitHub Action", package: "Pacote npm/PyPI", dependency: "Dependência", contact: "Contato", subscriber: "Inscrito",
+  free: "Grátis", manual: "Ativo manual", active: "Ativo", trialing: "Teste", canceled: "Cancelado"
+});
 
 function getToken() { return localStorage.getItem('cg-admin-token') || ''; }
 function setToken(token) { localStorage.setItem('cg-admin-token', token); }
@@ -239,47 +461,96 @@ function updateAuthView() {
 }
 
 function formatNumber(value) {
-  return Number(value || 0).toLocaleString();
+  return Number(value || 0).toLocaleString(ADMIN_LOCALES[adminLang()] || "en-US");
+}
+
+function adminLang() {
+  return langEl?.value || "en";
+}
+
+function adminDir() {
+  return window.LANGS?.[adminLang()]?.dir || "ltr";
+}
+
+function tr(key) {
+  const lang = adminLang();
+  return ADMIN_COPY[lang]?.[key] || ADMIN_COPY.en[key] || key;
+}
+
+function textWithParams(key, params = {}) {
+  return tr(key).replace(/\{(\w+)\}/g, (_match, name) => params[name] ?? "");
+}
+
+function setText(selector, key) {
+  const el = document.querySelector(selector);
+  if (el) el.textContent = tr(key);
+}
+
+function setLabel(forId, key) {
+  const el = document.querySelector(`label[for="${forId}"]`);
+  if (el) el.textContent = tr(key);
+}
+
+function setOptionText(selectEl, value, key) {
+  const option = selectEl?.querySelector(`option[value="${value}"]`);
+  if (option) option.textContent = tr(key);
+}
+
+function applyAdminTranslations() {
+  document.documentElement.lang = adminLang();
+  document.documentElement.dir = adminDir();
+
+  setText('main.wrap > p', 'admin_intro');
+  setText('#login-panel h2', 'sign_in_title');
+  setLabel('username', 'username');
+  setLabel('password', 'password');
+  document.getElementById('login').textContent = tr('sign_in_button');
+
+  setText('#admin-panel h2', 'content_editor_title');
+  setText('#admin-panel .muted', 'content_editor_desc');
+  setLabel('surface', 'area');
+  setOptionText(surfaceEl, 'site', 'main_site');
+  setOptionText(surfaceEl, 'dashboard', 'dashboard');
+  setLabel('lang', 'language');
+  setLabel('key', 'text_key');
+  keyEl.placeholder = tr('text_key_placeholder');
+  setLabel('value', 'new_text');
+  valueEl.placeholder = tr('new_text_placeholder');
+  document.getElementById('save').textContent = tr('save_text');
+  document.getElementById('load').textContent = tr('load_current');
+  document.getElementById('open-site').textContent = tr('open_site');
+  document.getElementById('open-dashboard').textContent = tr('open_dashboard');
+  document.getElementById('logout').textContent = tr('sign_out');
+
+  setText('#analytics-panel h2', 'analytics_title');
+  setText('#analytics-panel .muted', 'analytics_desc');
+  document.getElementById('refresh-analytics').textContent = tr('refresh_analytics');
+  setText('#leads-panel h2', 'leads_title');
+  setText('#leads-panel .muted', 'leads_desc');
+  document.getElementById('refresh-leads').textContent = tr('refresh_messages');
+  setText('#accounts-panel h2', 'accounts_title');
+  setText('#accounts-panel .muted', 'accounts_desc');
+  setLabel('customer-email', 'customer_email');
+  setLabel('customer-password', 'initial_password');
+  setLabel('customer-plan', 'plan');
+  setLabel('customer-status', 'status');
+  setLabel('customer-days', 'access_days');
+  customerEmailEl.placeholder = tr('customer_email_placeholder');
+  customerPasswordEl.placeholder = tr('customer_password_placeholder');
+  setOptionText(customerStatusEl, 'manual', 'status_manual');
+  setOptionText(customerStatusEl, 'active', 'status_active');
+  setOptionText(customerStatusEl, 'trialing', 'status_trialing');
+  setOptionText(customerStatusEl, 'canceled', 'status_canceled');
+  document.getElementById('save-account').textContent = tr('save_account');
+  document.getElementById('refresh-accounts').textContent = tr('refresh_accounts');
+
+  if (lastAnalyticsData) renderAnalytics(lastAnalyticsData);
+  if (lastLeadsData) renderLeads(lastLeadsData);
+  if (lastAccountsData) renderAccounts(lastAccountsData);
 }
 
 function formatAnalyticsKey(value) {
-  const labels = {
-    public_visitors: 'Public visitors',
-    scan_started: 'Scans started',
-    scan_completed: 'Scans completed',
-    contact_or_signup: 'Sales contact or signup',
-    ok_to_install: 'OK to install',
-    security_review: 'Security review',
-    do_not_install: 'Do not install',
-    unknown: 'Unknown',
-    mcp: 'MCP',
-    skill: 'AI Skill',
-    extension: 'IDE extension',
-    github_action: 'GitHub Action',
-    package: 'npm/PyPI package',
-    dependency: 'Dependency',
-    contact_sales_clicked: 'Clicked Sales',
-    contact_enterprise_clicked: 'Clicked Enterprise',
-    contact_support_clicked: 'Clicked Support',
-    contact_security_clicked: 'Clicked Security',
-    contact_clicked: 'Clicked Contact',
-    contact_form_submitted: 'Contact form sent',
-    contact_form_failed: 'Contact form failed',
-    email_submitted: 'Email signup',
-    email_submit_failed: 'Email signup failed',
-    page_view: 'Page view',
-    scan_scope_selected: 'Scan type selected',
-    scan_failed: 'Scan failed',
-    scan_started: 'Scan started',
-    scan_completed: 'Scan completed',
-    under_500: 'Under 500 chars',
-    '500_1999': '500-1,999 chars',
-    '2000_9999': '2,000-9,999 chars',
-    '10000_plus': '10,000+ chars',
-    '0_19_low_risk': '0-19 low risk',
-    '20_69_review': '20-69 review',
-    '70_100_high_risk': '70-100 high risk'
-  };
+  const labels = ADMIN_KEY_LABELS[adminLang()] || ADMIN_KEY_LABELS.en;
   const raw = String(value || 'unknown');
   if (labels[raw]) return labels[raw];
   return raw
@@ -301,20 +572,20 @@ function analyticsRows(items) {
 function analyticsList(title, items) {
   return `
     <div class="analytics-list">
-      <h3>${escapeHtml(title)}</h3>
+      <h3>${escapeHtml(tr(title))}</h3>
       ${analyticsRows(items)}
     </div>`;
 }
 
 function percent(value) {
-  return `${Number(value || 0).toLocaleString()}%`;
+  return `${Number(value || 0).toLocaleString(ADMIN_LOCALES[adminLang()] || "en-US")}%`;
 }
 
 function formatDateTime(value) {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleString();
+  return date.toLocaleString(ADMIN_LOCALES[adminLang()] || "en-US");
 }
 
 function escapeHtml(value) {
@@ -406,10 +677,94 @@ function renderAnalytics(data) {
     : 'Loaded private product analytics.';
 }
 
+function renderAnalytics(data) {
+  lastAnalyticsData = data;
+  if (!data || data.configured === false) {
+    adminAnalyticsEl.innerHTML = `<p class="muted">${escapeHtml(tr('product_not_configured'))}</p>`;
+    return;
+  }
+  adminAnalyticsEl.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('public_visitors_today'))}</div>
+        <div class="stat-num">${formatNumber(data.visitors_today)}</div>
+        <div class="stat-sub">${escapeHtml(textWithParams('seven_days', { a: formatNumber(data.visitors_7d), b: formatNumber(data.visitors_30d) }))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('public_completed_scans'))}</div>
+        <div class="stat-num">${formatNumber(data.scans_30d)}</div>
+        <div class="stat-sub">${escapeHtml(textWithParams('scans_started_completion', { a: formatNumber(data.scan_starts_30d), b: percent(data.scan_completion_rate) }))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('sales_interest'))}</div>
+        <div class="stat-num">${formatNumber(data.business_intent_30d)}</div>
+        <div class="stat-sub">${escapeHtml(textWithParams('visitor_to_intent', { a: percent(data.visitor_to_business_intent_rate) }))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('scan_demand'))}</div>
+        <div class="stat-num">${percent(data.visitor_to_scan_rate)}</div>
+        <div class="stat-sub">${escapeHtml(tr('scan_demand_sub'))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('contact_clicks'))}</div>
+        <div class="stat-num">${formatNumber(data.contact_clicks_30d)}</div>
+        <div class="stat-sub">${escapeHtml(textWithParams('forms_sent', { a: formatNumber(data.contact_forms_30d) }))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('email_signups'))}</div>
+        <div class="stat-num">${formatNumber(data.email_submits_30d)}</div>
+        <div class="stat-sub">${escapeHtml(textWithParams('failures', { a: formatNumber(data.email_failures_30d) }))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('owner_completed_scans'))}</div>
+        <div class="stat-num">${formatNumber(data.owner_scans_30d)}</div>
+        <div class="stat-sub">${escapeHtml(textWithParams('owner_events', { a: formatNumber(data.owner_events_30d) }))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('all_tracked_events'))}</div>
+        <div class="stat-num">${formatNumber(data.all_events_30d)}</div>
+        <div class="stat-sub">${escapeHtml(textWithParams('public_events_count', { a: formatNumber(data.events_30d) }))}</div>
+      </div>
+    </div>
+    <div class="analytics-section-title">${escapeHtml(tr('business_funnel'))}</div>
+    <div class="analytics-lists">
+      ${analyticsList('visitor_funnel', data.funnel)}
+      ${analyticsList('contact_by_type', data.contact_by_type)}
+      ${analyticsList('public_events', data.by_event)}
+    </div>
+    <div class="analytics-section-title">${escapeHtml(tr('scans'))}</div>
+    <div class="analytics-lists">
+      ${analyticsList('completed_scans_by_type', data.completed_by_scope)}
+      ${analyticsList('started_scans_by_type', data.started_by_scope)}
+      ${analyticsList('failed_scans_by_type', data.failed_by_scope)}
+      ${analyticsList('scan_verdicts', data.scan_statuses)}
+      ${analyticsList('risk_score_buckets', data.scan_score_buckets)}
+      ${analyticsList('completed_scans_by_country', data.scans_by_country)}
+      ${analyticsList('country_scan_type', data.scans_by_country_scope)}
+      ${analyticsList('public_scan_interest', data.by_scan_scope)}
+      ${analyticsList('owner_scan_types', data.owner_by_scan_scope)}
+    </div>
+    <div class="analytics-section-title">${escapeHtml(tr('audience'))}</div>
+    <div class="analytics-lists">
+      ${analyticsList('top_public_countries', data.by_country)}
+      ${analyticsList('languages', data.by_language)}
+      ${analyticsList('devices', data.by_device)}
+      ${analyticsList('browsers', data.by_browser)}
+      ${analyticsList('top_pages', data.top_pages)}
+      ${analyticsList('top_referrers', data.top_referrers)}
+      ${analyticsList('contact_countries', data.contact_by_country)}
+      ${analyticsList('email_signup_countries', data.email_by_country)}
+      ${analyticsList('owner_events_title', data.owner_by_event)}
+    </div>`;
+  analyticsStatusEl.textContent = data.actor_filter_active === false
+    ? tr('owner_sep_pending')
+    : tr('loaded_private_analytics');
+}
+
 async function loadAnalytics() {
   const token = getToken();
   if (!token) return;
-  analyticsStatusEl.textContent = 'Loading analytics...';
+  analyticsStatusEl.textContent = tr('loading_analytics');
   try {
     const response = await fetch('/api/product-analytics', {
       headers: { 'X-CG-Admin-Token': token }
@@ -418,19 +773,19 @@ async function loadAnalytics() {
     if (response.status === 401) {
       clearToken();
       updateAuthView();
-      loginStatusEl.textContent = 'Session expired. Sign in again.';
+      loginStatusEl.textContent = tr('session_expired');
       loginStatusEl.className = 'status error';
       return;
     }
     if (!response.ok) {
-      analyticsStatusEl.textContent = data.error || 'Analytics unavailable.';
+      analyticsStatusEl.textContent = data.error || tr('analytics_unavailable');
       analyticsStatusEl.className = 'status error';
       return;
     }
     analyticsStatusEl.className = 'status';
     renderAnalytics(data);
   } catch {
-    analyticsStatusEl.textContent = 'Analytics unavailable.';
+    analyticsStatusEl.textContent = tr('analytics_unavailable');
     analyticsStatusEl.className = 'status error';
   }
 }
@@ -510,11 +865,83 @@ function renderLeads(data) {
   leadsStatusEl.textContent = `Loaded messages and subscribers at ${formatDateTime(data?.generated_at || new Date().toISOString())}.`;
 }
 
+function renderContactMessages(section) {
+  if (!section?.configured) {
+    return emptyState(tr('contact_table_missing'));
+  }
+  const rows = section.rows || [];
+  if (!rows.length) return emptyState(tr('no_contact_messages'));
+  return `<div class="lead-list">${rows.map(row => `
+    <div class="lead-card">
+      <div class="lead-top">
+        <div class="lead-kind">${escapeHtml(formatAnalyticsKey(row.kind || 'contact'))}</div>
+        <div class="lead-time">${escapeHtml(formatDateTime(row.created_at))}</div>
+      </div>
+      <div class="lead-meta">
+        <div><span class="lead-email">${escapeHtml(row.email)}</span></div>
+        <div>${escapeHtml(row.name || tr('no_name'))}${row.company ? ` - ${escapeHtml(row.company)}` : ''}</div>
+        ${row.origin ? `<div>${escapeHtml(tr('origin'))}: ${escapeHtml(row.origin)}</div>` : ''}
+      </div>
+      <div class="lead-message">${escapeHtml(row.message || '')}</div>
+    </div>`).join('')}</div>`;
+}
+
+function renderSubscribers(section) {
+  if (!section?.configured) {
+    return emptyState(tr('subscribers_table_missing'));
+  }
+  const rows = section.rows || [];
+  if (!rows.length) return emptyState(tr('no_email_subscribers'));
+  return `<div class="lead-list">${rows.map(row => `
+    <div class="lead-card">
+      <div class="lead-top">
+        <div class="lead-kind">${escapeHtml(formatAnalyticsKey(row.source || 'subscriber'))}</div>
+        <div class="lead-time">${escapeHtml(formatDateTime(row.updated_at || row.created_at))}</div>
+      </div>
+      <div class="lead-meta">
+        <div><span class="lead-email">${escapeHtml(row.email)}</span></div>
+        ${row.origin ? `<div>${escapeHtml(tr('origin'))}: ${escapeHtml(row.origin)}</div>` : ''}
+        <div>${escapeHtml(tr('created'))}: ${escapeHtml(formatDateTime(row.created_at))}</div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function renderLeads(data) {
+  lastLeadsData = data;
+  const contactCount = data?.contacts?.rows?.length || 0;
+  const subscriberCount = data?.subscribers?.rows?.length || 0;
+  adminLeadsEl.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('recent_contact_messages'))}</div>
+        <div class="stat-num">${formatNumber(contactCount)}</div>
+        <div class="stat-sub">${escapeHtml(tr('latest50'))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('email_subscribers'))}</div>
+        <div class="stat-num">${formatNumber(subscriberCount)}</div>
+        <div class="stat-sub">${escapeHtml(tr('latest100'))}</div>
+      </div>
+    </div>
+    <div class="lead-grid">
+      <div>
+        <div class="analytics-section-title">${escapeHtml(tr('contact_messages'))}</div>
+        ${renderContactMessages(data?.contacts)}
+      </div>
+      <div>
+        <div class="analytics-section-title">${escapeHtml(tr('email_subscribers'))}</div>
+        ${renderSubscribers(data?.subscribers)}
+      </div>
+    </div>`;
+  leadsStatusEl.className = 'status';
+  leadsStatusEl.textContent = textWithParams('loaded_messages', { time: formatDateTime(data?.generated_at || new Date().toISOString()) });
+}
+
 async function loadLeads() {
   const token = getToken();
   if (!token) return;
   leadsStatusEl.className = 'status';
-  leadsStatusEl.textContent = 'Loading messages and subscribers...';
+  leadsStatusEl.textContent = tr('loading_messages');
   try {
     const response = await fetch('/api/admin-data?section=leads', {
       headers: { 'X-CG-Admin-Token': token }
@@ -523,25 +950,27 @@ async function loadLeads() {
     if (response.status === 401) {
       clearToken();
       updateAuthView();
-      loginStatusEl.textContent = 'Session expired. Sign in again.';
+      loginStatusEl.textContent = tr('session_expired');
       loginStatusEl.className = 'status error';
       return;
     }
     if (!response.ok) {
-      leadsStatusEl.textContent = data.error || 'Messages unavailable.';
+      leadsStatusEl.textContent = data.error || tr('messages_unavailable');
       leadsStatusEl.className = 'status error';
       return;
     }
     renderLeads(data);
   } catch {
-    leadsStatusEl.textContent = 'Messages unavailable.';
+    leadsStatusEl.textContent = tr('messages_unavailable');
     leadsStatusEl.className = 'status error';
   }
 }
 
 function planLabel(plan) {
-  const price = plan.price_usd == null ? 'custom' : `$${Number(plan.price_usd).toLocaleString()}/mo`;
-  return `${plan.display_name} - ${Number(plan.monthly_scan_limit || 0).toLocaleString()} scans - ${price}`;
+  const price = plan.price_usd == null
+    ? tr('custom_price')
+    : `$${Number(plan.price_usd).toLocaleString(ADMIN_LOCALES[adminLang()] || "en-US")}/${tr('monthly_suffix')}`;
+  return `${plan.display_name} - ${formatNumber(plan.monthly_scan_limit || 0)} ${tr('scans_word')} - ${price}`;
 }
 
 function populatePlanOptions(plans) {
@@ -583,11 +1012,42 @@ function renderAccounts(data) {
     </div>`;
 }
 
+function renderAccounts(data) {
+  lastAccountsData = data;
+  if (!data?.configured) {
+    adminAccountsEl.innerHTML = emptyState(tr('account_plans_missing'));
+    return;
+  }
+  populatePlanOptions(data.plans);
+  const rows = data.rows || [];
+  if (!rows.length) {
+    adminAccountsEl.innerHTML = emptyState(tr('no_customer_accounts'));
+    return;
+  }
+  adminAccountsEl.innerHTML = `
+    <div class="account-card">
+      ${rows.map(row => `
+        <div class="account-row">
+          <div>
+            <div class="account-email">${escapeHtml(row.email)}</div>
+            <div class="account-meta">${escapeHtml(tr('created'))}: ${escapeHtml(formatDateTime(row.created_at))}</div>
+          </div>
+          <div><span class="account-pill">${escapeHtml(row.plan_name || row.plan_code)}</span></div>
+          <div>${escapeHtml(formatAnalyticsKey(row.status || 'free'))}</div>
+          <div>${formatNumber(row.quota_used)} / ${formatNumber(row.quota_limit)}</div>
+          <div>
+            <div>${formatNumber(row.quota_remaining)} ${escapeHtml(tr('scans_left'))}</div>
+            <div class="account-meta">${escapeHtml(tr('ends'))}: ${escapeHtml(formatDateTime(row.current_period_end) || tr('free_no_period'))}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
 async function loadAccounts() {
   const token = getToken();
   if (!token) return;
   accountsStatusEl.className = 'status';
-  accountsStatusEl.textContent = 'Loading customer accounts...';
+  accountsStatusEl.textContent = tr('loading_accounts');
   try {
     const response = await fetch('/api/admin-data?section=accounts', {
       headers: { 'X-CG-Admin-Token': token }
@@ -596,20 +1056,20 @@ async function loadAccounts() {
     if (response.status === 401) {
       clearToken();
       updateAuthView();
-      loginStatusEl.textContent = 'Session expired. Sign in again.';
+      loginStatusEl.textContent = tr('session_expired');
       loginStatusEl.className = 'status error';
       return;
     }
     if (!response.ok) {
-      accountsStatusEl.textContent = data.error || 'Account management unavailable.';
+      accountsStatusEl.textContent = data.error || tr('account_management_unavailable');
       accountsStatusEl.className = 'status error';
       return;
     }
     renderAccounts(data);
     accountsStatusEl.className = 'status';
-    accountsStatusEl.textContent = `Loaded customer accounts at ${formatDateTime(data.generated_at || new Date().toISOString())}.`;
+    accountsStatusEl.textContent = textWithParams('loaded_accounts', { time: formatDateTime(data.generated_at || new Date().toISOString()) });
   } catch {
-    accountsStatusEl.textContent = 'Account management unavailable.';
+    accountsStatusEl.textContent = tr('account_management_unavailable');
     accountsStatusEl.className = 'status error';
   }
 }
@@ -620,7 +1080,7 @@ async function saveAccountAccess() {
   const email = customerEmailEl.value.trim();
   const password = customerPasswordEl.value;
   accountsStatusEl.className = 'status';
-  accountsStatusEl.textContent = 'Saving customer account...';
+  accountsStatusEl.textContent = tr('saving_account');
   try {
     const response = await fetch('/api/admin-data?section=accounts', {
       method: 'POST',
@@ -635,18 +1095,18 @@ async function saveAccountAccess() {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      accountsStatusEl.textContent = data.error || 'Could not save customer account.';
+      accountsStatusEl.textContent = data.error || tr('could_not_save_account');
       accountsStatusEl.className = 'status error';
       return;
     }
     customerPasswordEl.value = '';
     accountsStatusEl.className = 'status';
     accountsStatusEl.textContent = data.created
-      ? 'Customer account created and plan assigned.'
-      : 'Customer plan updated.';
+      ? tr('customer_created')
+      : tr('customer_updated');
     await loadAccounts();
   } catch {
-    accountsStatusEl.textContent = 'Could not save customer account.';
+    accountsStatusEl.textContent = tr('could_not_save_account');
     accountsStatusEl.className = 'status error';
   }
 }
@@ -657,7 +1117,7 @@ async function login() {
   const username = usernameEl.value.trim();
   const password = passwordEl.value;
   if (!username || !password) {
-    loginStatusEl.textContent = 'Username and password are required.';
+    loginStatusEl.textContent = tr('login_required_fields');
     loginStatusEl.className = 'status error';
     return;
   }
@@ -668,7 +1128,7 @@ async function login() {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok || !data.token) {
-    loginStatusEl.textContent = data.error || 'Login failed.';
+    loginStatusEl.textContent = data.error || tr('login_failed');
     loginStatusEl.className = 'status error';
     return;
   }
@@ -709,7 +1169,7 @@ async function loadCurrent() {
   const override = data.entries?.[key];
   const fallback = surface === 'site' ? (window.TRANSLATIONS?.[lang]?.[key] || window.TRANSLATIONS?.en?.[key] || '') : '';
   valueEl.value = override || fallback;
-  fallbackEl.textContent = override ? 'Loaded saved override.' : (fallback ? 'Loaded default text.' : 'No default text found for this key.');
+  fallbackEl.textContent = override ? tr('loaded_saved_override') : (fallback ? tr('loaded_default_text') : tr('no_default_text'));
 }
 
 async function saveText() {
@@ -719,7 +1179,7 @@ async function saveText() {
   const key = keyEl.value.trim();
   const value = valueEl.value;
   if (!token || !key || !value.trim()) {
-    statusEl.textContent = 'Login, key, and text are required.';
+    statusEl.textContent = tr('login_key_text_required');
     return;
   }
   const response = await fetch('/api/content', {
@@ -732,21 +1192,24 @@ async function saveText() {
     clearToken();
     updateAuthView();
     statusEl.textContent = '';
-    loginStatusEl.textContent = 'Session expired. Sign in again.';
+    loginStatusEl.textContent = tr('session_expired');
     loginStatusEl.className = 'status error';
     return;
   }
   if (!response.ok) {
-    statusEl.textContent = data.error || 'Save failed.';
+    statusEl.textContent = data.error || tr('save_failed');
     return;
   }
-  statusEl.textContent = `Saved ${key}.`;
+  statusEl.textContent = textWithParams('saved_text', { key });
 }
 
 document.getElementById('login').onclick = login;
 passwordEl.addEventListener('keydown', event => { if (event.key === 'Enter') login(); });
 surfaceEl.onchange = populateKeys;
-langEl.onchange = populateKeys;
+langEl.onchange = () => {
+  populateKeys();
+  applyAdminTranslations();
+};
 keyEl.onchange = loadCurrent;
 document.getElementById('load').onclick = loadCurrent;
 document.getElementById('save').onclick = saveText;
@@ -758,6 +1221,7 @@ document.getElementById('refresh-accounts').onclick = loadAccounts;
 document.getElementById('save-account').onclick = saveAccountAccess;
 document.getElementById('logout').onclick = () => { clearToken(); updateAuthView(); };
 updateAuthView();
+applyAdminTranslations();
 if (getToken()) {
   populateKeys();
   loadAnalytics();
