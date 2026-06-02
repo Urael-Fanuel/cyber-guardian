@@ -779,7 +779,7 @@ async function loadAccountStatus() {
     return;
   }
   try {
-    const response = await fetch('/api/account-status', {
+    const response = await fetch('/api/account?mode=status', {
       headers: { 'X-CG-Account-Token': accountToken() }
     });
     const data = await response.json().catch(() => ({}));
@@ -797,7 +797,7 @@ async function loadAccountStatus() {
 async function initAccountAuth() {
   renderAccountPlan(null);
   try {
-    const config = await fetch('/api/public-config').then(r => r.json());
+    const config = await fetch('/api/account?mode=config').then(r => r.json());
     if (!config.supabase_configured || !window.supabase) {
       setAccountMessage(t('account_not_configured'));
       return;

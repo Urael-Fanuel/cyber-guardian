@@ -516,7 +516,7 @@ async function loadLeads() {
   leadsStatusEl.className = 'status';
   leadsStatusEl.textContent = 'Loading messages and subscribers...';
   try {
-    const response = await fetch('/api/admin-leads', {
+    const response = await fetch('/api/admin-data?section=leads', {
       headers: { 'X-CG-Admin-Token': token }
     });
     const data = await response.json().catch(() => ({}));
@@ -589,7 +589,7 @@ async function loadAccounts() {
   accountsStatusEl.className = 'status';
   accountsStatusEl.textContent = 'Loading customer accounts...';
   try {
-    const response = await fetch('/api/admin-accounts', {
+    const response = await fetch('/api/admin-data?section=accounts', {
       headers: { 'X-CG-Admin-Token': token }
     });
     const data = await response.json().catch(() => ({}));
@@ -622,7 +622,7 @@ async function saveAccountAccess() {
   accountsStatusEl.className = 'status';
   accountsStatusEl.textContent = 'Saving customer account...';
   try {
-    const response = await fetch('/api/admin-accounts', {
+    const response = await fetch('/api/admin-data?section=accounts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CG-Admin-Token': token },
       body: JSON.stringify({

@@ -38,6 +38,15 @@ function getHeader(req, name) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+function getSection(req) {
+  try {
+    const url = new URL(req.url, "https://cyberguardianscan.com");
+    return String(url.searchParams.get("section") || "leads").trim();
+  } catch {
+    return "leads";
+  }
+}
+
 function isAdminToken(req) {
   const token = String(getHeader(req, "x-cg-admin-token") || "").trim();
   if (!token || !TOKEN_SECRET) return false;
@@ -72,6 +81,46 @@ function addDays(days) {
   const date = new Date();
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString();
+}
+
+async function getContactMessages(sb) {
+  const { data, error } = await sb
+    .from("contact_messages")
+    .select("id,kind,name,email,company,message,origin,created_at")
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error) {
+    if (tableMissing(error)) return { configured: false, rows: [] };
+    throw error;
+  }
+  return { configured: true, rows: data || [] };
+}
+
+async function getEmailSubscribers(sb) {
+  const { data, error } = await sb
+    .from("email_subscribers")
+    .select("email,source,origin,created_at,updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(100);
+  if (error) {
+    if (tableMissing(error)) return { configured: false, rows: [] };
+    throw error;
+  }
+  return { configured: true, rows: data || [] };
+}
+
+async function getLeads(sb) {
+  const [contacts, subscribers] = await Promise.all([
+    getContactMessages(sb),
+    getEmailSubscribers(sb),
+  ]);
+
+  return {
+    ok: true,
+    contacts,
+    subscribers,
+    generated_at: new Date().toISOString(),
+  };
 }
 
 async function getPlans(sb) {
@@ -154,6 +203,16 @@ async function getAccountRows(sb) {
   return { configured: true, plans: plans.rows, rows };
 }
 
+async function getAccounts(sb) {
+  const accounts = await getAccountRows(sb);
+  return {
+    ok: true,
+    ...accounts,
+    month_key: monthKey(),
+    generated_at: new Date().toISOString(),
+  };
+}
+
 async function findUserByEmail(sb, email) {
   const { data, error } = await sb.auth.admin.listUsers({ page: 1, perPage: 1000 });
   if (error) throw error;
@@ -232,26 +291,29 @@ module.exports = async function handler(req, res) {
   const sb = getSupabase();
   if (!sb) return res.status(500).json({ error: "Supabase is not configured" });
 
+  const section = getSection(req);
   try {
-    if (req.method === "POST") {
-      let body = req.body;
-      if (typeof body === "string") {
-        try { body = JSON.parse(body); } catch { return res.status(400).json({ error: "Invalid request format" }); }
-      }
-      const result = await upsertAccount(sb, body);
-      if (result.error) return res.status(400).json({ error: result.error });
-      return res.status(200).json(result);
+    if (section === "leads") {
+      if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+      return res.status(200).json(await getLeads(sb));
     }
 
-    const accounts = await getAccountRows(sb);
-    return res.status(200).json({
-      ok: true,
-      ...accounts,
-      month_key: monthKey(),
-      generated_at: new Date().toISOString(),
-    });
+    if (section === "accounts") {
+      if (req.method === "POST") {
+        let body = req.body;
+        if (typeof body === "string") {
+          try { body = JSON.parse(body); } catch { return res.status(400).json({ error: "Invalid request format" }); }
+        }
+        const result = await upsertAccount(sb, body);
+        if (result.error) return res.status(400).json({ error: result.error });
+        return res.status(200).json(result);
+      }
+      return res.status(200).json(await getAccounts(sb));
+    }
+
+    return res.status(404).json({ error: "Unknown admin data section" });
   } catch (err) {
-    console.error("[admin-accounts]", err.message);
-    return res.status(500).json({ error: "Account management unavailable" });
+    console.error("[admin-data]", section, err.message);
+    return res.status(500).json({ error: "Admin data unavailable" });
   }
 };

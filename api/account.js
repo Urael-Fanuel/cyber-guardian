@@ -1,7 +1,8 @@
 const { createClient } = require("@supabase/supabase-js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "";
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
   .split(",")
   .map(s => s.trim())
@@ -10,8 +11,8 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "https://cyberguardiansc
 let supabaseClient = null;
 
 function getSupabase() {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
-  if (!supabaseClient) supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return null;
+  if (!supabaseClient) supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   return supabaseClient;
 }
 
@@ -31,6 +32,15 @@ function getHeader(req, name) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+function getMode(req) {
+  try {
+    const url = new URL(req.url, "https://cyberguardianscan.com");
+    return String(url.searchParams.get("mode") || "config").trim();
+  } catch {
+    return "config";
+  }
+}
+
 function monthKey() {
   const now = new Date();
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
@@ -38,6 +48,14 @@ function monthKey() {
 
 function tableMissing(error) {
   return /relation .* does not exist|schema cache|Could not find/i.test(error?.message || "");
+}
+
+function publicConfig() {
+  return {
+    supabase_configured: Boolean(SUPABASE_URL && SUPABASE_ANON_KEY),
+    supabase_url: SUPABASE_URL || "",
+    supabase_anon_key: SUPABASE_ANON_KEY,
+  };
 }
 
 async function getUserFromRequest(sb, req) {
@@ -130,6 +148,10 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
+  const mode = getMode(req);
+  if (mode === "config") return res.status(200).json(publicConfig());
+  if (mode !== "status") return res.status(404).json({ error: "Unknown account action" });
+
   const sb = getSupabase();
   if (!sb) return res.status(500).json({ error: "Supabase is not configured" });
 
@@ -142,7 +164,7 @@ module.exports = async function handler(req, res) {
     }
     return res.status(200).json(status);
   } catch (err) {
-    console.error("[account-status]", err.message);
+    console.error("[account]", err.message);
     return res.status(500).json({ error: "Account status unavailable" });
   }
 };
