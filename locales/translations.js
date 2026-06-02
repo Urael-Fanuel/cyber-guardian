@@ -1710,13 +1710,13 @@ Object.entries(ACCOUNT_COPY).forEach(([lang, copy]) => {
 });
 
 const NAV_ACCOUNT_COPY = {
-  en: { nav_customer_login: "Customer login", nav_stats: "Stats" },
-  he: { nav_customer_login: "כניסת לקוחות", nav_stats: "דשבורד" },
-  de: { nav_customer_login: "Kundenlogin", nav_stats: "Dashboard" },
-  ja: { nav_customer_login: "顧客ログイン", nav_stats: "ダッシュボード" },
-  ko: { nav_customer_login: "고객 로그인", nav_stats: "대시보드" },
-  fr: { nav_customer_login: "Accès client", nav_stats: "Dashboard" },
-  pt: { nav_customer_login: "Login do cliente", nav_stats: "Dashboard" }
+  en: { nav_customer_login: "Customer login", nav_account_cta: "Sign in / Free account", nav_stats: "Dashboard", nav_dashboard: "Dashboard" },
+  he: { nav_customer_login: "כניסת לקוחות", nav_account_cta: "כניסה / חשבון חינמי", nav_stats: "דשבורד", nav_dashboard: "דשבורד" },
+  de: { nav_customer_login: "Kundenlogin", nav_account_cta: "Anmelden / Gratis-Konto", nav_stats: "Dashboard", nav_dashboard: "Dashboard" },
+  ja: { nav_customer_login: "顧客ログイン", nav_account_cta: "サインイン / 無料アカウント", nav_stats: "ダッシュボード", nav_dashboard: "ダッシュボード" },
+  ko: { nav_customer_login: "고객 로그인", nav_account_cta: "로그인 / 무료 계정", nav_stats: "대시보드", nav_dashboard: "대시보드" },
+  fr: { nav_customer_login: "Accès client", nav_account_cta: "Connexion / compte gratuit", nav_stats: "Tableau de bord", nav_dashboard: "Tableau de bord" },
+  pt: { nav_customer_login: "Login do cliente", nav_account_cta: "Entrar / conta gratis", nav_stats: "Painel", nav_dashboard: "Painel" }
 };
 
 Object.entries(NAV_ACCOUNT_COPY).forEach(([lang, copy]) => {
