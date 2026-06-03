@@ -53,7 +53,13 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
   .account-email { color:#dbeafe; font-weight:800; overflow-wrap:anywhere; user-select:all; }
   .account-meta { color:#8fa8bd; font-size:12px; margin-top:4px; }
   .account-pill { display:inline-block; border:1px solid #2a4158; color:#00d4ff; border-radius:999px; padding:3px 8px; font-size:12px; }
+  .moat-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:14px; }
+  .moat-card { border:1px solid #203449; background:#08111b; border-radius:8px; padding:14px; }
+  .moat-title { color:#dbeafe; font-weight:800; overflow-wrap:anywhere; }
+  .moat-score { color:#00d4ff; font-size:28px; font-weight:900; margin-top:6px; }
+  .moat-meta { color:#8fa8bd; font-size:12px; line-height:1.5; margin-top:6px; overflow-wrap:anywhere; }
   @media (max-width:900px) { .account-admin-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .account-row { grid-template-columns:1fr; } }
+  @media (max-width:900px) { .moat-grid { grid-template-columns:1fr; } }
   @media (max-width:900px) { .stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .analytics-lists { grid-template-columns:1fr; } }
 @media (max-width:720px) { .grid, .lead-grid { grid-template-columns:1fr; } }
 @media (max-width:520px) { .stats-grid { grid-template-columns:1fr; } }
@@ -191,6 +197,16 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
     <div class="status" id="accounts-status"></div>
     <div id="admin-accounts" style="margin-top:16px"></div>
   </section>
+
+  <section class="panel hidden" id="moat-panel">
+    <h2>Strategic moat</h2>
+    <p class="muted">Tracks threat-intelligence reports, trust registry entries, secure-wrapper requests, and runtime policy templates.</p>
+    <div id="admin-moat"></div>
+    <div class="actions">
+      <button id="refresh-moat" class="secondary">Refresh Moat</button>
+    </div>
+    <div class="status" id="moat-status"></div>
+  </section>
 </main>
 
 <script src="/locales/translations.js"></script>
@@ -200,6 +216,7 @@ const adminPanel = document.getElementById('admin-panel');
 const analyticsPanel = document.getElementById('analytics-panel');
 const leadsPanel = document.getElementById('leads-panel');
 const accountsPanel = document.getElementById('accounts-panel');
+const moatPanel = document.getElementById('moat-panel');
 const usernameEl = document.getElementById('username');
 const passwordEl = document.getElementById('password');
 const loginStatusEl = document.getElementById('login-status');
@@ -216,6 +233,8 @@ const adminLeadsEl = document.getElementById('admin-leads');
 const leadsStatusEl = document.getElementById('leads-status');
 const adminAccountsEl = document.getElementById('admin-accounts');
 const accountsStatusEl = document.getElementById('accounts-status');
+const adminMoatEl = document.getElementById('admin-moat');
+const moatStatusEl = document.getElementById('moat-status');
 const customerEmailEl = document.getElementById('customer-email');
 const customerPasswordEl = document.getElementById('customer-password');
 const customerPlanEl = document.getElementById('customer-plan');
@@ -225,6 +244,7 @@ let dashboardKeys = [];
 let lastAnalyticsData = null;
 let lastLeadsData = null;
 let lastAccountsData = null;
+let lastMoatData = null;
 
 const ADMIN_LOCALES = {
   en: "en-US",
@@ -251,6 +271,11 @@ const ADMIN_COPY = {
     customer_email_placeholder: "customer@example.com", customer_password_placeholder: "Only for new users",
     status_manual: "Manual active", status_active: "Active", status_trialing: "Trialing", status_canceled: "Canceled",
     save_account: "Save Account Access", refresh_accounts: "Refresh Accounts",
+    moat_title: "Strategic moat", moat_desc: "Tracks threat-intelligence reports, trust registry entries, secure-wrapper requests, and runtime policy templates.",
+    refresh_moat: "Refresh Moat", threat_intel_reports: "Threat intel reports", trust_registry: "Trust registry", wrapper_requests: "Wrapper requests",
+    runtime_policies: "Runtime policies", moat_not_configured: "Moat tables are not configured yet. Run migration 010 in Supabase.",
+    no_moat_rows: "No moat data yet.", loading_moat: "Loading moat data...", loaded_moat: "Loaded moat data at {time}.",
+    moat_unavailable: "Moat data unavailable.",
     public_visitors_today: "Public visitors today", public_completed_scans: "Public completed scans", sales_interest: "Sales interest", scan_demand: "Scan demand",
     contact_clicks: "Contact clicks", email_signups: "Email signups", owner_completed_scans: "Owner completed scans", all_tracked_events: "All tracked events",
     seven_days: "7 days: {a} - 30 days: {b}", scans_started_completion: "Started: {a} - completion: {b}", visitor_to_intent: "Visitor to intent: {a}",
@@ -288,6 +313,11 @@ const ADMIN_COPY = {
     customer_email_placeholder: "customer@example.com", customer_password_placeholder: "רק עבור משתמש חדש",
     status_manual: "פעיל ידנית", status_active: "פעיל", status_trialing: "ניסיון", status_canceled: "מבוטל",
     save_account: "שמור גישת חשבון", refresh_accounts: "רענן חשבונות",
+    moat_title: "חומת היתרון העסקי", moat_desc: "מציג דיווחי מודיעין איומים, Registry וציון אמון, בקשות Secure Wrapper ותבניות מדיניות Runtime.",
+    refresh_moat: "רענן Moat", threat_intel_reports: "דיווחי מודיעין איומים", trust_registry: "Registry וציון אמון", wrapper_requests: "בקשות Wrapper",
+    runtime_policies: "מדיניות Runtime", moat_not_configured: "טבלאות ה-Moat עדיין לא מוגדרות. צריך להריץ מיגרציה 010 ב-Supabase.",
+    no_moat_rows: "עדיין אין נתוני Moat.", loading_moat: "טוען נתוני Moat...", loaded_moat: "נתוני ה-Moat נטענו בשעה {time}.",
+    moat_unavailable: "נתוני ה-Moat לא זמינים.",
     public_visitors_today: "מבקרים ציבוריים היום", public_completed_scans: "סריקות ציבוריות שהושלמו", sales_interest: "עניין במכירות", scan_demand: "ביקוש לסריקות",
     contact_clicks: "לחיצות ליצירת קשר", email_signups: "נרשמים באימייל", owner_completed_scans: "סריקות שהבעלים השלים", all_tracked_events: "כל האירועים שנמדדו",
     seven_days: "7 ימים: {a} - 30 ימים: {b}", scans_started_completion: "התחילו: {a} - השלמה: {b}", visitor_to_intent: "מבקר לעניין עסקי: {a}",
@@ -458,6 +488,7 @@ function updateAuthView() {
   analyticsPanel.classList.toggle('hidden', !signedIn);
   leadsPanel.classList.toggle('hidden', !signedIn);
   accountsPanel.classList.toggle('hidden', !signedIn);
+  moatPanel.classList.toggle('hidden', !signedIn);
 }
 
 function formatNumber(value) {
@@ -543,10 +574,14 @@ function applyAdminTranslations() {
   setOptionText(customerStatusEl, 'canceled', 'status_canceled');
   document.getElementById('save-account').textContent = tr('save_account');
   document.getElementById('refresh-accounts').textContent = tr('refresh_accounts');
+  setText('#moat-panel h2', 'moat_title');
+  setText('#moat-panel .muted', 'moat_desc');
+  document.getElementById('refresh-moat').textContent = tr('refresh_moat');
 
   if (lastAnalyticsData) renderAnalytics(lastAnalyticsData);
   if (lastLeadsData) renderLeads(lastLeadsData);
   if (lastAccountsData) renderAccounts(lastAccountsData);
+  if (lastMoatData) renderMoat(lastMoatData);
 }
 
 function formatAnalyticsKey(value) {
@@ -1074,6 +1109,81 @@ async function loadAccounts() {
   }
 }
 
+function renderMoatList(titleKey, section, renderer) {
+  const rows = section?.rows || [];
+  if (!section?.configured) return `<div class="moat-card"><div class="moat-title">${escapeHtml(tr(titleKey))}</div><div class="moat-meta">${escapeHtml(tr('moat_not_configured'))}</div></div>`;
+  if (!rows.length) return `<div class="moat-card"><div class="moat-title">${escapeHtml(tr(titleKey))}</div><div class="moat-meta">${escapeHtml(tr('no_moat_rows'))}</div></div>`;
+  return `<div class="moat-card">
+    <div class="moat-title">${escapeHtml(tr(titleKey))}</div>
+    <div class="moat-score">${formatNumber(rows.length)}</div>
+    ${rows.slice(0, 5).map(renderer).join('')}
+  </div>`;
+}
+
+function renderMoat(data) {
+  lastMoatData = data;
+  adminMoatEl.innerHTML = `
+    <div class="moat-grid">
+      ${renderMoatList('threat_intel_reports', data?.intel, row => `
+        <div class="moat-meta">
+          <strong>${escapeHtml(formatAnalyticsKey(row.severity || 'medium'))}</strong> - ${escapeHtml(formatAnalyticsKey(row.event_type || 'runtime_anomaly'))}<br>
+          ${escapeHtml(row.source_name || row.source_url || row.scope || '')}<br>
+          ${escapeHtml(formatDateTime(row.created_at))}
+        </div>`)}
+      ${renderMoatList('trust_registry', data?.registry, row => `
+        <div class="moat-meta">
+          <strong>${formatNumber(row.trust_score)} / 100</strong> - ${escapeHtml(formatAnalyticsKey(row.trust_status || 'unverified'))}<br>
+          ${escapeHtml(row.source_name || row.source_url || '')}<br>
+          ${formatNumber(row.scan_count)} ${escapeHtml(tr('scans_word'))}
+        </div>`)}
+      ${renderMoatList('wrapper_requests', data?.wrappers, row => `
+        <div class="moat-meta">
+          <strong>${escapeHtml(formatAnalyticsKey(row.wrapper_status || 'requested'))}</strong> - ${formatNumber(row.threat_score)} / 100<br>
+          ${escapeHtml(row.source_name || row.code_purpose || row.scope || '')}<br>
+          ${escapeHtml(formatDateTime(row.created_at))}
+        </div>`)}
+      ${renderMoatList('runtime_policies', data?.policies, row => `
+        <div class="moat-meta">
+          <strong>${escapeHtml(row.template_name || row.scope || '')}</strong><br>
+          ${escapeHtml(row.description || '')}<br>
+          ${escapeHtml(formatAnalyticsKey(row.status || 'draft'))}
+        </div>`)}
+    </div>`;
+  moatStatusEl.className = 'status';
+  moatStatusEl.textContent = data?.configured
+    ? textWithParams('loaded_moat', { time: formatDateTime(data.generated_at || new Date().toISOString()) })
+    : tr('moat_not_configured');
+}
+
+async function loadMoat() {
+  const token = getToken();
+  if (!token) return;
+  moatStatusEl.className = 'status';
+  moatStatusEl.textContent = tr('loading_moat');
+  try {
+    const response = await fetch('/api/admin-data?section=moat', {
+      headers: { 'X-CG-Admin-Token': token }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      clearToken();
+      updateAuthView();
+      loginStatusEl.textContent = tr('session_expired');
+      loginStatusEl.className = 'status error';
+      return;
+    }
+    if (!response.ok) {
+      moatStatusEl.textContent = data.error || tr('moat_unavailable');
+      moatStatusEl.className = 'status error';
+      return;
+    }
+    renderMoat(data);
+  } catch {
+    moatStatusEl.textContent = tr('moat_unavailable');
+    moatStatusEl.className = 'status error';
+  }
+}
+
 async function saveAccountAccess() {
   const token = getToken();
   if (!token) return;
@@ -1140,6 +1250,7 @@ async function login() {
   loadAnalytics();
   loadLeads();
   loadAccounts();
+  loadMoat();
 }
 
 async function getDashboardKeys() {
@@ -1218,6 +1329,7 @@ document.getElementById('open-dashboard').onclick = () => window.open('/dashboar
 document.getElementById('refresh-analytics').onclick = loadAnalytics;
 document.getElementById('refresh-leads').onclick = loadLeads;
 document.getElementById('refresh-accounts').onclick = loadAccounts;
+document.getElementById('refresh-moat').onclick = loadMoat;
 document.getElementById('save-account').onclick = saveAccountAccess;
 document.getElementById('logout').onclick = () => { clearToken(); updateAuthView(); };
 updateAuthView();
@@ -1227,6 +1339,7 @@ if (getToken()) {
   loadAnalytics();
   loadLeads();
   loadAccounts();
+  loadMoat();
 }
 </script>
 </body>

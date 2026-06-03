@@ -281,6 +281,62 @@ async function upsertAccount(sb, body) {
   };
 }
 
+async function safeTableRows(sb, table, select, orderColumn, limit = 50) {
+  const { data, error } = await sb
+    .from(table)
+    .select(select)
+    .order(orderColumn, { ascending: false })
+    .limit(limit);
+  if (error) {
+    if (tableMissing(error)) return { configured: false, rows: [] };
+    throw error;
+  }
+  return { configured: true, rows: data || [] };
+}
+
+async function getMoat(sb) {
+  const [intel, registry, wrappers, policies] = await Promise.all([
+    safeTableRows(
+      sb,
+      "cg_threat_intel_reports",
+      "id,report_source,scope,source_name,source_url,event_type,severity,behavior,status,country,created_at",
+      "created_at",
+      50
+    ),
+    safeTableRows(
+      sb,
+      "cg_registry_entries",
+      "id,scope,source_name,source_url,source_owner,creator_verified,trust_score,trust_status,scan_count,clean_scan_count,review_scan_count,blocked_scan_count,user_reports_count,last_scan_status,last_threat_score,last_seen_at,updated_at",
+      "updated_at",
+      50
+    ),
+    safeTableRows(
+      sb,
+      "cg_wrapper_requests",
+      "id,request_source,scope,source_name,source_url,decision,threat_score,threat_families,code_purpose,requested_controls,wrapper_status,contact_email,created_at,updated_at",
+      "created_at",
+      50
+    ),
+    safeTableRows(
+      sb,
+      "cg_runtime_policy_templates",
+      "id,scope,template_name,description,status,created_at,updated_at",
+      "updated_at",
+      50
+    ),
+  ]);
+
+  return {
+    ok: true,
+    configured: intel.configured && registry.configured && wrappers.configured && policies.configured,
+    intel,
+    registry,
+    wrappers,
+    policies,
+    generated_at: new Date().toISOString(),
+  };
+}
+
 module.exports = async function handler(req, res) {
   setCors(req, res);
   if (req.method === "OPTIONS") return res.status(200).end();
@@ -309,6 +365,11 @@ module.exports = async function handler(req, res) {
         return res.status(200).json(result);
       }
       return res.status(200).json(await getAccounts(sb));
+    }
+
+    if (section === "moat") {
+      if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+      return res.status(200).json(await getMoat(sb));
     }
 
     return res.status(404).json({ error: "Unknown admin data section" });

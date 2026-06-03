@@ -563,6 +563,40 @@ footer a:hover { color: var(--cyan); }
   <div class="trust-note" data-i18n="trust_note">Use the result as a security decision aid, not as a replacement for internal review, vendor due diligence, or production approval controls.</div>
 </section>
 
+<section class="trust">
+  <div class="section-lbl" data-i18n="moat_label">Strategic security moat</div>
+  <h2 class="section-title" data-i18n="moat_title">Beyond scanning: a security network for AI tools</h2>
+  <p class="section-sub" data-i18n="moat_sub">Cyber-Guardian is being built as a live trust layer for MCP servers, Skills, IDE extensions and AI supply-chain code. The goal is not only to warn, but to learn, verify, contain and help teams keep working safely.</p>
+  <div class="trust-grid">
+    <div class="trust-card">
+      <div class="trust-k" data-i18n="moat_network_k">Network effect</div>
+      <div class="trust-t" data-i18n="moat_network_t">Threat intelligence web</div>
+      <div class="trust-d" data-i18n="moat_network_d">Future MCP and IDE agents can anonymously report runtime anomalies such as unexpected .env access, network callbacks or blocked permission attempts. These reports build a private zero-day signal network.</div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-k" data-i18n="moat_registry_k">Trust layer</div>
+      <div class="trust-t" data-i18n="moat_registry_t">Trust Score & Registry</div>
+      <div class="trust-d" data-i18n="moat_registry_d">Scanned sources can build a dynamic reputation score from scan history, creator verification, community reports and recent behavior. Historical clean scans are useful signals, never blind trust.</div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-k" data-i18n="moat_fuzzing_k">Active testing</div>
+      <div class="trust-t" data-i18n="moat_fuzzing_t">Sandbox fuzzing profile</div>
+      <div class="trust-d" data-i18n="moat_fuzzing_d">When an isolated runner is connected, scans include a fuzzing profile with honeytokens and attack objectives so the runner can pressure-test tool boundaries, file access, network egress and prompt-injection resistance.</div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-k" data-i18n="moat_wrapper_k">Remediation</div>
+      <div class="trust-t" data-i18n="moat_wrapper_t">Secure Wrapper requests</div>
+      <div class="trust-d" data-i18n="moat_wrapper_d">When a risky tool has no good replacement, Cyber-Guardian can queue a secure wrapper request: a controlled policy layer that blocks unnecessary file, network or shell access before use.</div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-k" data-i18n="moat_firewall_k">Runtime</div>
+      <div class="trust-t" data-i18n="moat_firewall_t">Runtime MCP Firewall foundation</div>
+      <div class="trust-d" data-i18n="moat_firewall_d">The data model is ready for a runtime agent that enforces permissions while developers work: deny risky commands, restrict files, block unexpected hosts and report anomalies back to the intelligence layer.</div>
+    </div>
+  </div>
+  <div class="trust-note" data-i18n="moat_note">Some capabilities require the future local MCP/IDE agent or isolated sandbox runner. The public scanner will not claim runtime protection until those components are connected.</div>
+</section>
+
 <section class="other">
   <div class="section-lbl" data-i18n="other_label">Also scans</div>
   <h2 class="section-title" data-i18n="other_title">Beyond MCP - full coverage</h2>
@@ -1288,6 +1322,47 @@ async function findSaferAlternative() {
   }
 }
 
+function moatVisitorId() {
+  try { return localStorage.getItem('cg-visitor-id') || ''; } catch { return ''; }
+}
+
+async function requestSecureWrapper() {
+  const target = document.getElementById('wrapper-request-results') || document.getElementById('alternative-results');
+  if (!target || !lastScanResult) return;
+  const profile = lastScanResult.code_profile || {};
+  const details = lastScanResult.decision_details || {};
+  const threats = Array.isArray(lastScanResult.threats) ? lastScanResult.threats : [];
+  const families = threats.map(item => item.family).filter(Boolean).slice(0, 12);
+  target.innerHTML = `<div class="alternative-box"><div class="alternative-title">${t('wrapper_request_loading')}</div><div>${t('wrapper_request_loading_desc')}</div></div>`;
+
+  try {
+    const response = await fetch('/api/track-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_name: 'secure_wrapper_requested',
+        page_path: location.pathname,
+        visitor_id: moatVisitorId(),
+        scan_scope: currentScope,
+        metadata: {
+          scope: currentScope,
+          decision: details.decision || lastScanResult.decision || '',
+          threat_score: lastScanResult.threat_score || 0,
+          threat_families: families.join(','),
+          code_purpose: profile.code_purpose || profile.purpose || '',
+          requested_controls: 'deny risky filesystem access, block unexpected network egress, limit shell execution, preserve approved functionality',
+        }
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.wrapper_request_stored === false) throw new Error(data.error || t('wrapper_request_failed'));
+    if (window.cgTrack) window.cgTrack('secure_wrapper_request_confirmed', { scope: currentScope, decision: details.decision || '' });
+    target.innerHTML = `<div class="alternative-box"><div class="alternative-title">${t('wrapper_request_saved_title')}</div><div>${t('wrapper_request_saved_desc')}</div><div class="alternative-meta">${t('wrapper_request_saved_note')}</div></div>`;
+  } catch (err) {
+    target.innerHTML = `<div class="alternative-box"><div class="alternative-title">${t('wrapper_request_failed_title')}</div><div>${escHtml(err.message || t('wrapper_request_failed'))}</div><div class="alternative-actions"><button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_contact_sales')}</button></div></div>`;
+  }
+}
+
 async function verifyAlternativeCandidate() {
   const target = document.getElementById('alternative-verification-status') || document.getElementById('alternative-results');
   const item = lastAlternativeCandidate;
@@ -1457,10 +1532,12 @@ function renderResult(r) {
   html += `<div class="actions">
     <button class="act-btn" onclick="copyReport(${score},'${r.status}',${threats.length})">${t('action_copy')}</button>
     ${scanNeedsAlternative(r) ? `<button class="act-btn" onclick="findSaferAlternative()">${t('action_find_alternative')}</button>` : ''}
+    ${scanNeedsAlternative(r) ? `<button class="act-btn" onclick="requestSecureWrapper()">${t('action_request_wrapper')}</button>` : ''}
     <button class="act-btn" onclick="clearScan()">${t('action_clear')}</button>
     <span class="conf-badge">${t('confidence')}: ${((r.confidence||0)*100).toFixed(0)}%</span>
   </div>
-  <div id="alternative-results"></div>`;
+  <div id="alternative-results"></div>
+  <div id="wrapper-request-results"></div>`;
 
   document.getElementById('results').innerHTML = html;
   setTimeout(() => { const bf = document.getElementById('bfill'); if(bf) bf.style.width = score + '%'; }, 80);

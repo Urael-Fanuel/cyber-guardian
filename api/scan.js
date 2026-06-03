@@ -71,6 +71,7 @@ const CONFIG = {
   DYNAMIC_SANDBOX_MIN_SCORE: Math.max(0, Math.min(100, parseInt(process.env.DYNAMIC_SANDBOX_MIN_SCORE || "0", 10) || 0)),
   DYNAMIC_SANDBOX_SCOPES: (process.env.DYNAMIC_SANDBOX_SCOPES || "mcp,skill,extension,github_action,package,dependency")
     .split(",").map(s => s.trim()).filter(Boolean),
+  DYNAMIC_SANDBOX_FUZZING_ENABLED: boolEnv("DYNAMIC_SANDBOX_FUZZING_ENABLED", true),
 };
 
 const state = {
@@ -147,6 +148,10 @@ function cleanList(value, maxItems = 8) {
     .slice(0, maxItems);
 }
 
+function tableMissing(error) {
+  return /relation .* does not exist|schema cache|Could not find/i.test(error?.message || "");
+}
+
 function normalizeCodeProfile(profile, scope) {
   const source = profile && typeof profile === "object" ? profile : {};
   return {
@@ -193,6 +198,70 @@ async function insertSiteScanWithFallback(sb, row) {
   return true;
 }
 
+function trustScoreFromScan(row) {
+  const score = Math.max(0, Math.min(100, Number(row.threat_score || 0)));
+  if (row.status === "STATUS_SAFE") return Math.max(60, 100 - score);
+  if (row.status === "STATUS_CRITICAL") return Math.max(0, 25 - Math.round(score / 5));
+  return Math.max(20, 70 - Math.round(score / 2));
+}
+
+function trustStatusFromScore(score, row) {
+  if (row.status === "STATUS_CRITICAL" || score < 30) return "blocked_or_high_risk";
+  if (score >= 85) return "observed_low_risk";
+  if (score >= 60) return "needs_context";
+  return "review_required";
+}
+
+async function updateRegistryFromScan(sb, row) {
+  if (!row.source_url) return;
+  const sourceUrl = cleanText(row.source_url, 500);
+  const scanScore = trustScoreFromScan(row);
+
+  const existingResult = await sb
+    .from("cg_registry_entries")
+    .select("id,scan_count,clean_scan_count,review_scan_count,blocked_scan_count,user_reports_count,creator_verified,trust_score")
+    .eq("source_url", sourceUrl)
+    .maybeSingle();
+
+  if (existingResult.error) {
+    if (!tableMissing(existingResult.error)) console.error("[registry-read]", existingResult.error.message);
+    return;
+  }
+
+  const existing = existingResult.data || {};
+  const scanCount = (existing.scan_count || 0) + 1;
+  const cleanScanCount = (existing.clean_scan_count || 0) + (row.status === "STATUS_SAFE" ? 1 : 0);
+  const blockedScanCount = (existing.blocked_scan_count || 0) + (row.status === "STATUS_CRITICAL" ? 1 : 0);
+  const reviewScanCount = (existing.review_scan_count || 0) + (!["STATUS_SAFE", "STATUS_CRITICAL"].includes(row.status) ? 1 : 0);
+  const historyPenalty = Math.min(35, blockedScanCount * 12 + reviewScanCount * 3);
+  const creatorBoost = existing.creator_verified ? 8 : 0;
+  const trustScore = Math.max(0, Math.min(100, Math.round(((existing.trust_score || scanScore) + scanScore) / 2 + creatorBoost - historyPenalty)));
+
+  const payload = {
+    scope: row.scope,
+    source_name: row.source_name || sourceUrl,
+    source_url: sourceUrl,
+    source_owner: row.source_owner || null,
+    trust_score: trustScore,
+    trust_status: trustStatusFromScore(trustScore, row),
+    scan_count: scanCount,
+    clean_scan_count: cleanScanCount,
+    review_scan_count: reviewScanCount,
+    blocked_scan_count: blockedScanCount,
+    user_reports_count: existing.user_reports_count || 0,
+    last_scan_status: row.status,
+    last_threat_score: row.threat_score || 0,
+    last_seen_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = await sb
+    .from("cg_registry_entries")
+    .upsert(payload, { onConflict: "source_url" });
+
+  if (error && !tableMissing(error)) console.error("[registry-upsert]", error.message);
+}
+
 async function saveSiteScan(scope, result, context = {}) {
   const sb = getSupabase();
   if (!sb || !result?.status) return false;
@@ -213,7 +282,9 @@ async function saveSiteScan(scope, result, context = {}) {
     ...profile,
   };
 
-  return insertSiteScanWithFallback(sb, row);
+  const inserted = await insertSiteScanWithFallback(sb, row);
+  if (inserted) await updateRegistryFromScan(sb, row);
+  return inserted;
 }
 
 function checkRateLimit(ip) {
@@ -1094,6 +1165,15 @@ function normalizeDynamicSandboxEvidence(value) {
     signals: cleanDisplayList(value.signals, 10),
     report_url: cleanText(value.report_url || "", 500),
     submitted_at: cleanText(value.submitted_at || "", 48),
+    fuzzing_profile: value.fuzzing_profile && typeof value.fuzzing_profile === "object"
+      ? {
+          enabled: Boolean(value.fuzzing_profile.enabled),
+          mode: cleanText(value.fuzzing_profile.mode || "autonomous_ai_fuzzing", 80),
+          objectives: cleanDisplayList(value.fuzzing_profile.objectives, 8),
+          threat_focus: cleanDisplayList(value.fuzzing_profile.threat_focus, 8),
+          required_evidence: cleanDisplayList(value.fuzzing_profile.required_evidence, 8),
+        }
+      : {},
   };
 }
 
@@ -1111,6 +1191,35 @@ function sandboxEvidence(status, overrides = {}) {
     submitted_at: new Date().toISOString(),
     ...overrides,
   });
+}
+
+function sandboxFuzzingProfile(scope, result) {
+  const threats = Array.isArray(result?.threats) ? result.threats.slice(0, 8).map(threat => threat.family).filter(Boolean) : [];
+  return {
+    enabled: CONFIG.DYNAMIC_SANDBOX_FUZZING_ENABLED,
+    mode: "autonomous_ai_fuzzing",
+    scope,
+    objectives: [
+      "attempt_prompt_injection_resistance",
+      "pressure_test_tool_permission_boundaries",
+      "probe_secret_and_env_access",
+      "probe_network_and_file_exfiltration",
+      "verify_no_unexpected_command_execution",
+    ],
+    honeytokens: [
+      "CG_FAKE_API_KEY_DO_NOT_EXFILTRATE",
+      "CG_FAKE_ENV_SECRET_DO_NOT_READ",
+      "CG_FAKE_CUSTOMER_TOKEN_DO_NOT_SEND",
+    ],
+    threat_focus: threats,
+    required_evidence: [
+      "filesystem_access_attempts",
+      "network_destinations",
+      "process_or_shell_execution",
+      "prompt_or_tool_boundary_breaks",
+      "secret_access_or_exfiltration_attempts",
+    ],
+  };
 }
 
 async function runDynamicSandbox(scope, code, result, codeHash) {
@@ -1154,6 +1263,7 @@ async function runDynamicSandbox(scope, code, result, codeHash) {
         static_status: result?.status || "STATUS_AMBIGUOUS",
         static_threat_score: result?.threat_score || 0,
         static_threats: Array.isArray(result?.threats) ? result.threats.slice(0, 10) : [],
+        fuzzing_profile: sandboxFuzzingProfile(scope, result),
       }),
     });
     clearTimeout(timeoutId);
@@ -1181,6 +1291,7 @@ async function runDynamicSandbox(scope, code, result, codeHash) {
       signals: data.signals || data.behavior_signals || data.findings || [],
       report_url: data.report_url || data.reportUrl || data.url || "",
       submitted_at: data.submitted_at || submittedAt,
+      fuzzing_profile: data.fuzzing_profile || sandboxFuzzingProfile(scope, result),
     });
   } catch (err) {
     clearTimeout(timeoutId);

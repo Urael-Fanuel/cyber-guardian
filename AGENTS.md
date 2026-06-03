@@ -76,3 +76,27 @@ Long-term behavior:
 
 This feature should be treated as a premium business value: companies do not
 only want warnings; they want a safe replacement path.
+
+## Strategic Moat Roadmap
+
+Remember this strategic direction: Cyber-Guardian should become more than a
+scanner. It should become a defensible trust network for MCPs, AI Skills, IDE
+extensions, GitHub Actions, packages, and dependencies.
+
+Prioritized moat pillars:
+
+- decentralized threat intelligence web: future MCP/IDE agents report
+  anonymized runtime anomalies such as unexpected `.env` access, network
+  callbacks, blocked permission attempts, and suspicious shell execution
+- Trust Score & Registry: scanned sources build dynamic reputation from scan
+  history, creator verification, recent behavior, and community reports
+- autonomous sandbox fuzzing: when an isolated runner is connected, scan
+  payloads include honeytokens and attack objectives for active boundary tests
+- Secure Wrapper workflow: when there is no clean alternative, queue a wrapper
+  request that can generate a controlled policy layer around the risky tool
+- Runtime MCP Firewall: future local agent should enforce permissions during
+  live use, then report policy blocks back into threat intelligence
+
+Do not overclaim these features publicly. Show them as active foundations,
+beta workflows, or future agent capabilities unless the local agent/runner is
+actually connected and verified.
