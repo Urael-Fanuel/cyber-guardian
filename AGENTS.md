@@ -100,3 +100,20 @@ Prioritized moat pillars:
 Do not overclaim these features publicly. Show them as active foundations,
 beta workflows, or future agent capabilities unless the local agent/runner is
 actually connected and verified.
+
+## Paid Launch Runtime Security Priority
+
+Remember this as a high-priority product decision: as soon as Cyber-Guardian
+starts rolling out payment collection, paid plans, credits, or commercial
+packages, immediately prioritize implementation of:
+
+- a real isolated sandbox runner for dynamic execution and fuzzing
+- Runtime MCP Firewall / local runtime agent enforcement
+- file-system integrity monitoring during sandbox runs
+- dynamic library/native payload load monitoring
+- network/DNS/process/shell telemetry from the runner
+- customer-facing evidence reports that explain what happened during runtime
+
+This is not optional polish. It is part of making Cyber-Guardian credible for
+businesses, SaaS companies, security teams, and enterprise buyers. Keep public
+claims honest until these components are actually connected and verified.
