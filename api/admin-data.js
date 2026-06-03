@@ -367,7 +367,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json(await getAccounts(sb));
     }
 
-    if (section === "moat") {
+    if (section === "moat" || section === "integrity") {
       if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
       return res.status(200).json(await getMoat(sb));
     }

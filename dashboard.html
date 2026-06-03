@@ -903,7 +903,7 @@ const DECISION_EXTRA_COPY = {
     no_alternatives: 'No reliable similar alternative is available yet. Rescan later as the database grows.',
     open_source: 'Open source',
     sandbox_evidence: 'Dynamic sandbox evidence',
-    sandbox_provider: 'Sandbox provider',
+    sandbox_provider: 'Review source',
     sandbox_status_completed: 'completed',
     sandbox_status_queued: 'queued',
     sandbox_status_submitted: 'submitted',
@@ -1296,9 +1296,9 @@ function sandboxEvidenceHtml(scan) {
     sandbox.verdict && sandbox.verdict !== 'unknown' ? sandbox.verdict : '',
   ].filter(Boolean).join(' · ');
   return `<div class="sandbox-evidence ${cls}">
-    <div class="sandbox-evidence-title">${escapeHtml(decisionText('sandbox_evidence', 'Dynamic sandbox evidence'))}</div>
+    <div class="sandbox-evidence-title">${escapeHtml(decisionText('sandbox_evidence', 'Additional review evidence'))}</div>
     ${sandbox.summary ? `<div>${escapeHtml(sandbox.summary)}</div>` : ''}
-    <div class="sandbox-evidence-meta">${escapeHtml(bits)}${bits ? ' · ' : ''}${escapeHtml(decisionText('sandbox_provider', 'Sandbox provider'))}: ${escapeHtml(sandbox.provider || 'external-isolated-runner')}</div>
+    ${bits ? `<div class="sandbox-evidence-meta">${escapeHtml(bits)}</div>` : ''}
   </div>`;
 }
 
