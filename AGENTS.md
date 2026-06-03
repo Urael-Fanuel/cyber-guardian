@@ -50,3 +50,24 @@ Examples:
 The goal is not to lock the product to one model. The long-term architecture
 should support multiple scan modules and model providers, with clear routing
 logic, cost control, and auditability.
+
+## Future Paid Alternative Discovery
+
+Remember this product direction: when a scan returns "do not install",
+"fix before use", or another warning, the product should eventually offer a
+paid "Find a safer alternative" workflow.
+
+Long-term behavior:
+
+- search the existing Supabase scan history for similar lower-risk code first
+- if no reliable match exists, use external discovery systems such as Apify,
+  repository search, package registries, and other vetted sources
+- scan candidate alternatives before recommending them
+- show one strong recommended alternative, not a confusing list
+- make it clear that alternatives still require review and rescanning
+- support paid team/company/enterprise plans and monthly credits
+- consider future partnerships with authors who publish clean, reviewed MCPs,
+  Skills, IDE extensions, packages, and workflows
+
+This feature should be treated as a premium business value: companies do not
+only want warnings; they want a safe replacement path.

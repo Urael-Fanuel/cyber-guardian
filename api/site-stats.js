@@ -25,6 +25,14 @@ function setCors(req, res) {
   res.setHeader('Content-Type', 'application/json');
 }
 
+function getUrl(req) {
+  try {
+    return new URL(req.url, 'https://cyberguardianscan.com');
+  } catch {
+    return new URL('https://cyberguardianscan.com/api/site-stats');
+  }
+}
+
 function rejectDisallowedOrigin(req, res) {
   if (isAllowedOrigin(getOrigin(req))) return false;
   res.status(403).json({ error: 'Origin not allowed' });
@@ -79,6 +87,14 @@ function alternativeScopeKey(scope) {
 
 function arrayValue(value) {
   return Array.isArray(value) ? value.filter(Boolean) : [];
+}
+
+function listParam(url, name) {
+  return String(url.searchParams.get(name) || '')
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+    .slice(0, 12);
 }
 
 const TAG_STOP_WORDS = new Set([
@@ -189,6 +205,8 @@ module.exports = async function handler(req, res) {
   if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Not configured' });
 
   try {
+    const url = getUrl(req);
+    const mode = String(url.searchParams.get('mode') || 'stats').trim().toLowerCase();
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
     const enrichedSelect = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags';
     let { data: scans, error } = await sb
@@ -219,12 +237,35 @@ module.exports = async function handler(req, res) {
     if (error) throw error;
 
     if (!scans || scans.length === 0) {
+      if (mode === 'alternatives') {
+        return res.status(200).json({ alternatives: [], source: 'site_scans', status: 'empty' });
+      }
       return res.status(200).json({
         total: 0, safe: 0, moderate: 0, critical: 0,
         review: 0, blocked: 0,
         detection_rate: 0, attention_rate: 0, blocked_rate: 0, avg_threat_score: 0,
         by_scope: { mcp: 0, skill: 0, extension: 0, supply_chain: 0 },
         recent: [], trend: []
+      });
+    }
+
+    if (mode === 'alternatives') {
+      const virtualScan = {
+        scope: url.searchParams.get('scope') || 'mcp',
+        status: 'STATUS_CRITICAL',
+        threat_score: 100,
+        threat_count: 1,
+        threats_summary: url.searchParams.get('threats') || '',
+        source_url: url.searchParams.get('source_url') || '',
+        code_purpose: url.searchParams.get('purpose') || '',
+        component_type: url.searchParams.get('component_type') || '',
+        capabilities: listParam(url, 'capabilities'),
+        use_case_tags: listParam(url, 'tags'),
+      };
+      return res.status(200).json({
+        alternatives: saferAlternatives(virtualScan, scans).slice(0, 1),
+        source: 'site_scans',
+        status: 'ok',
       });
     }
 

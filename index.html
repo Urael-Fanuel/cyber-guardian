@@ -230,6 +230,11 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .sp-item { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: var(--green); background: var(--green-dim); border: 1px solid rgba(0,230,118,0.2); padding: 4px 10px; border-radius: 2px; margin: 3px; }
 .rec-box { margin: 0 24px 16px; padding: 12px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; font-size: 11.5px; line-height: 1.6; }
 .rec-label { font-size: 9px; letter-spacing: 2px; color: var(--cyan); margin-bottom: 5px; }
+.alternative-box { margin: 0 24px 16px; padding: 14px 16px; background: rgba(0,230,118,0.04); border: 1px solid rgba(0,230,118,0.22); border-radius: 3px; font-size: 11.5px; line-height: 1.7; }
+.alternative-title { font-family: var(--sans); font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 5px; }
+.alternative-meta { color: var(--text-dim); margin-top: 5px; }
+.alternative-link { display: inline-block; margin-top: 8px; color: var(--green); text-decoration: none; border: 1px solid rgba(0,230,118,0.24); padding: 5px 9px; border-radius: 2px; }
+.alternative-link:hover { color: #fff; border-color: var(--green); }
 .sandbox-box { margin: 0 24px 16px; padding: 13px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; font-size: 11.5px; line-height: 1.6; }
 .sandbox-box.completed.clean { border-color: rgba(0,230,118,0.34); background: rgba(0,230,118,0.05); }
 .sandbox-box.completed.risky { border-color: rgba(255,189,46,0.38); background: rgba(255,189,46,0.06); }
@@ -939,6 +944,7 @@ async function accountSignOut() {
 
 // Scope pill switching
 let currentScope = 'mcp';
+let lastScanResult = null;
 function inputLengthBucket(length) {
   if (length < 500) return 'under_500';
   if (length < 2000) return '500_1999';
@@ -1174,6 +1180,66 @@ function renderDecisionDetails(r) {
   </div>`;
 }
 
+function scanNeedsAlternative(r) {
+  const decision = r?.decision_details?.decision || r?.decision || '';
+  return r?.status !== 'STATUS_SAFE' && !['install_ok', 'safe'].includes(decision);
+}
+
+function alternativeQuery(r) {
+  const profile = r?.code_profile || {};
+  const tags = Array.isArray(profile.use_case_tags) ? profile.use_case_tags : [];
+  const capabilities = Array.isArray(profile.capabilities) ? profile.capabilities : [];
+  const threats = Array.isArray(r?.threats) ? r.threats.map(t => t.family).filter(Boolean) : [];
+  const params = new URLSearchParams({
+    mode: 'alternatives',
+    scope: currentScope,
+    purpose: String(profile.purpose || '').slice(0, 260),
+    component_type: String(profile.component_type || currentScope).slice(0, 80),
+    tags: tags.join(','),
+    capabilities: capabilities.join(','),
+    threats: threats.join(','),
+  });
+  return `/api/site-stats?${params.toString()}`;
+}
+
+function renderAlternativeResult(item) {
+  const sourceUrl = /^https?:\/\//i.test(String(item?.source_url || '')) ? item.source_url : '';
+  const label = item?.source_name || item?.code_purpose || t('alternative_generic_name');
+  const caps = Array.isArray(item?.capabilities) ? item.capabilities.filter(Boolean).slice(0, 4) : [];
+  return `<div class="alternative-box">
+    <div class="alternative-title">${t('alternative_found_title')}</div>
+    <div>${escHtml(label)}</div>
+    ${item?.code_purpose ? `<div class="alternative-meta">${escHtml(item.code_purpose)}</div>` : ''}
+    <div class="alternative-meta">${t('alternative_score_label')}: ${Number(item?.threat_score || 0)}/100${caps.length ? ` · ${caps.map(escHtml).join(' · ')}` : ''}</div>
+    ${sourceUrl ? `<a class="alternative-link" href="${escHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${t('alternative_open_source')}</a>` : ''}
+    <div class="alternative-meta">${t('alternative_verify_note')}</div>
+  </div>`;
+}
+
+function renderAlternativePaidCta() {
+  return `<div class="alternative-box">
+    <div class="alternative-title">${t('alternative_paid_title')}</div>
+    <div>${t('alternative_paid_desc')}</div>
+    <div class="alternative-meta">${t('alternative_paid_note')}</div>
+    <button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_contact_sales')}</button>
+  </div>`;
+}
+
+async function findSaferAlternative() {
+  const target = document.getElementById('alternative-results');
+  if (!target || !lastScanResult) return;
+  if (window.cgTrack) window.cgTrack('safer_alternative_clicked', { scope: currentScope, decision: lastScanResult.decision || '' });
+  target.innerHTML = `<div class="alternative-box"><div class="alternative-title">${t('alternative_loading')}</div><div>${t('alternative_loading_desc')}</div></div>`;
+  try {
+    const response = await fetch(alternativeQuery(lastScanResult));
+    const data = await response.json().catch(() => ({}));
+    const item = Array.isArray(data.alternatives) ? data.alternatives[0] : null;
+    target.innerHTML = item ? renderAlternativeResult(item) : renderAlternativePaidCta();
+  } catch {
+    target.innerHTML = renderAlternativePaidCta();
+  }
+}
+
 function threatFixText(tt, details) {
   const suggestions = Array.isArray(details?.fix_suggestions) ? details.fix_suggestions : [];
   const family = String(tt.family || '').toUpperCase();
@@ -1182,6 +1248,7 @@ function threatFixText(tt, details) {
 }
 
 function renderResult(r) {
+  lastScanResult = r;
   const statusMap = {
     STATUS_SAFE:      { cls:'safe',  icon:'✅', title:t('verdict_safe_title'), sub:t('verdict_safe_sub') },
     STATUS_MODERATE:  { cls:'mod',   icon:'⚠️', title:t('verdict_mod_title'),  sub:t('verdict_mod_sub') },
@@ -1284,9 +1351,11 @@ function renderResult(r) {
 
   html += `<div class="actions">
     <button class="act-btn" onclick="copyReport(${score},'${r.status}',${threats.length})">${t('action_copy')}</button>
+    ${scanNeedsAlternative(r) ? `<button class="act-btn" onclick="findSaferAlternative()">${t('action_find_alternative')}</button>` : ''}
     <button class="act-btn" onclick="clearScan()">${t('action_clear')}</button>
     <span class="conf-badge">${t('confidence')}: ${((r.confidence||0)*100).toFixed(0)}%</span>
-  </div>`;
+  </div>
+  <div id="alternative-results"></div>`;
 
   document.getElementById('results').innerHTML = html;
   setTimeout(() => { const bf = document.getElementById('bfill'); if(bf) bf.style.width = score + '%'; }, 80);
@@ -1303,6 +1372,7 @@ function copyReport(score, status, count) {
 }
 
 function clearScan() {
+  lastScanResult = null;
   document.getElementById('code-input').value = '';
   document.getElementById('results').style.display = 'none';
   document.getElementById('scan-btn').innerHTML = '▶ &nbsp;<span>' + t('btn_scan') + '</span>';

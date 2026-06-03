@@ -2164,6 +2164,111 @@ Object.entries(DECISION_GUIDANCE_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SAFER_ALTERNATIVE_COPY = {
+  en: {
+    action_find_alternative: "Find a safer alternative",
+    alternative_loading: "Searching for a safer alternative",
+    alternative_loading_desc: "Checking similar lower-risk scans already stored in Cyber-Guardian.",
+    alternative_found_title: "One safer candidate found",
+    alternative_generic_name: "Lower-risk scanned source",
+    alternative_score_label: "Risk score",
+    alternative_open_source: "Open source",
+    alternative_verify_note: "This is not an automatic approval. Review the source and rescan before installing.",
+    alternative_paid_title: "No reliable alternative is ready yet",
+    alternative_paid_desc: "For teams and organizations, Cyber-Guardian can run a deeper paid alternative search using external discovery sources such as Apify, repository scanning, and additional security review.",
+    alternative_paid_note: "This is designed for businesses that need a clean replacement, not only a warning.",
+    alternative_contact_sales: "Request paid alternative search"
+  },
+  he: {
+    action_find_alternative: "מצא לי חלופה בטוחה יותר",
+    alternative_loading: "מחפש חלופה בטוחה יותר",
+    alternative_loading_desc: "בודק סריקות דומות בסיכון נמוך יותר שכבר שמורות ב-Cyber-Guardian.",
+    alternative_found_title: "נמצאה חלופה אחת בסיכון נמוך יותר",
+    alternative_generic_name: "מקור שנסרק בסיכון נמוך יותר",
+    alternative_score_label: "ציון סיכון",
+    alternative_open_source: "פתח מקור",
+    alternative_verify_note: "זו לא הבטחת התקנה אוטומטית. צריך לבדוק את המקור ולסרוק שוב לפני התקנה.",
+    alternative_paid_title: "עדיין אין חלופה אמינה מוכנה",
+    alternative_paid_desc: "לצוותים וארגונים, Cyber-Guardian יכול לבצע חיפוש חלופה בתשלום בעזרת מקורות חיצוניים כמו Apify, סריקת repositories ובדיקת אבטחה נוספת.",
+    alternative_paid_note: "זה מיועד לעסקים שצריכים תחליף נקי, לא רק אזהרה.",
+    alternative_contact_sales: "בקש חיפוש חלופה בתשלום"
+  },
+  de: {
+    action_find_alternative: "Sicherere Alternative finden",
+    alternative_loading: "Suche nach sichererer Alternative",
+    alternative_loading_desc: "Prueft aehnliche risikoaermere Scans in Cyber-Guardian.",
+    alternative_found_title: "Ein sichererer Kandidat gefunden",
+    alternative_generic_name: "Risikoaermer gescannte Quelle",
+    alternative_score_label: "Risikowert",
+    alternative_open_source: "Quelle oeffnen",
+    alternative_verify_note: "Keine automatische Freigabe. Quelle pruefen und vor Installation erneut scannen.",
+    alternative_paid_title: "Noch keine verlaessliche Alternative bereit",
+    alternative_paid_desc: "Fuer Teams und Organisationen kann Cyber-Guardian eine tiefere bezahlte Alternativsuche mit externen Quellen wie Apify, Repository-Scanning und weiterer Security Review ausfuehren.",
+    alternative_paid_note: "Gedacht fuer Unternehmen, die einen sauberen Ersatz brauchen, nicht nur eine Warnung.",
+    alternative_contact_sales: "Bezahlte Alternativsuche anfragen"
+  },
+  ja: {
+    action_find_alternative: "より安全な代替を探す",
+    alternative_loading: "より安全な代替を検索中",
+    alternative_loading_desc: "Cyber-Guardianに保存済みの低リスク類似スキャンを確認しています。",
+    alternative_found_title: "低リスク候補が1件見つかりました",
+    alternative_generic_name: "低リスクでスキャン済みのソース",
+    alternative_score_label: "リスクスコア",
+    alternative_open_source: "ソースを開く",
+    alternative_verify_note: "これは自動承認ではありません。インストール前にソースを確認し再スキャンしてください。",
+    alternative_paid_title: "信頼できる代替はまだありません",
+    alternative_paid_desc: "チームや組織向けに、Cyber-GuardianはApify、リポジトリ検索、追加セキュリティレビューを使った有料の代替検索を実行できます。",
+    alternative_paid_note: "単なる警告ではなく、クリーンな置き換えが必要な企業向けです。",
+    alternative_contact_sales: "有料代替検索を依頼"
+  },
+  ko: {
+    action_find_alternative: "더 안전한 대안 찾기",
+    alternative_loading: "더 안전한 대안 검색 중",
+    alternative_loading_desc: "Cyber-Guardian에 저장된 유사한 저위험 스캔을 확인합니다.",
+    alternative_found_title: "더 안전한 후보 1개 발견",
+    alternative_generic_name: "저위험으로 스캔된 소스",
+    alternative_score_label: "위험 점수",
+    alternative_open_source: "소스 열기",
+    alternative_verify_note: "자동 승인 아닙니다. 설치 전 소스를 검토하고 다시 스캔하세요.",
+    alternative_paid_title: "아직 신뢰할 대안이 준비되지 않았습니다",
+    alternative_paid_desc: "팀과 조직은 Apify, repository scanning, 추가 보안 검토를 활용한 유료 대안 검색을 요청할 수 있습니다.",
+    alternative_paid_note: "경고만이 아니라 깨끗한 대체 코드가 필요한 기업을 위한 기능입니다.",
+    alternative_contact_sales: "유료 대안 검색 요청"
+  },
+  fr: {
+    action_find_alternative: "Trouver une alternative plus sure",
+    alternative_loading: "Recherche d'une alternative plus sure",
+    alternative_loading_desc: "Verification des scans similaires a risque plus faible deja stockes dans Cyber-Guardian.",
+    alternative_found_title: "Un candidat plus sur trouve",
+    alternative_generic_name: "Source scannee a risque plus faible",
+    alternative_score_label: "Score de risque",
+    alternative_open_source: "Ouvrir la source",
+    alternative_verify_note: "Ce n'est pas une approbation automatique. Verifiez la source et rescanez avant installation.",
+    alternative_paid_title: "Aucune alternative fiable n'est encore prete",
+    alternative_paid_desc: "Pour equipes et organisations, Cyber-Guardian peut lancer une recherche payante plus profonde avec Apify, scan de repositories et revue securite additionnelle.",
+    alternative_paid_note: "C'est concu pour les entreprises qui ont besoin d'un remplacement propre, pas seulement d'une alerte.",
+    alternative_contact_sales: "Demander une recherche payante"
+  },
+  pt: {
+    action_find_alternative: "Encontrar alternativa mais segura",
+    alternative_loading: "Procurando alternativa mais segura",
+    alternative_loading_desc: "Verificando scans semelhantes de menor risco ja salvos no Cyber-Guardian.",
+    alternative_found_title: "Um candidato mais seguro encontrado",
+    alternative_generic_name: "Fonte escaneada de menor risco",
+    alternative_score_label: "Pontuacao de risco",
+    alternative_open_source: "Abrir fonte",
+    alternative_verify_note: "Isso nao e aprovacao automatica. Revise a fonte e escaneie novamente antes de instalar.",
+    alternative_paid_title: "Nenhuma alternativa confiavel pronta ainda",
+    alternative_paid_desc: "Para equipes e organizacoes, o Cyber-Guardian pode executar uma busca paga mais profunda usando fontes externas como Apify, varredura de repositorios e revisao adicional.",
+    alternative_paid_note: "Pensado para empresas que precisam de substituto limpo, nao apenas um alerta.",
+    alternative_contact_sales: "Solicitar busca paga"
+  }
+};
+
+Object.entries(SAFER_ALTERNATIVE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const LANGS = {
   en: { name: "English",    flag: "🇺🇸", dir: "ltr" },
   de: { name: "Deutsch",    flag: "🇩🇪", dir: "ltr" },
