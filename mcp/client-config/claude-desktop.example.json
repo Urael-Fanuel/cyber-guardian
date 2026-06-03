@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "cyber-guardian": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/cyber-guardian/mcp/cyberguardian-mcp-server.mjs"
+      ],
+      "env": {
+        "CG_SCAN_API_URL": "https://cyberguardianscan.com/api/scan",
+        "CG_OUTPUT_LANGUAGE": "en"
+      }
+    }
+  }
+}

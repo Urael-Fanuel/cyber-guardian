@@ -29,6 +29,7 @@ It checks 60 canonical threat families before a user decides whether to install 
 | Database | Supabase |
 | Rate limits | Supabase RPC plus server fallback |
 | Batch scanner | Python scanner for GitHub, npm, MCP directories, Skills, and IDE extensions |
+| MCP integration | Local stdio MCP server in `mcp/cyberguardian-mcp-server.mjs` |
 
 ## Production Security Controls
 
@@ -55,6 +56,25 @@ npm test
 npm run check
 python -m py_compile mcp_scanner.py
 ```
+
+## Cyber-Guardian MCP Server
+
+The repository includes a local stdio MCP server that lets MCP-capable clients call Cyber-Guardian scans from inside a developer workflow.
+
+Run it locally:
+
+```bash
+npm run mcp:stdio
+```
+
+It exposes:
+
+- `scan_code` - scan MCP server, AI Skill, IDE extension, GitHub Action, package, or dependency code.
+- `service_info` - return supported scopes, limits, and integration notes.
+
+Configuration examples for Claude Desktop and Cursor are in `mcp/client-config/`.
+
+Remote MCP support for ChatGPT or Claude cloud connectors should be deployed as a separate HTTPS MCP service with OAuth/customer authentication. See `mcp/REMOTE_MCP_PLAN.md`.
 
 ## Batch Scan Defaults
 

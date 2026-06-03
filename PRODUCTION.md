@@ -210,6 +210,31 @@ with purpose, capabilities, source metadata, and use-case tags. These fields pow
 the dashboard explanation of what each scanned component does and enable similar
 lower-risk recommendations.
 
+## MCP Integration
+
+The repository includes a local stdio MCP server at
+`mcp/cyberguardian-mcp-server.mjs`.
+
+Run locally:
+
+```bash
+npm run mcp:stdio
+```
+
+This local MCP server calls the existing `/api/scan` endpoint and exposes:
+
+- `scan_code`
+- `service_info`
+
+Keep `CG_ADMIN_BYPASS_SECRET` owner-only. Customer usage should move to account
+tokens/API keys, not the admin bypass secret.
+
+Remote MCP for ChatGPT apps/connectors, Claude cloud connectors, and enterprise
+SaaS embedding should be deployed as a separate HTTPS service with OAuth or
+customer API keys. Do not add it as another Serverless Function to the current
+Hobby deployment because this project has already hit the Vercel Hobby function
+limit. See `mcp/REMOTE_MCP_PLAN.md`.
+
 ## Editing Public Text
 
 Open `/content-admin.html`, paste the same `CG_ADMIN_BYPASS_SECRET`, choose the
