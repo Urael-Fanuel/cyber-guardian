@@ -41,6 +41,10 @@ Every normalized scan response includes:
 - `remediation_plan`: prioritized fix categories that help a developer understand
   what to change before rescanning.
 
+When `supabase/migrations/011_scan_evidence.sql` has been applied, each finding
+is also persisted to `cg_scan_evidence` with its scan run id, family, severity,
+confidence, code location, simple explanation, and remediation guidance.
+
 ## Evidence and Decisions
 
 The production response is intentionally public-safe. It summarizes what was found,

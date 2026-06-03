@@ -172,12 +172,13 @@ async function insertSiteScanWithFallback(sb, row) {
     return false;
   }
 
-  if (Object.prototype.hasOwnProperty.call(row, "dynamic_sandbox")) {
+  if (Object.prototype.hasOwnProperty.call(row, "dynamic_sandbox") || Object.prototype.hasOwnProperty.call(row, "scan_run_id")) {
     const enrichedRow = { ...row };
     delete enrichedRow.dynamic_sandbox;
+    delete enrichedRow.scan_run_id;
     const enrichedRetry = await sb.from("site_scans").insert(enrichedRow);
     if (!enrichedRetry.error) {
-      console.warn("[site-scan-save] saved enriched row without dynamic_sandbox; run supabase/migrations/007_dynamic_sandbox.sql");
+      console.warn("[site-scan-save] saved enriched row without newest metadata; run latest Supabase migrations");
       return true;
     }
   }
@@ -195,6 +196,52 @@ async function insertSiteScanWithFallback(sb, row) {
     return false;
   }
   console.warn("[site-scan-save] saved legacy row; run supabase/migrations/005_site_scan_intelligence.sql for enriched metadata");
+  return true;
+}
+
+function evidenceRowsForScan(row, result) {
+  const evidenceItems = Array.isArray(result?.evidence_report) ? result.evidence_report : [];
+  if (!evidenceItems.length) return [];
+
+  const decision = result?.decision_details || {};
+  return evidenceItems.slice(0, 25).map((item, index) => {
+    const confidence = Number(item.confidence || 0);
+    return {
+      scan_run_id: row.scan_run_id,
+      scope: row.scope,
+      status: row.status,
+      decision: cleanText(result?.decision || decision.decision || "", 64),
+      risk_type: cleanText(decision.risk_type || "", 64),
+      source_name: cleanText(row.source_name || "", 160),
+      source_url: cleanText(row.source_url || "", 500),
+      source_owner: cleanText(row.source_owner || "", 120),
+      code_hash: cleanText(row.code_hash || "", 80),
+      code_purpose: cleanText(row.code_purpose || "", 280),
+      component_type: cleanText(row.component_type || row.scope || "", 48),
+      evidence_id: cleanText(item.id || `evidence_${index + 1}`, 80),
+      family: cleanText(item.family || "UNCLASSIFIED", 80),
+      severity: cleanText(item.severity || "MEDIUM", 20).toUpperCase() || "MEDIUM",
+      confidence: Number.isFinite(confidence) ? Math.max(0, Math.min(1, confidence)) : 0,
+      evidence: cleanText(item.evidence || "", 500),
+      line_hint: cleanText(item.location || item.line_hint || "", 500),
+      plain_explanation: cleanText(item.plain_explanation || "", 500),
+      impact_key: cleanText(item.impact_key || "", 80),
+      user_impact: cleanText(item.user_impact || "", 500),
+      fix_key: cleanText(item.fix_key || "", 80),
+      fix_guidance: cleanText(item.fix || "", 500),
+    };
+  });
+}
+
+async function saveScanEvidence(sb, row, result) {
+  const rows = evidenceRowsForScan(row, result);
+  if (!rows.length) return true;
+
+  const { error } = await sb.from("cg_scan_evidence").insert(rows);
+  if (error) {
+    if (!tableMissing(error)) console.error("[scan-evidence-save]", error.message);
+    return false;
+  }
   return true;
 }
 
@@ -268,7 +315,9 @@ async function saveSiteScan(scope, result, context = {}) {
 
   const threats = Array.isArray(result.threats) ? result.threats : [];
   const profile = normalizeCodeProfile(result.code_profile, scope);
+  const scanRunId = cleanText(context.scan_run_id || (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex")), 80);
   const row = {
+    scan_run_id: scanRunId,
     scope,
     status: result.status,
     threat_score: result.threat_score || 0,
@@ -283,7 +332,10 @@ async function saveSiteScan(scope, result, context = {}) {
   };
 
   const inserted = await insertSiteScanWithFallback(sb, row);
-  if (inserted) await updateRegistryFromScan(sb, row);
+  if (inserted) {
+    await saveScanEvidence(sb, row, result);
+    await updateRegistryFromScan(sb, row);
+  }
   return inserted;
 }
 
