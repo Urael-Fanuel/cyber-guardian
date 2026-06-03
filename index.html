@@ -1207,11 +1207,13 @@ function renderAlternativeResult(item) {
   const label = item?.source_name || item?.code_purpose || t('alternative_generic_name');
   const caps = Array.isArray(item?.capabilities) ? item.capabilities.filter(Boolean).slice(0, 4) : [];
   return `<div class="alternative-box">
-    <div class="alternative-title">${t('alternative_found_title')}</div>
+    <div class="alternative-title">${t('alternative_candidate_title')}</div>
     <div>${escHtml(label)}</div>
     ${item?.code_purpose ? `<div class="alternative-meta">${escHtml(item.code_purpose)}</div>` : ''}
     <div class="alternative-meta">${t('alternative_score_label')}: ${Number(item?.threat_score || 0)}/100${caps.length ? ` · ${caps.map(escHtml).join(' · ')}` : ''}</div>
+    <div class="alternative-meta"><strong>${t('alternative_rescan_required_title')}</strong> ${t('alternative_rescan_required_desc')}</div>
     ${sourceUrl ? `<a class="alternative-link" href="${escHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${t('alternative_open_source')}</a>` : ''}
+    <button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_request_verification')}</button>
     <div class="alternative-meta">${t('alternative_verify_note')}</div>
   </div>`;
 }

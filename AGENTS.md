@@ -63,6 +63,11 @@ Long-term behavior:
 - if no reliable match exists, use external discovery systems such as Apify,
   repository search, package registries, and other vetted sources
 - scan candidate alternatives before recommending them
+- never recommend an alternative solely because it was clean in a historical
+  scan; historical scans are candidates only
+- before showing an alternative as safe, fetch the current source and rescan it
+  because attackers may publish clean code first and later replace it with
+  malicious behavior
 - show one strong recommended alternative, not a confusing list
 - make it clear that alternatives still require review and rescanning
 - support paid team/company/enterprise plans and monthly credits

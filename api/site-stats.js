@@ -191,6 +191,8 @@ function saferAlternatives(scan, scans) {
     decision: classifyScan(candidate),
     threat_score: candidate.threat_score || 0,
     scanned_at: candidate.scanned_at,
+    verification_status: 'historical_match_only',
+    requires_fresh_rescan: true,
   }));
 }
 
