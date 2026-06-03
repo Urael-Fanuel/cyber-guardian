@@ -1516,10 +1516,16 @@ async function handler(req, res) {
   }
 
   const codeHash = await hashCode(code);
+  const persistContext = {
+    code_hash: codeHash,
+    source_name: body?.source_name || "",
+    source_url: body?.source_url || "",
+    source_owner: body?.source_owner || "",
+  };
   const cacheKey = `${scope}:${codeHash}`;
   const cached   = getFromCache(cacheKey);
   if (cached) {
-    if (!skipPersist) await saveSiteScan(scope, cached, { code_hash: codeHash });
+    if (!skipPersist) await saveSiteScan(scope, cached, persistContext);
     return res.status(200).json(publicScanResponse(cached, adminBypass, { _from_cache: true, ...accountResponse(accountUser, accountUsage) }));
   }
   const staticResult = runStaticScan(code);
@@ -1529,7 +1535,7 @@ async function handler(req, res) {
     let result = staticFallbackResult(staticResult, "ANTHROPIC_API_KEY missing");
     result = await attachDynamicSandbox(scope, code, result, codeHash);
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
-    if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
+    if (!skipPersist) await saveSiteScan(scope, result, persistContext);
     saveToCache(cacheKey, result);
     return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
   }
@@ -1564,7 +1570,7 @@ async function handler(req, res) {
     result = await attachDynamicSandbox(scope, code, result, codeHash);
 
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
-    if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
+    if (!skipPersist) await saveSiteScan(scope, result, persistContext);
     saveToCache(cacheKey, result);
     return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
 
@@ -1574,7 +1580,7 @@ async function handler(req, res) {
       let result = staticFallbackResult(staticResult, "deep behavior review timed out");
       result = await attachDynamicSandbox(scope, code, result, codeHash);
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
-      if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
+      if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       saveToCache(cacheKey, result);
       return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
     }
@@ -1583,7 +1589,7 @@ async function handler(req, res) {
       let result = staticFallbackResult(staticResult, err.message);
       result = await attachDynamicSandbox(scope, code, result, codeHash);
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
-      if (!skipPersist) await saveSiteScan(scope, result, { code_hash: codeHash });
+      if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       saveToCache(cacheKey, result);
       return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
     }

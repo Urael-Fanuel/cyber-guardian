@@ -235,6 +235,11 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .alternative-meta { color: var(--text-dim); margin-top: 5px; }
 .alternative-link { display: inline-block; margin-top: 8px; color: var(--green); text-decoration: none; border: 1px solid rgba(0,230,118,0.24); padding: 5px 9px; border-radius: 2px; }
 .alternative-link:hover { color: #fff; border-color: var(--green); }
+.alternative-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.alternative-verification { margin-top: 10px; padding: 10px 12px; border: 1px solid rgba(0,204,255,0.22); background: rgba(0,204,255,0.04); }
+.alternative-verification.safe { border-color: rgba(0,230,118,0.32); background: rgba(0,230,118,0.06); }
+.alternative-verification.risk { border-color: rgba(255,59,63,0.35); background: rgba(255,59,63,0.06); }
+.alternative-verification .alternative-title { margin-bottom: 4px; }
 .sandbox-box { margin: 0 24px 16px; padding: 13px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; font-size: 11.5px; line-height: 1.6; }
 .sandbox-box.completed.clean { border-color: rgba(0,230,118,0.34); background: rgba(0,230,118,0.05); }
 .sandbox-box.completed.risky { border-color: rgba(255,189,46,0.38); background: rgba(255,189,46,0.06); }
@@ -945,6 +950,7 @@ async function accountSignOut() {
 // Scope pill switching
 let currentScope = 'mcp';
 let lastScanResult = null;
+let lastAlternativeCandidate = null;
 function inputLengthBucket(length) {
   if (length < 500) return 'under_500';
   if (length < 2000) return '500_1999';
@@ -1202,6 +1208,20 @@ function alternativeQuery(r) {
   return `/api/site-stats?${params.toString()}`;
 }
 
+function alternativeSourceQuery(item) {
+  const params = new URLSearchParams({
+    mode: 'alternative_source',
+    scope: item?.scope || currentScope,
+    source_url: item?.source_url || '',
+  });
+  return `/api/site-stats?${params.toString()}`;
+}
+
+function alternativeIsInstallOk(result) {
+  const decision = result?.decision_details?.decision || result?.decision || '';
+  return result?.status === 'STATUS_SAFE' || decision === 'install_ok' || decision === 'safe';
+}
+
 function renderAlternativeResult(item) {
   const sourceUrl = /^https?:\/\//i.test(String(item?.source_url || '')) ? item.source_url : '';
   const label = item?.source_name || item?.code_purpose || t('alternative_generic_name');
@@ -1212,9 +1232,33 @@ function renderAlternativeResult(item) {
     ${item?.code_purpose ? `<div class="alternative-meta">${escHtml(item.code_purpose)}</div>` : ''}
     <div class="alternative-meta">${t('alternative_score_label')}: ${Number(item?.threat_score || 0)}/100${caps.length ? ` · ${caps.map(escHtml).join(' · ')}` : ''}</div>
     <div class="alternative-meta"><strong>${t('alternative_rescan_required_title')}</strong> ${t('alternative_rescan_required_desc')}</div>
-    ${sourceUrl ? `<a class="alternative-link" href="${escHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${t('alternative_open_source')}</a>` : ''}
-    <button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_request_verification')}</button>
+    <div class="alternative-actions">
+      ${sourceUrl ? `<a class="alternative-link" href="${escHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${t('alternative_open_source')}</a>` : ''}
+      ${sourceUrl ? `<button type="button" class="act-btn" onclick="verifyAlternativeCandidate()">${t('alternative_verify_now')}</button>` : `<button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_request_verification')}</button>`}
+    </div>
     <div class="alternative-meta">${t('alternative_verify_note')}</div>
+    <div id="alternative-verification-status"></div>
+  </div>`;
+}
+
+function renderAlternativeVerification(result, item, source) {
+  const isOk = alternativeIsInstallOk(result);
+  const title = isOk ? t('alternative_verified_safe_title') : t('alternative_verified_risk_title');
+  const desc = isOk ? t('alternative_verified_safe_desc') : t('alternative_verified_risk_desc');
+  const files = Array.isArray(source?.files) && source.files.length
+    ? `<div class="alternative-meta">${t('alternative_verified_files')}: ${source.files.slice(0, 4).map(escHtml).join(' · ')}</div>`
+    : '';
+  const score = Number(result?.threat_score || 0);
+  return `<div class="alternative-verification ${isOk ? 'safe' : 'risk'}">
+    <div class="alternative-title">${escHtml(title)}</div>
+    <div>${escHtml(desc)}</div>
+    <div class="alternative-meta">${t('alternative_score_label')}: ${score}/100</div>
+    ${files}
+    ${result?.summary ? `<div class="alternative-meta">${escHtml(result.summary)}</div>` : ''}
+    <div class="alternative-actions">
+      ${item?.source_url ? `<a class="alternative-link" href="${escHtml(item.source_url)}" target="_blank" rel="noopener noreferrer">${t('alternative_open_source')}</a>` : ''}
+      ${isOk ? '' : `<button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_contact_sales')}</button>`}
+    </div>
   </div>`;
 }
 
@@ -1230,15 +1274,74 @@ function renderAlternativePaidCta() {
 async function findSaferAlternative() {
   const target = document.getElementById('alternative-results');
   if (!target || !lastScanResult) return;
+  lastAlternativeCandidate = null;
   if (window.cgTrack) window.cgTrack('safer_alternative_clicked', { scope: currentScope, decision: lastScanResult.decision || '' });
   target.innerHTML = `<div class="alternative-box"><div class="alternative-title">${t('alternative_loading')}</div><div>${t('alternative_loading_desc')}</div></div>`;
   try {
     const response = await fetch(alternativeQuery(lastScanResult));
     const data = await response.json().catch(() => ({}));
     const item = Array.isArray(data.alternatives) ? data.alternatives[0] : null;
+    lastAlternativeCandidate = item || null;
     target.innerHTML = item ? renderAlternativeResult(item) : renderAlternativePaidCta();
   } catch {
     target.innerHTML = renderAlternativePaidCta();
+  }
+}
+
+async function verifyAlternativeCandidate() {
+  const target = document.getElementById('alternative-verification-status') || document.getElementById('alternative-results');
+  const item = lastAlternativeCandidate;
+  if (!target || !item) return;
+  if (!requireScanAccess()) return;
+  if (!item.source_url) {
+    target.innerHTML = `<div class="alternative-verification risk"><div class="alternative-title">${t('alternative_manual_required_title')}</div><div>${t('alternative_manual_required_desc')}</div></div>`;
+    return;
+  }
+
+  if (window.cgTrack) window.cgTrack('safer_alternative_verify_clicked', { scope: item.scope || currentScope });
+  target.innerHTML = `<div class="alternative-verification"><div class="alternative-title">${t('alternative_verify_loading')}</div><div>${t('alternative_verify_loading_desc')}</div></div>`;
+
+  try {
+    const sourceResponse = await fetch(alternativeSourceQuery(item));
+    const source = await sourceResponse.json().catch(() => ({}));
+    if (!sourceResponse.ok || !source.code) throw new Error(source.error || t('alternative_verify_fetch_failed'));
+
+    const scanResponse = await fetch('/api/scan', {
+      method: 'POST',
+      headers: scanHeaders(),
+      body: JSON.stringify({
+        code: source.code,
+        scope: item.scope || source.scope || currentScope,
+        source_name: source.source_name || item.source_name || '',
+        source_url: source.source_url || item.source_url || '',
+        source_owner: source.source_owner || '',
+      })
+    });
+    const scanResult = await scanResponse.json().catch(() => ({}));
+    if (!scanResponse.ok) throw new Error(scanResult.error || t('alternative_verify_scan_failed'));
+
+    if (scanResult._account) {
+      renderAccountPlan({
+        authenticated: true,
+        email: scanResult._account.email,
+        plan_name: scanResult._account.plan_name,
+        quota_remaining: scanResult._account.quota_remaining,
+        monthly_scan_limit: scanResult._account.quota_limit,
+      });
+      setAccountMessage(t('account_quota_updated'));
+      resetLocalQuota();
+    }
+
+    if (window.cgTrack) window.cgTrack('safer_alternative_verify_completed', {
+      scope: item.scope || source.scope || currentScope,
+      status: scanResult.status || '',
+      threat_score: scanResult.threat_score || 0,
+      verified_safe: alternativeIsInstallOk(scanResult),
+    });
+    target.innerHTML = renderAlternativeVerification(scanResult, item, source);
+  } catch (err) {
+    if (window.cgTrack) window.cgTrack('safer_alternative_verify_failed', { scope: item.scope || currentScope, error: err.message || 'unknown' });
+    target.innerHTML = `<div class="alternative-verification risk"><div class="alternative-title">${t('alternative_manual_required_title')}</div><div>${escHtml(err.message || t('alternative_verify_scan_failed'))}</div><div class="alternative-actions"><button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_contact_sales')}</button></div></div>`;
   }
 }
 

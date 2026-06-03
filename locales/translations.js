@@ -2181,7 +2181,19 @@ const SAFER_ALTERNATIVE_COPY = {
     alternative_paid_title: "No reliable alternative is ready yet",
     alternative_paid_desc: "For teams and organizations, Cyber-Guardian can run a deeper paid alternative search using external discovery sources such as Apify, repository scanning, and additional security review.",
     alternative_paid_note: "This is designed for businesses that need a clean replacement, not only a warning.",
-    alternative_contact_sales: "Request paid alternative search"
+    alternative_contact_sales: "Request paid alternative search",
+    alternative_verify_now: "Verify and scan this alternative now",
+    alternative_verify_loading: "Verifying the current source",
+    alternative_verify_loading_desc: "Fetching the latest source and scanning it again before making a recommendation.",
+    alternative_verify_fetch_failed: "Could not fetch the current source for automatic verification.",
+    alternative_verify_scan_failed: "Could not complete the verification scan.",
+    alternative_verified_safe_title: "Alternative verified",
+    alternative_verified_safe_desc: "The current source was fetched and scanned again. It is lower risk based on the latest verification.",
+    alternative_verified_risk_title: "Do not use this alternative yet",
+    alternative_verified_risk_desc: "The fresh verification found risk indicators, so this source should not be recommended without further review.",
+    alternative_verified_files: "Files verified",
+    alternative_manual_required_title: "Manual verification required",
+    alternative_manual_required_desc: "This source cannot be automatically fetched yet. Request a verified alternative search so the current code can be checked properly."
   },
   he: {
     action_find_alternative: "מצא לי חלופה בטוחה יותר",
@@ -2199,7 +2211,19 @@ const SAFER_ALTERNATIVE_COPY = {
     alternative_paid_title: "עדיין אין חלופה אמינה מוכנה",
     alternative_paid_desc: "לצוותים וארגונים, Cyber-Guardian יכול לבצע חיפוש חלופה בתשלום בעזרת מקורות חיצוניים כמו Apify, סריקת repositories ובדיקת אבטחה נוספת.",
     alternative_paid_note: "זה מיועד לעסקים שצריכים תחליף נקי, לא רק אזהרה.",
-    alternative_contact_sales: "בקש חיפוש חלופה בתשלום"
+    alternative_contact_sales: "בקש חיפוש חלופה בתשלום",
+    alternative_verify_now: "אמת וסרוק את החלופה עכשיו",
+    alternative_verify_loading: "מאמת את המקור העדכני",
+    alternative_verify_loading_desc: "מושך את הקוד העדכני וסורק אותו מחדש לפני שמציגים המלצה.",
+    alternative_verify_fetch_failed: "לא ניתן למשוך את המקור העדכני לאימות אוטומטי.",
+    alternative_verify_scan_failed: "לא ניתן להשלים את סריקת האימות.",
+    alternative_verified_safe_title: "החלופה אומתה",
+    alternative_verified_safe_desc: "המקור העדכני נמשך ונסרק מחדש. לפי האימות האחרון הוא בסיכון נמוך יותר.",
+    alternative_verified_risk_title: "לא להשתמש בחלופה הזו עדיין",
+    alternative_verified_risk_desc: "האימות הטרי מצא סימני סיכון, ולכן אין להמליץ על המקור הזה בלי בדיקה נוספת.",
+    alternative_verified_files: "קבצים שאומתו",
+    alternative_manual_required_title: "נדרש אימות ידני",
+    alternative_manual_required_desc: "עדיין אי אפשר למשוך את המקור הזה אוטומטית. בקש חיפוש חלופה מאומתת כדי לבדוק את הקוד העדכני בצורה נכונה."
   },
   de: {
     action_find_alternative: "Sicherere Alternative finden",
@@ -2217,7 +2241,19 @@ const SAFER_ALTERNATIVE_COPY = {
     alternative_paid_title: "Noch keine verlaessliche Alternative bereit",
     alternative_paid_desc: "Fuer Teams und Organisationen kann Cyber-Guardian eine tiefere bezahlte Alternativsuche mit externen Quellen wie Apify, Repository-Scanning und weiterer Security Review ausfuehren.",
     alternative_paid_note: "Gedacht fuer Unternehmen, die einen sauberen Ersatz brauchen, nicht nur eine Warnung.",
-    alternative_contact_sales: "Bezahlte Alternativsuche anfragen"
+    alternative_contact_sales: "Bezahlte Alternativsuche anfragen",
+    alternative_verify_now: "Alternative jetzt verifizieren und scannen",
+    alternative_verify_loading: "Aktuelle Quelle wird verifiziert",
+    alternative_verify_loading_desc: "Die neueste Quelle wird abgerufen und erneut gescannt, bevor eine Empfehlung angezeigt wird.",
+    alternative_verify_fetch_failed: "Die aktuelle Quelle konnte nicht automatisch abgerufen werden.",
+    alternative_verify_scan_failed: "Der Verifizierungsscan konnte nicht abgeschlossen werden.",
+    alternative_verified_safe_title: "Alternative verifiziert",
+    alternative_verified_safe_desc: "Die aktuelle Quelle wurde abgerufen und erneut gescannt. Nach der neuesten Verifizierung ist sie risikoaermer.",
+    alternative_verified_risk_title: "Diese Alternative noch nicht verwenden",
+    alternative_verified_risk_desc: "Die frische Verifizierung fand Risikoindikatoren. Diese Quelle sollte ohne weitere Pruefung nicht empfohlen werden.",
+    alternative_verified_files: "Verifizierte Dateien",
+    alternative_manual_required_title: "Manuelle Verifizierung erforderlich",
+    alternative_manual_required_desc: "Diese Quelle kann noch nicht automatisch abgerufen werden. Fordern Sie eine verifizierte Alternativsuche an, damit der aktuelle Code korrekt geprueft wird."
   },
   ja: {
     action_find_alternative: "より安全な代替を探す",
@@ -2235,7 +2271,19 @@ const SAFER_ALTERNATIVE_COPY = {
     alternative_paid_title: "信頼できる代替はまだありません",
     alternative_paid_desc: "チームや組織向けに、Cyber-GuardianはApify、リポジトリ検索、追加セキュリティレビューを使った有料の代替検索を実行できます。",
     alternative_paid_note: "単なる警告ではなく、クリーンな置き換えが必要な企業向けです。",
-    alternative_contact_sales: "有料代替検索を依頼"
+    alternative_contact_sales: "有料代替検索を依頼",
+    alternative_verify_now: "この代替を今すぐ検証してスキャン",
+    alternative_verify_loading: "現在のソースを検証中",
+    alternative_verify_loading_desc: "推薦前に最新ソースを取得し、再スキャンしています。",
+    alternative_verify_fetch_failed: "自動検証のために現在のソースを取得できませんでした。",
+    alternative_verify_scan_failed: "検証スキャンを完了できませんでした。",
+    alternative_verified_safe_title: "代替を検証しました",
+    alternative_verified_safe_desc: "現在のソースを取得して再スキャンしました。最新検証ではより低リスクです。",
+    alternative_verified_risk_title: "この代替はまだ使用しないでください",
+    alternative_verified_risk_desc: "最新検証でリスク指標が見つかりました。追加確認なしに推薦すべきではありません。",
+    alternative_verified_files: "検証したファイル",
+    alternative_manual_required_title: "手動検証が必要です",
+    alternative_manual_required_desc: "このソースはまだ自動取得できません。現在のコードを正しく確認するため、検証済み代替検索を依頼してください。"
   },
   ko: {
     action_find_alternative: "더 안전한 대안 찾기",
@@ -2253,7 +2301,19 @@ const SAFER_ALTERNATIVE_COPY = {
     alternative_paid_title: "아직 신뢰할 대안이 준비되지 않았습니다",
     alternative_paid_desc: "팀과 조직은 Apify, repository scanning, 추가 보안 검토를 활용한 유료 대안 검색을 요청할 수 있습니다.",
     alternative_paid_note: "경고만이 아니라 깨끗한 대체 코드가 필요한 기업을 위한 기능입니다.",
-    alternative_contact_sales: "유료 대안 검색 요청"
+    alternative_contact_sales: "유료 대안 검색 요청",
+    alternative_verify_now: "지금 대안을 검증하고 스캔",
+    alternative_verify_loading: "현재 소스 검증 중",
+    alternative_verify_loading_desc: "추천 전에 최신 소스를 가져와 다시 스캔합니다.",
+    alternative_verify_fetch_failed: "자동 검증을 위해 현재 소스를 가져올 수 없습니다.",
+    alternative_verify_scan_failed: "검증 스캔을 완료할 수 없습니다.",
+    alternative_verified_safe_title: "대안이 검증되었습니다",
+    alternative_verified_safe_desc: "현재 소스를 가져와 다시 스캔했습니다. 최신 검증 기준으로 더 낮은 위험입니다.",
+    alternative_verified_risk_title: "아직 이 대안을 사용하지 마세요",
+    alternative_verified_risk_desc: "최신 검증에서 위험 신호가 발견되었습니다. 추가 검토 없이 추천해서는 안 됩니다.",
+    alternative_verified_files: "검증된 파일",
+    alternative_manual_required_title: "수동 검증 필요",
+    alternative_manual_required_desc: "이 소스는 아직 자동으로 가져올 수 없습니다. 현재 코드를 제대로 확인하려면 검증된 대안 검색을 요청하세요."
   },
   fr: {
     action_find_alternative: "Trouver une alternative plus sure",
@@ -2271,7 +2331,19 @@ const SAFER_ALTERNATIVE_COPY = {
     alternative_paid_title: "Aucune alternative fiable n'est encore prete",
     alternative_paid_desc: "Pour equipes et organisations, Cyber-Guardian peut lancer une recherche payante plus profonde avec Apify, scan de repositories et revue securite additionnelle.",
     alternative_paid_note: "C'est concu pour les entreprises qui ont besoin d'un remplacement propre, pas seulement d'une alerte.",
-    alternative_contact_sales: "Demander une recherche payante"
+    alternative_contact_sales: "Demander une recherche payante",
+    alternative_verify_now: "Verifier et scanner cette alternative maintenant",
+    alternative_verify_loading: "Verification de la source actuelle",
+    alternative_verify_loading_desc: "Recuperation de la source la plus recente et nouveau scan avant toute recommandation.",
+    alternative_verify_fetch_failed: "Impossible de recuperer la source actuelle pour verification automatique.",
+    alternative_verify_scan_failed: "Impossible de terminer le scan de verification.",
+    alternative_verified_safe_title: "Alternative verifiee",
+    alternative_verified_safe_desc: "La source actuelle a ete recuperee et rescanee. Elle est moins risquee selon la derniere verification.",
+    alternative_verified_risk_title: "Ne pas encore utiliser cette alternative",
+    alternative_verified_risk_desc: "La verification recente a trouve des indicateurs de risque. Cette source ne doit pas etre recommandee sans revue supplementaire.",
+    alternative_verified_files: "Fichiers verifies",
+    alternative_manual_required_title: "Verification manuelle requise",
+    alternative_manual_required_desc: "Cette source ne peut pas encore etre recuperee automatiquement. Demandez une recherche d'alternative verifiee afin que le code actuel soit controle correctement."
   },
   pt: {
     action_find_alternative: "Encontrar alternativa mais segura",
@@ -2289,7 +2361,19 @@ const SAFER_ALTERNATIVE_COPY = {
     alternative_paid_title: "Nenhuma alternativa confiavel pronta ainda",
     alternative_paid_desc: "Para equipes e organizacoes, o Cyber-Guardian pode executar uma busca paga mais profunda usando fontes externas como Apify, varredura de repositorios e revisao adicional.",
     alternative_paid_note: "Pensado para empresas que precisam de substituto limpo, nao apenas um alerta.",
-    alternative_contact_sales: "Solicitar busca paga"
+    alternative_contact_sales: "Solicitar busca paga",
+    alternative_verify_now: "Verificar e escanear esta alternativa agora",
+    alternative_verify_loading: "Verificando a fonte atual",
+    alternative_verify_loading_desc: "Buscando a fonte mais recente e escaneando novamente antes de recomendar.",
+    alternative_verify_fetch_failed: "Nao foi possivel buscar a fonte atual para verificacao automatica.",
+    alternative_verify_scan_failed: "Nao foi possivel concluir o scan de verificacao.",
+    alternative_verified_safe_title: "Alternativa verificada",
+    alternative_verified_safe_desc: "A fonte atual foi buscada e escaneada novamente. Pela verificacao mais recente, ela tem menor risco.",
+    alternative_verified_risk_title: "Ainda nao use esta alternativa",
+    alternative_verified_risk_desc: "A verificacao nova encontrou indicadores de risco, portanto esta fonte nao deve ser recomendada sem revisao adicional.",
+    alternative_verified_files: "Arquivos verificados",
+    alternative_manual_required_title: "Verificacao manual obrigatoria",
+    alternative_manual_required_desc: "Esta fonte ainda nao pode ser buscada automaticamente. Solicite uma busca de alternativa verificada para que o codigo atual seja analisado corretamente."
   }
 };
 

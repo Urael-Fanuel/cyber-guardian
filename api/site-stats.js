@@ -54,6 +54,160 @@ const BLOCKING_THREAT_FAMILIES = new Set([
   'LOGIC_BOMB'
 ]);
 
+const MAX_ALTERNATIVE_SOURCE_CHARS = 50000;
+const MAX_ALTERNATIVE_SOURCE_FILES = 6;
+
+function githubRequestHeaders() {
+  const headers = {
+    'Accept': 'application/vnd.github+json',
+    'User-Agent': 'Cyber-Guardian-Alternative-Verifier',
+  };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  return headers;
+}
+
+function parseGithubSourceUrl(value) {
+  let url;
+  try {
+    url = new URL(String(value || '').trim());
+  } catch {
+    return null;
+  }
+
+  if (url.protocol !== 'https:') return null;
+  const parts = url.pathname.split('/').filter(Boolean);
+
+  if (url.hostname === 'raw.githubusercontent.com' && parts.length >= 4) {
+    const [owner, repo, branch, ...pathParts] = parts;
+    return {
+      kind: 'file',
+      owner,
+      repo,
+      branch,
+      path: pathParts.join('/'),
+      raw_url: url.toString(),
+      source_url: url.toString(),
+    };
+  }
+
+  if (url.hostname !== 'github.com' || parts.length < 2) return null;
+  const [owner, repo, marker, branch, ...pathParts] = parts;
+  const cleanRepo = String(repo || '').replace(/\.git$/i, '');
+
+  if ((marker === 'blob' || marker === 'raw') && branch && pathParts.length) {
+    return {
+      kind: 'file',
+      owner,
+      repo: cleanRepo,
+      branch,
+      path: pathParts.join('/'),
+      raw_url: `https://raw.githubusercontent.com/${owner}/${cleanRepo}/${branch}/${pathParts.join('/')}`,
+      source_url: `https://github.com/${owner}/${cleanRepo}/blob/${branch}/${pathParts.join('/')}`,
+    };
+  }
+
+  return {
+    kind: 'repo',
+    owner,
+    repo: cleanRepo,
+    source_url: `https://github.com/${owner}/${cleanRepo}`,
+  };
+}
+
+async function fetchTextWithLimit(url, headers = {}) {
+  const response = await fetch(url, { headers });
+  if (!response.ok) throw new Error(`Source fetch failed: ${response.status}`);
+  const contentLength = parseInt(response.headers.get('content-length') || '0', 10);
+  if (contentLength > MAX_ALTERNATIVE_SOURCE_CHARS * 2) {
+    throw new Error('Source file is too large for verification.');
+  }
+  const text = await response.text();
+  return text.slice(0, MAX_ALTERNATIVE_SOURCE_CHARS);
+}
+
+async function fetchGithubJson(url) {
+  const response = await fetch(url, { headers: githubRequestHeaders() });
+  if (!response.ok) throw new Error(`GitHub API failed: ${response.status}`);
+  return response.json();
+}
+
+function isUsefulSourcePath(path) {
+  const p = String(path || '').toLowerCase();
+  if (!p || /(^|\/)(node_modules|vendor|dist|build|coverage|\.git|\.next|out)\//.test(p)) return false;
+  if (/\.(png|jpe?g|gif|webp|svg|ico|lock|zip|tar|gz|7z|exe|dll|so|dylib|pdf)$/i.test(p)) return false;
+  return /\.(js|mjs|cjs|ts|tsx|jsx|py|json|ya?ml|toml|md|sh)$/i.test(p);
+}
+
+function sourcePathRank(path) {
+  const p = String(path || '').toLowerCase();
+  let score = 0;
+  if (/(package\.json|manifest\.json|requirements\.txt|pyproject\.toml|setup\.py|action\.ya?ml)$/.test(p)) score += 20;
+  if (/(mcp|skill|extension|server|tool|agent|workflow|index|main|src)/.test(p)) score += 8;
+  if (/\.(js|ts|py|mjs|cjs)$/.test(p)) score += 6;
+  if (/\.(json|ya?ml|toml)$/.test(p)) score += 4;
+  if (/readme\.md$/.test(p)) score += 1;
+  return score;
+}
+
+async function fetchCurrentGithubSource(sourceUrl) {
+  const source = parseGithubSourceUrl(sourceUrl);
+  if (!source) throw new Error('Only GitHub source URLs can be automatically verified right now.');
+
+  if (source.kind === 'file') {
+    const code = await fetchTextWithLimit(source.raw_url, githubRequestHeaders());
+    return {
+      code,
+      source_url: source.source_url,
+      source_owner: source.owner,
+      source_name: `${source.owner}/${source.repo}/${source.path}`,
+      files: [source.path],
+    };
+  }
+
+  const repoApi = `https://api.github.com/repos/${source.owner}/${source.repo}`;
+  const repo = await fetchGithubJson(repoApi);
+  const branch = repo.default_branch || 'main';
+  const tree = await fetchGithubJson(`${repoApi}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
+  const candidates = Array.isArray(tree.tree) ? tree.tree : [];
+  const files = candidates
+    .filter(item => item.type === 'blob')
+    .filter(item => item.size > 0 && item.size <= 35000)
+    .filter(item => isUsefulSourcePath(item.path))
+    .sort((a, b) => {
+      const rankDelta = sourcePathRank(b.path) - sourcePathRank(a.path);
+      if (rankDelta) return rankDelta;
+      return (a.size || 0) - (b.size || 0);
+    })
+    .slice(0, MAX_ALTERNATIVE_SOURCE_FILES);
+
+  if (!files.length) throw new Error('No useful source files were found for automatic verification.');
+
+  let code = '';
+  const included = [];
+  for (const file of files) {
+    if (code.length >= MAX_ALTERNATIVE_SOURCE_CHARS) break;
+    const rawUrl = `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${branch}/${file.path}`;
+    try {
+      const text = await fetchTextWithLimit(rawUrl, githubRequestHeaders());
+      const block = `\n\n// Source file: ${file.path}\n${text}`;
+      if (code.length + block.length > MAX_ALTERNATIVE_SOURCE_CHARS) continue;
+      code += block;
+      included.push(file.path);
+    } catch {
+      // Skip individual files that cannot be fetched; the remaining files still provide a useful verification sample.
+    }
+  }
+
+  if (!code.trim()) throw new Error('Could not fetch source files for automatic verification.');
+  return {
+    code: code.trim(),
+    source_url: source.source_url,
+    source_owner: source.owner,
+    source_name: `${source.owner}/${source.repo}`,
+    files: included,
+  };
+}
+
 function threatFamilies(summary) {
   return String(summary || '')
     .split(',')
@@ -186,6 +340,7 @@ function saferAlternatives(scan, scans) {
     source_name: candidate.source_name || '',
     source_url: candidate.source_url || '',
     code_purpose: candidate.code_purpose || '',
+    scope: candidate.scope || '',
     component_type: candidate.component_type || '',
     capabilities: arrayValue(candidate.capabilities).slice(0, 4),
     decision: classifyScan(candidate),
@@ -204,11 +359,31 @@ module.exports = async function handler(req, res) {
   }
   if (rejectDisallowedOrigin(req, res)) return;
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Not configured' });
 
   try {
     const url = getUrl(req);
     const mode = String(url.searchParams.get('mode') || 'stats').trim().toLowerCase();
+
+    if (mode === 'alternative_source') {
+      try {
+        const sourceUrl = url.searchParams.get('source_url') || '';
+        const source = await fetchCurrentGithubSource(sourceUrl);
+        return res.status(200).json({
+          status: 'ok',
+          source: 'github_current_source',
+          scope: normalizeScope(url.searchParams.get('scope') || ''),
+          fetched_at: new Date().toISOString(),
+          ...source,
+        });
+      } catch (err) {
+        return res.status(400).json({
+          status: 'source_unavailable',
+          error: err.message || 'Could not fetch current source for verification.',
+        });
+      }
+    }
+
+    if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Not configured' });
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
     const enrichedSelect = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags';
     let { data: scans, error } = await sb
