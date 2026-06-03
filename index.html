@@ -6,10 +6,13 @@
 <title>Cyber-Guardian - MCP Security Scanner | First scanner for MCP Servers, AI Skills & IDE Extensions</title>
 <meta name="description" content="The first security scanner for Model Context Protocol (MCP) servers. Detect malicious code, prompt injection, credential theft and tool poisoning before connecting. Also scans AI Skills and IDE extensions. Powered by an advanced security engine.">
 <meta name="keywords" content="MCP security, MCP scanner, Model Context Protocol security, MCP server audit, AI skill scanner, AI security, MCP security, Cursor MCP, prompt injection scanner">
+<link rel="canonical" href="https://cyberguardianscan.com/">
 <meta property="og:title" content="Cyber-Guardian - The First MCP Security Scanner">
 <meta property="og:description" content="Before you connect an MCP server, scan it. 10,000+ MCP servers exist. Zero are audited.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://cyber-guardian.netlify.app/og-image.png">
+<meta property="og:url" content="https://cyberguardianscan.com/">
+<meta property="og:site_name" content="Cyber-Guardian">
+<meta property="og:image" content="https://cyberguardianscan.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="The First MCP Security Scanner">
 <meta name="twitter:description" content="10,000+ MCP servers. Zero audited. Scan before you connect.">
@@ -299,6 +302,23 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .trust-note { margin-top: 14px; border: 1px solid rgba(255,189,46,0.28); background: rgba(255,189,46,0.06); color: var(--text); padding: 14px 16px; font-size: 12px; line-height: 1.7; }
 @media(max-width:700px){ .trust-grid { grid-template-columns: 1fr; } }
 
+.seo-hub { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
+.seo-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 22px; }
+.seo-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 18px; min-height: 180px; border-top: 3px solid var(--cyan); }
+.seo-card:nth-child(2) { border-top-color: var(--orange); }
+.seo-card:nth-child(3) { border-top-color: var(--green); }
+.seo-card:nth-child(4) { border-top-color: var(--purple); }
+.seo-card-k { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+.seo-card-t { font-family: var(--sans); font-size: 16px; font-weight: 800; color: #fff; line-height: 1.25; margin-bottom: 8px; }
+.seo-card-d { color: var(--text-dim); font-size: 11.5px; line-height: 1.65; margin-bottom: 12px; }
+.seo-card a { color: var(--cyan); text-decoration: none; font-size: 11px; letter-spacing: 1px; font-weight: 700; }
+.seo-share { margin-top: 16px; padding: 14px 16px; border: 1px solid var(--border); background: var(--bg2); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.seo-share-title { color: #fff; font-family: var(--sans); font-size: 14px; font-weight: 800; }
+.seo-share-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.seo-share-actions a { border: 1px solid var(--border2); color: var(--cyan); background: var(--bg3); padding: 7px 10px; border-radius: 2px; text-decoration: none; font-size: 10px; }
+@media(max-width:900px){ .seo-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:600px){ .seo-grid { grid-template-columns: 1fr; } .seo-hub { padding: 0 12px; } }
+
 /* ── OTHER PRODUCTS SECTION (NEW) ── */
 .other { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; }
 .other-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
@@ -398,6 +418,7 @@ footer a:hover { color: var(--cyan); }
     <div class="lang-switcher" id="lang-switcher"></div>
     <div class="pulse"></div>
     <span class="pulse-txt" data-i18n="nav_live">LIVE</span>
+    <a class="nav-link" href="/resources.html" data-i18n="nav_resources">Resources</a>
     <a class="nav-link" href="/dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
     <a class="nav-link nav-login" href="#account-panel" data-i18n="nav_account_cta">Sign in / Free account</a>
   </div>
@@ -597,6 +618,50 @@ footer a:hover { color: var(--cyan); }
   <div class="trust-note" data-i18n="moat_note">Some capabilities require the future local MCP/IDE agent or isolated sandbox runner. The public scanner will not claim runtime protection until those components are connected.</div>
 </section>
 
+<section class="seo-hub" id="resources">
+  <div class="section-lbl" data-i18n="seo_label">Security resources</div>
+  <h2 class="section-title" data-i18n="seo_title">Guides people can share before one bad AI-tool install.</h2>
+  <p class="section-sub" data-i18n="seo_sub">Organic growth starts with useful explanations: what can go wrong, who is exposed, and how to decide whether an MCP server, AI Skill, IDE extension, workflow or package is safe enough to use.</p>
+  <div class="seo-grid">
+    <div class="seo-card">
+      <div class="seo-card-k" data-i18n="seo_card1_k">Builders</div>
+      <div class="seo-card-t" data-i18n="seo_card1_t">Solo developers and indie hackers</div>
+      <div class="seo-card-d" data-i18n="seo_card1_d">Explain the risk of copying unknown AI tooling while moving fast.</div>
+      <a href="/resources.html#solo" data-i18n="seo_card_link">Read guide</a>
+    </div>
+    <div class="seo-card">
+      <div class="seo-card-k" data-i18n="seo_card2_k">Companies</div>
+      <div class="seo-card-t" data-i18n="seo_card2_t">Security teams and business owners</div>
+      <div class="seo-card-d" data-i18n="seo_card2_d">Turn technical scan results into approve, review, block, or replace decisions.</div>
+      <a href="/resources.html#security-leaders" data-i18n="seo_card_link">Read guide</a>
+    </div>
+    <div class="seo-card">
+      <div class="seo-card-k" data-i18n="seo_card3_k">Agencies</div>
+      <div class="seo-card-t" data-i18n="seo_card3_t">Client-facing AI automation teams</div>
+      <div class="seo-card-d" data-i18n="seo_card3_d">Show clients that AI tools were checked before entering their environment.</div>
+      <a href="/resources.html#agencies-guide" data-i18n="seo_card_link">Read guide</a>
+    </div>
+    <div class="seo-card">
+      <div class="seo-card-k" data-i18n="seo_card4_k">Supply chain</div>
+      <div class="seo-card-t" data-i18n="seo_card4_t">GitHub Actions, packages and dependencies</div>
+      <div class="seo-card-d" data-i18n="seo_card4_d">Cover workflows and packages that may run with secrets or production access.</div>
+      <a href="/resources.html#devops-guide" data-i18n="seo_card_link">Read guide</a>
+    </div>
+  </div>
+  <div class="seo-share">
+    <div>
+      <div class="seo-share-title" data-i18n="seo_share_title">Help another team scan before installing.</div>
+      <div class="seo-card-d" data-i18n="seo_share_sub">Share the security guides with a developer, founder, agency or security lead.</div>
+    </div>
+    <div class="seo-share-actions">
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fcyberguardianscan.com%2Fresources.html" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcyberguardianscan.com%2Fresources.html&amp;text=MCP%20security%20guides%20for%20AI%20developers%20and%20security%20teams" target="_blank" rel="noopener noreferrer">X</a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcyberguardianscan.com%2Fresources.html" target="_blank" rel="noopener noreferrer">Facebook</a>
+      <a href="https://wa.me/?text=MCP%20security%20guides%20for%20AI%20developers%20and%20security%20teams%20https%3A%2F%2Fcyberguardianscan.com%2Fresources.html" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+    </div>
+  </div>
+</section>
+
 <section class="other">
   <div class="section-lbl" data-i18n="other_label">Also scans</div>
   <h2 class="section-title" data-i18n="other_title">Beyond MCP - full coverage</h2>
@@ -759,6 +824,8 @@ footer a:hover { color: var(--cyan); }
   <div data-i18n="footer_tagline">MCP-FIRST · 60 THREAT FAMILIES · SECURITY ENGINE</div>
   <div>
     <span data-i18n="footer_legal">Apache 2.0 · </span>
+    <a href="/resources.html" data-i18n="footer_resources">Resources</a>
+    &nbsp;·&nbsp;
     <a href="/terms.html" data-i18n="footer_terms">Terms</a>
     &nbsp;·&nbsp;
     <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a>

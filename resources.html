@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP Security Guides for AI Developers, Startups and Security Teams | Cyber-Guardian</title>
+<meta name="description" content="Practical MCP security, AI Skills security, IDE extension security and AI supply-chain guides for developers, startups, agencies, DevOps teams and security leaders.">
+<link rel="canonical" href="https://cyberguardianscan.com/resources.html">
+<meta property="og:title" content="MCP Security Guides - Cyber-Guardian">
+<meta property="og:description" content="Learn how to avoid malicious MCP servers, unsafe AI Skills, risky IDE extensions and AI supply-chain attacks before installing code.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cyberguardianscan.com/resources.html">
+<meta property="og:site_name" content="Cyber-Guardian">
+<meta property="og:image" content="https://cyberguardianscan.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MCP Security Guides - Cyber-Guardian">
+<meta name="twitter:description" content="Practical security guides for MCP, AI Skills, IDE extensions and AI supply-chain code.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Cyber-Guardian Security Guides",
+  "description": "MCP security, AI Skills security, IDE extension security and AI supply-chain guides for developers and organizations.",
+  "url": "https://cyberguardianscan.com/resources.html",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Cyber-Guardian",
+    "url": "https://cyberguardianscan.com"
+  },
+  "mainEntity": [
+    {
+      "@type": "Article",
+      "headline": "MCP Security for Solo Developers",
+      "about": "Model Context Protocol security"
+    },
+    {
+      "@type": "Article",
+      "headline": "AI Skills Security for Teams",
+      "about": "AI Skills and prompt injection"
+    },
+    {
+      "@type": "Article",
+      "headline": "IDE Extension Security for Companies",
+      "about": "IDE extension supply-chain risk"
+    },
+    {
+      "@type": "Article",
+      "headline": "Runtime MCP Firewall and Secure Wrappers",
+      "about": "Runtime protection and secure wrappers"
+    }
+  ]
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#080C10; --bg2:#0D1219; --bg3:#131B24; --border:#1E2D3D; --border2:#2A3F54; --cyan:#00D4FF; --green:#00E676; --orange:#FF9100; --red:#FF3D3D; --text:#D8E8F4; --dim:#6A8090; --mono:'IBM Plex Mono',monospace; --sans:'Syne',Arial,sans-serif; }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { min-height:100vh; background:var(--bg); color:var(--text); font-family:var(--mono); line-height:1.75; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none; background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px); background-size:48px 48px; opacity:.28; }
+nav { position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px 34px; border-bottom:1px solid var(--border); background:rgba(8,12,16,.95); flex-wrap:wrap; }
+.logo { font-family:var(--sans); color:#fff; font-weight:800; text-decoration:none; display:flex; align-items:center; gap:10px; }
+.logo-mark { width:30px; height:30px; background:var(--cyan); clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+.nav-links { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.nav-links a { color:var(--cyan); text-decoration:none; border:1px solid var(--border2); padding:7px 12px; font-size:11px; letter-spacing:1px; border-radius:2px; }
+.nav-links a:hover { background:rgba(0,212,255,.08); border-color:var(--cyan); }
+.hero { position:relative; z-index:1; max-width:980px; margin:0 auto; padding:66px 22px 34px; }
+.eyebrow { color:var(--green); letter-spacing:3px; text-transform:uppercase; font-size:10px; margin-bottom:14px; }
+h1 { font-family:var(--sans); color:#fff; font-size:clamp(34px,6vw,64px); line-height:1; max-width:860px; margin-bottom:18px; }
+.sub { color:var(--dim); max-width:760px; font-size:14px; }
+.hero-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:26px; }
+.btn { display:inline-flex; align-items:center; justify-content:center; min-height:40px; border:1px solid var(--cyan); background:var(--cyan); color:#001018; text-decoration:none; padding:10px 18px; font-family:var(--sans); font-weight:800; border-radius:3px; }
+.btn.secondary { background:transparent; color:var(--cyan); font-family:var(--mono); font-weight:600; }
+main { position:relative; z-index:1; max-width:1100px; margin:0 auto 70px; padding:0 22px; }
+.share-panel { border:1px solid var(--border); background:var(--bg2); padding:16px; margin:20px 0 28px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.share-title { font-family:var(--sans); color:#fff; font-weight:800; }
+.share-buttons { display:flex; flex-wrap:wrap; gap:8px; }
+.share-buttons button, .share-buttons a { border:1px solid var(--border2); background:var(--bg3); color:var(--cyan); padding:8px 11px; border-radius:2px; font-family:var(--mono); font-size:11px; cursor:pointer; text-decoration:none; }
+.share-buttons button:hover, .share-buttons a:hover { border-color:var(--cyan); background:rgba(0,212,255,.08); }
+.grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:22px 0 38px; }
+.card { border:1px solid var(--border); background:var(--bg2); padding:18px; border-radius:4px; min-height:210px; }
+.card-k { color:var(--cyan); letter-spacing:2px; text-transform:uppercase; font-size:9px; margin-bottom:8px; }
+.card h2 { font-family:var(--sans); color:#fff; font-size:21px; line-height:1.2; margin-bottom:10px; }
+.card p { color:var(--dim); font-size:12.5px; }
+.card a { color:var(--green); text-decoration:none; display:inline-block; margin-top:12px; font-size:12px; }
+.section { border-top:1px solid var(--border); padding:38px 0 6px; }
+.section-label { color:var(--cyan); letter-spacing:3px; text-transform:uppercase; font-size:10px; margin-bottom:12px; }
+.section h2 { font-family:var(--sans); color:#fff; font-size:clamp(26px,4vw,42px); line-height:1.1; margin-bottom:14px; }
+.section p { color:var(--dim); max-width:850px; margin-bottom:14px; }
+.problem-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:20px 0; }
+.problem { border:1px solid var(--border); background:rgba(13,18,25,.75); padding:15px; }
+.problem strong { color:#fff; display:block; margin-bottom:6px; }
+.problem span { color:var(--dim); font-size:12px; }
+.solution-map { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); margin:22px 0; }
+.solution { background:var(--bg2); padding:16px; }
+.solution strong { color:var(--green); display:block; margin-bottom:6px; }
+.solution span { color:var(--dim); font-size:12px; }
+.keyword-cloud { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+.keyword-cloud span { border:1px solid var(--border2); color:var(--text); background:var(--bg3); padding:5px 9px; font-size:11px; }
+.faq { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:18px; }
+.faq-item { border:1px solid var(--border); background:var(--bg2); padding:16px; }
+.faq-item h3 { font-family:var(--sans); color:#fff; font-size:17px; margin-bottom:8px; }
+.faq-item p { font-size:12.5px; margin:0; }
+footer { position:relative; z-index:1; border-top:1px solid var(--border); padding:22px; color:var(--dim); text-align:center; font-size:11px; }
+footer a { color:var(--cyan); text-decoration:none; }
+@media(max-width:860px) { .grid, .problem-list, .faq { grid-template-columns:1fr; } .solution-map { grid-template-columns:1fr 1fr; } nav { padding:14px 18px; } }
+@media(max-width:560px) { .solution-map { grid-template-columns:1fr; } .share-panel { align-items:flex-start; } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo"><span class="logo-mark"></span>Cyber-Guardian</a>
+  <div class="nav-links">
+    <a href="/">Scanner</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/contact.html?type=sales">Contact Sales</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">AI tool security guides</div>
+  <h1>MCP security starts before a developer clicks install.</h1>
+  <p class="sub">Security teams, solo builders, agencies and AI startups are adopting MCP servers, AI Skills, IDE extensions and third-party packages faster than traditional review can keep up. These guides explain the risk in plain language and map each problem to a practical Cyber-Guardian workflow.</p>
+  <div class="hero-actions">
+    <a class="btn" href="/#scanner">Scan code now</a>
+    <a class="btn secondary" href="/contact.html?type=sales">Need more than 10 scans?</a>
+  </div>
+</section>
+
+<main>
+  <div class="share-panel">
+    <div>
+      <div class="share-title">Share these guides</div>
+      <p style="color:var(--dim);font-size:12px;margin-top:4px">Help developers scan risky AI tooling before it reaches their machine or company repository.</p>
+    </div>
+    <div class="share-buttons">
+      <button data-share="linkedin">LinkedIn</button>
+      <button data-share="x">X</button>
+      <button data-share="facebook">Facebook</button>
+      <button data-share="whatsapp">WhatsApp</button>
+      <button data-share="telegram">Telegram</button>
+      <button data-share="copy">Copy link</button>
+      <a id="share-email" href="#">Email</a>
+    </div>
+  </div>
+
+  <div class="grid" aria-label="Security guide categories">
+    <article class="card" id="solo-developers">
+      <div class="card-k">Solo developers</div>
+      <h2>The scary part of building fast with AI</h2>
+      <p>A single developer can ship faster than ever with AI, but they also install more unknown code than ever: MCP servers, skills, prompts, packages and IDE extensions. One bad install can expose tokens, local files or customer data.</p>
+      <a href="#solo">Read the guide</a>
+    </article>
+    <article class="card" id="startups">
+      <div class="card-k">AI startups</div>
+      <h2>Speed creates invisible supply-chain risk</h2>
+      <p>Small teams depend on third-party AI tooling. The problem is not only malware; it is unreviewed permission creep, install scripts, prompt injection and tools that behave differently at runtime.</p>
+      <a href="#startups-guide">Read the guide</a>
+    </article>
+    <article class="card" id="security-teams">
+      <div class="card-k">Security teams</div>
+      <h2>Employees are installing AI tools before review</h2>
+      <p>Traditional AppSec was not designed for developers adding MCP servers and AI Skills directly into assistants and IDEs. Security needs a fast pre-install decision and eventually runtime enforcement.</p>
+      <a href="#security-leaders">Read the guide</a>
+    </article>
+    <article class="card" id="agencies">
+      <div class="card-k">Agencies</div>
+      <h2>Client projects need defensible AI tooling</h2>
+      <p>Agencies adopting AI coding workflows need to prove they are not installing risky third-party code into client environments. A scan report can become part of professional delivery hygiene.</p>
+      <a href="#agencies-guide">Read the guide</a>
+    </article>
+    <article class="card" id="devops">
+      <div class="card-k">DevOps and CI/CD</div>
+      <h2>Secrets make GitHub Actions high-value targets</h2>
+      <p>Workflows run with repository secrets, deploy keys and production permissions. A suspicious install command or network callback is not a small issue when it runs inside CI/CD.</p>
+      <a href="#devops-guide">Read the guide</a>
+    </article>
+    <article class="card" id="business">
+      <div class="card-k">Business owners</div>
+      <h2>You do not need to read code to reduce risk</h2>
+      <p>Founders and managers do not need to inspect every line. They need clear decisions: safe to install, fix before use, do not install, or request a safer alternative.</p>
+      <a href="#business-guide">Read the guide</a>
+    </article>
+  </div>
+
+  <section class="section" id="solo">
+    <div class="section-label">Guide for solo developers</div>
+    <h2>You are building the next thing. Do not let one unknown tool steal it.</h2>
+    <p>AI makes a single developer feel like a full team. That is the opportunity. The risk is that every shortcut often comes with new code from someone else: a Model Context Protocol server, an AI Skill, a VS Code or Cursor extension, a package, or a workflow copied from GitHub.</p>
+    <p>The fear is simple: you do not know whether the tool is only helping you, or whether it can read local files, steal API keys, call an external server, or manipulate your AI assistant through prompt injection. Cyber-Guardian gives you a fast pre-install scan so you can keep moving without trusting blindly.</p>
+    <div class="problem-list">
+      <div class="problem"><strong>Problem</strong><span>You paste code from GitHub or a marketplace and cannot review it deeply.</span></div>
+      <div class="problem"><strong>Solution</strong><span>Scan the code for 60 threat families and get a clear install decision.</span></div>
+      <div class="problem"><strong>Problem</strong><span>The tool looks useful but requests permissions it may not need.</span></div>
+      <div class="problem"><strong>Solution</strong><span>Use the result to ask the author for fixes, find a safer alternative, or request a secure wrapper.</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="startups-guide">
+    <div class="section-label">Guide for startups</div>
+    <h2>AI startups move fast, but investors and customers still expect security discipline.</h2>
+    <p>Early-stage teams often use AI agents, MCP servers, IDE extensions and packages to build product faster. That is rational. But when a tool touches code, credentials, repositories or customer data, it becomes part of your security boundary.</p>
+    <p>Cyber-Guardian helps startups create a lightweight rule: before a new AI tool enters the workflow, scan it. If the result is risky, the team can block it, fix it, request a safer alternative, or queue a secure wrapper request.</p>
+  </section>
+
+  <section class="section" id="security-leaders">
+    <div class="section-label">Guide for security leaders</div>
+    <h2>The AI tooling layer is becoming a new supply chain.</h2>
+    <p>Security leaders know how to review libraries, cloud permissions and CI/CD workflows. MCP and AI Skills add a new layer: tools that sit between developers, assistants, local files, APIs and production workflows.</p>
+    <p>The correct control is not fear. It is visibility and policy. Cyber-Guardian starts with pre-install scanning, then builds toward Trust Registry, threat-intelligence reports, sandbox fuzzing, secure wrappers and runtime MCP firewall enforcement.</p>
+    <div class="solution-map">
+      <div class="solution"><strong>Pre-install</strong><span>Scan code before adding it to an IDE, assistant or repository.</span></div>
+      <div class="solution"><strong>Trust registry</strong><span>Track reputation, source history and scan outcomes.</span></div>
+      <div class="solution"><strong>Wrapper request</strong><span>Queue a controlled permission layer for risky but necessary tools.</span></div>
+      <div class="solution"><strong>Runtime future</strong><span>Block risky behavior while the tool is running.</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="agencies-guide">
+    <div class="section-label">Guide for agencies and consultants</div>
+    <h2>Client trust depends on the tools you install on their behalf.</h2>
+    <p>Agencies often adopt AI tooling quickly because it improves delivery speed. But client environments can include sensitive repositories, API keys, production dashboards and private data. A suspicious extension or MCP server can turn an efficiency gain into a breach conversation.</p>
+    <p>Scanning gives agencies a simple professional habit: record what was checked, what was blocked, and what needed review. This can become part of delivery documentation and security assurance.</p>
+  </section>
+
+  <section class="section" id="devops-guide">
+    <div class="section-label">Guide for DevOps and supply chain</div>
+    <h2>GitHub Actions and packages are dangerous because they run where secrets live.</h2>
+    <p>A package install script, dependency manifest or GitHub Action can run in places that hold deployment keys, repository secrets, cloud credentials and production access. That means a small copied snippet can become a high-impact incident.</p>
+    <p>Cyber-Guardian scans GitHub Actions, npm/PyPI packages and dependency files for risky install scripts, command execution, dependency confusion, typosquatting, network callbacks and credential access patterns.</p>
+  </section>
+
+  <section class="section" id="business-guide">
+    <div class="section-label">Guide for business owners</div>
+    <h2>The business question is not "is AI useful?" It is "who is allowed to connect what?"</h2>
+    <p>AI tools can make teams faster, but they also let employees connect new tools directly into workflows. A business owner needs a simple operating rule: scan before install, keep a record, and escalate risky results.</p>
+    <p>Cyber-Guardian turns technical risk into business decisions: approve, review, block, request a safer alternative, or request a secure wrapper for a tool the team cannot avoid.</p>
+  </section>
+
+  <section class="section" id="solutions">
+    <div class="section-label">Problem to solution map</div>
+    <h2>What Cyber-Guardian offers as a direct answer to the risk.</h2>
+    <div class="solution-map">
+      <div class="solution"><strong>MCP scanner</strong><span>Find tool poisoning, credential exfiltration, prompt injection and unsafe local behavior.</span></div>
+      <div class="solution"><strong>AI Skill scanner</strong><span>Detect hidden instructions, role confusion and malicious payloads inside skills and prompts.</span></div>
+      <div class="solution"><strong>IDE extension scanner</strong><span>Check extensions before they run inside developer environments.</span></div>
+      <div class="solution"><strong>Verified alternatives</strong><span>Search for safer options and rescan current source before recommendation.</span></div>
+      <div class="solution"><strong>Secure Wrapper</strong><span>Queue a controlled wrapper when a team must use a risky tool.</span></div>
+      <div class="solution"><strong>Trust Registry</strong><span>Build reputation over time from scans, creator verification and reports.</span></div>
+      <div class="solution"><strong>Sandbox fuzzing</strong><span>Prepare active testing profiles for isolated runner execution.</span></div>
+      <div class="solution"><strong>Runtime firewall</strong><span>Future local agent enforcement for files, commands, hosts and permissions.</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="searches">
+    <div class="section-label">Topics people search for</div>
+    <h2>Common AI security questions this site answers.</h2>
+    <div class="keyword-cloud">
+      <span>MCP security scanner</span><span>Model Context Protocol security</span><span>AI Skill scanner</span><span>Cursor Skill security</span><span>Claude Skill security</span><span>IDE extension security</span><span>VS Code extension malware</span><span>prompt injection scanner</span><span>tool poisoning</span><span>MCP credential theft</span><span>AI supply chain security</span><span>GitHub Action secret theft</span><span>npm install script security</span><span>safe MCP server alternative</span><span>runtime MCP firewall</span><span>secure wrapper for MCP</span>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="section-label">FAQ</div>
+    <h2>Questions teams ask before trusting AI tools.</h2>
+    <div class="faq">
+      <div class="faq-item"><h3>Why scan MCP servers?</h3><p>MCP servers can run locally and touch files, credentials and external services. A malicious server can be more dangerous than an ordinary website.</p></div>
+      <div class="faq-item"><h3>Is a safe past scan enough?</h3><p>No. Code can change. Cyber-Guardian treats historical clean scans as signals, then fetches and rescans current source before recommending alternatives.</p></div>
+      <div class="faq-item"><h3>Who should use this?</h3><p>Solo developers, AI startups, agencies, security teams, DevOps teams and any business letting employees install AI-connected tooling.</p></div>
+      <div class="faq-item"><h3>What is the business value?</h3><p>One blocked bad install can prevent credential theft, data exposure, production compromise or client-trust damage.</p></div>
+    </div>
+  </section>
+
+  <div class="share-panel">
+    <div>
+      <div class="share-title">Help another builder avoid one bad install</div>
+      <p style="color:var(--dim);font-size:12px;margin-top:4px">Share this with a developer, founder, security lead or agency using AI tools.</p>
+    </div>
+    <div class="share-buttons">
+      <button data-share="linkedin">LinkedIn</button>
+      <button data-share="x">X</button>
+      <button data-share="facebook">Facebook</button>
+      <button data-share="whatsapp">WhatsApp</button>
+      <button data-share="copy">Copy link</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Cyber-Guardian - MCP-first security engine -
+  <a href="/">Scanner</a> -
+  <a href="/dashboard.html">Dashboard</a> -
+  <a href="/terms.html">Terms</a> -
+  <a href="/privacy.html">Privacy</a>
+</footer>
+
+<script src="/analytics.js?v=2"></script>
+<script>
+const shareUrl = 'https://cyberguardianscan.com/resources.html';
+const shareText = 'MCP security guides for AI developers, startups and security teams - scan AI tools before installing.';
+function shareLink(platform) {
+  const url = encodeURIComponent(shareUrl);
+  const text = encodeURIComponent(shareText);
+  if (platform === 'linkedin') return `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+  if (platform === 'x') return `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+  if (platform === 'facebook') return `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+  if (platform === 'whatsapp') return `https://wa.me/?text=${text}%20${url}`;
+  if (platform === 'telegram') return `https://t.me/share/url?url=${url}&text=${text}`;
+  return shareUrl;
+}
+async function copyShareLink(button) {
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+    const old = button.textContent;
+    button.textContent = 'Copied';
+    setTimeout(() => { button.textContent = old; }, 1400);
+  } catch {
+    window.prompt('Copy this link', shareUrl);
+  }
+}
+document.querySelectorAll('[data-share]').forEach(button => {
+  button.addEventListener('click', event => {
+    const platform = event.currentTarget.getAttribute('data-share');
+    if (window.cgTrack) window.cgTrack('resource_share_clicked', { platform });
+    if (platform === 'copy') return copyShareLink(event.currentTarget);
+    window.open(shareLink(platform), '_blank', 'noopener,noreferrer,width=760,height=620');
+  });
+});
+document.getElementById('share-email').href = `mailto:?subject=${encodeURIComponent('MCP security guides')}&body=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`;
+</script>
+</body>
+</html>
