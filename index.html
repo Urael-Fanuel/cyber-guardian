@@ -233,6 +233,23 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .sp-item { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: var(--green); background: var(--green-dim); border: 1px solid rgba(0,230,118,0.2); padding: 4px 10px; border-radius: 2px; margin: 3px; }
 .rec-box { margin: 0 24px 16px; padding: 12px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; font-size: 11.5px; line-height: 1.6; }
 .rec-label { font-size: 9px; letter-spacing: 2px; color: var(--cyan); margin-bottom: 5px; }
+.analysis-box { margin: 0 24px 16px; padding: 14px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; font-size: 11.5px; line-height: 1.6; }
+.analysis-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.analysis-title { font-family: var(--sans); font-size: 16px; font-weight: 800; color: #fff; }
+.analysis-sub { color: var(--text-dim); margin-top: 3px; }
+.analysis-pill { color: var(--cyan); border: 1px solid rgba(0,212,255,0.25); background: rgba(0,212,255,0.06); padding: 4px 8px; border-radius: 2px; font-size: 9px; letter-spacing: 1px; white-space: nowrap; text-transform: uppercase; }
+.analysis-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.analysis-card { border: 1px solid var(--border); background: var(--bg); border-radius: 3px; padding: 10px 12px; }
+.analysis-card-title { color: #fff; font-weight: 700; margin-bottom: 4px; }
+.analysis-card-meta { color: var(--text-dim); font-size: 10.5px; }
+.analysis-card-meta strong { color: var(--cyan); }
+.remediation-list { display: grid; gap: 8px; margin-top: 10px; }
+.remediation-step { border: 1px solid var(--border); background: var(--bg); border-radius: 3px; padding: 10px 12px; }
+.remediation-step-title { display: flex; align-items: center; gap: 8px; color: #fff; font-weight: 700; margin-bottom: 5px; }
+.remediation-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; color: #000; background: var(--cyan); border-radius: 50%; font-size: 11px; font-weight: 800; flex: 0 0 auto; }
+.remediation-body { color: var(--text-dim); font-size: 10.8px; margin-top: 4px; }
+[dir="rtl"] .analysis-head { flex-direction: row-reverse; }
+@media (max-width: 700px) { .analysis-grid { grid-template-columns: 1fr; } .analysis-head { display: block; } .analysis-pill { display: inline-flex; margin-top: 8px; } }
 .alternative-box { margin: 0 24px 16px; padding: 14px 16px; background: rgba(0,230,118,0.04); border: 1px solid rgba(0,230,118,0.22); border-radius: 3px; font-size: 11.5px; line-height: 1.7; }
 .alternative-title { font-family: var(--sans); font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 5px; }
 .alternative-meta { color: var(--text-dim); margin-top: 5px; }
@@ -1494,6 +1511,73 @@ function threatFixText(tt, details) {
   return decisionText(suggestion?.guidance_key || 'fix_default_review');
 }
 
+function renderOrchestratorEvidence(r) {
+  const orchestrator = r.analysis_orchestrator || {};
+  const shared = orchestrator.shared_state || {};
+  const agents = Array.isArray(orchestrator.specialist_agents)
+    ? orchestrator.specialist_agents.filter(agent => (agent.evidence_count || 0) > 0).slice(0, 6)
+    : [];
+  const evidence = Array.isArray(r.evidence_report) ? r.evidence_report.slice(0, 4) : [];
+  const remediation = Array.isArray(r.remediation_plan) ? r.remediation_plan.slice(0, 5) : [];
+  if (!agents.length && !evidence.length && !remediation.length) return '';
+
+  const sandboxRecommended = shared.sandbox_recommended
+    ? `<div class="analysis-card-meta"><strong>${t('orchestrator_sandbox_recommended')}</strong></div>`
+    : '';
+  const humanReview = shared.human_review_recommended
+    ? `<div class="analysis-card-meta"><strong>${t('orchestrator_human_review')}</strong></div>`
+    : '';
+
+  let html = `<div class="analysis-box">
+    <div class="analysis-head">
+      <div>
+        <div class="rec-label">${t('orchestrator_label')}</div>
+        <div class="analysis-title">${t('orchestrator_title')}</div>
+        <div class="analysis-sub">${t('orchestrator_desc')}</div>
+      </div>
+      <div class="analysis-pill">${escHtml(orchestrator.version || 'orchestrator_v1')}</div>
+    </div>
+    <div class="analysis-grid">
+      <div class="analysis-card">
+        <div class="analysis-card-title">${t('orchestrator_specialists_label')}</div>
+        <div class="analysis-card-meta">${agents.length ? agents.map(agent => `${escHtml(agent.name)} (${agent.evidence_count})`).join(' · ') : t('orchestrator_no_evidence')}</div>
+      </div>
+      <div class="analysis-card">
+        <div class="analysis-card-title">${t('orchestrator_verdict_owner')}</div>
+        <div class="analysis-card-meta">${escHtml(orchestrator.verdict_owner || 'final_orchestrator')}</div>
+        ${sandboxRecommended}${humanReview}
+      </div>
+    </div>`;
+
+  if (evidence.length) {
+    html += `<div class="t-heading">${t('orchestrator_evidence_label')}</div><div class="analysis-grid">`;
+    evidence.forEach(item => {
+      html += `<div class="analysis-card">
+        <div class="analysis-card-title">${escHtml(item.family || 'UNCLASSIFIED')}</div>
+        <div class="analysis-card-meta"><strong>${escHtml(item.specialist_name || '')}</strong>${item.confidence ? ` · ${t('orchestrator_confidence_label')}: ${Math.round(item.confidence * 100)}%` : ''}</div>
+        ${item.location ? `<div class="analysis-card-meta">${escHtml(item.location)}</div>` : ''}
+        <div class="analysis-card-meta">${escHtml(decisionText(item.impact_key || 'impact_default_review'))}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (remediation.length) {
+    html += `<div class="t-heading">${t('orchestrator_remediation_label')}</div><div class="remediation-list">`;
+    remediation.forEach(item => {
+      const familyList = Array.isArray(item.families) ? item.families.join(', ') : '';
+      html += `<div class="remediation-step">
+        <div class="remediation-step-title"><span class="remediation-num">${item.priority || ''}</span><span>${escHtml(familyList || t('orchestrator_remediation_label'))}</span></div>
+        <div class="remediation-body"><strong>${t('remediation_plain_label')}</strong> ${escHtml(decisionText(item.impact_key || 'impact_default_review'))}</div>
+        <div class="remediation-body"><strong>${t('remediation_technical_label')}</strong> ${escHtml(decisionText(item.guidance_key || 'fix_default_review'))}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  return `${html}</div>`;
+}
+
 function renderResult(r) {
   lastScanResult = r;
   const statusMap = {
@@ -1543,6 +1627,8 @@ function renderResult(r) {
       ${capabilities.length ? `<div style="margin-top:8px"><strong>${t('capabilities_label')}</strong> ${capabilities.map(cap => `<span class="sp-item">${escHtml(cap)}</span>`).join(' ')}</div>` : ''}
     </div>`;
   }
+
+  html += renderOrchestratorEvidence(r);
 
   const sandbox = r.dynamic_sandbox || {};
   if (sandbox.status && !['disabled', 'not_configured'].includes(sandbox.status)) {

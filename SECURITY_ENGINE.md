@@ -35,6 +35,32 @@ Every normalized scan response includes:
 - `coverage.ai_families`: currently `60`.
 - `coverage.static_covered_families`: list of families with static rules.
 - `dynamic_sandbox`: optional evidence returned by an isolated sandbox runner.
+- `analysis_orchestrator`: the final evidence-routing layer that groups findings by
+  specialist domain and records quality gates.
+- `evidence_report`: plain-language and technical evidence for the most important
+  findings.
+- `remediation_plan`: prioritized fix categories that help a developer understand
+  what to change before rescanning.
+
+## Orchestrator and Specialist Evidence
+
+The first production phase now uses a lightweight orchestrator. It does not run
+extra model calls for every scan; instead, it routes the merged static, semantic,
+and optional runtime findings into specialist buckets:
+
+- code execution;
+- network and exfiltration;
+- prompt and tool-instruction security;
+- secrets and identity;
+- filesystem and local data;
+- supply chain;
+- resource safety;
+- runtime behavior.
+
+The final verdict belongs to the orchestrator, not to a single detector. This keeps
+the product honest: deterministic findings cannot be downgraded, historical clean
+alternatives must be rescanned before recommendation, and runtime claims require
+real isolated-runner evidence before being shown as active runtime protection.
 
 ## Rule Requirements
 
