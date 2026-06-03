@@ -55,6 +55,29 @@ Dynamic sandbox evidence may raise a verdict when runtime behavior is suspicious
 malicious. Untrusted code is not executed inside the Vercel API; dynamic execution belongs
 in a separate hardened runner/provider with strict time, network, and filesystem limits.
 
+## Advanced Evasion Coverage
+
+The engine explicitly checks for advanced bypass patterns:
+
+- Living-off-the-land file staging: normal OS or developer tools such as `cp`,
+  `rsync`, `robocopy`, `xcopy`, `shutil`, or `fs.copyFile` moving sensitive files
+  toward temporary, public, upload, cache, or shared locations.
+- Non-adjacent data flow: sensitive sources such as env vars, tokens, cookies,
+  SSH keys, cloud credentials, or local files reaching network, DNS, shell,
+  archive, logging, clipboard, or external upload sinks.
+- Input-dependent activation: risky behavior hidden behind rare user requests
+  such as crypto wallet, private key, production, payroll, invoice, backup, or
+  token-related inputs.
+- Dynamic library/native payload loading: `ctypes.CDLL`, `dlopen`,
+  `LoadLibrary`, `ffi`, `.node` modules, WebAssembly, dynamic plugins, or
+  downloaded native payloads.
+
+The semantic layer is instructed to perform data-flow analysis and to challenge
+the functional justification for file, network, process, shell, package-install,
+and dynamic-library behavior. The sandbox fuzzing profile also asks a future
+isolated runner to generate edge-case inputs, monitor file integrity events,
+record dynamic library loads, and detect sensitive-file staging.
+
 ## Quality Notes
 
 The current deterministic rules are production seed rules. Some are high-confidence

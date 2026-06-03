@@ -153,6 +153,13 @@ should return JSON with fields such as `status`, `verdict`, `threat_score`,
 `summary`, `signals`, and `report_url`. Returned evidence is attached to the scan
 response and saved in Supabase `site_scans.dynamic_sandbox`.
 
+The runner should treat the built-in `fuzzing_profile` as a minimum test plan. It
+should generate rare input edge cases, watch file integrity events, record dynamic
+library loads, detect sensitive-file staging, record process/shell execution, and
+capture network/DNS destinations. The runner should fail closed: suspicious
+runtime behavior may raise a scan from safe/review to critical, but it must never
+downgrade deterministic findings.
+
 Run `supabase/migrations/007_dynamic_sandbox.sql` before enabling the runner in
 production.
 

