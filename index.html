@@ -712,8 +712,8 @@ footer a:hover { color: var(--cyan); }
     </div>
     <div class="trust-card">
       <div class="trust-k" data-i18n="trust_sandbox_k">Layer 3</div>
-      <div class="trust-t" data-i18n="trust_sandbox_t">Dynamic sandbox evidence</div>
-      <div class="trust-d" data-i18n="trust_sandbox_d">When deeper review evidence is available, the report can include behavior signals and practical limits. Cyber-Guardian does not present a capability as active until it is verified.</div>
+      <div class="trust-t" data-i18n="trust_sandbox_t">Additional behavior review</div>
+      <div class="trust-d" data-i18n="trust_sandbox_d">When deeper review evidence is available, the report can include behavior signals and practical limits. Cyber-Guardian presents only verified evidence in the public report.</div>
     </div>
     <div class="trust-card">
       <div class="trust-k" data-i18n="trust_fp_k">Accuracy</div>
@@ -1593,17 +1593,16 @@ function threatFixText(tt, details) {
   return decisionText(suggestion?.guidance_key || 'fix_default_review');
 }
 
-function renderOrchestratorEvidence(r) {
-  const orchestrator = r.analysis_orchestrator || {};
-  const shared = orchestrator.shared_state || {};
+function renderSecurityEvidence(r) {
+  const report = r.security_report || {};
   const evidence = Array.isArray(r.evidence_report) ? r.evidence_report.slice(0, 4) : [];
   const remediation = Array.isArray(r.remediation_plan) ? r.remediation_plan.slice(0, 5) : [];
   if (!evidence.length && !remediation.length) return '';
 
-  const sandboxRecommended = shared.sandbox_recommended
+  const deeperReviewRecommended = Boolean(report.deeper_review_recommended)
     ? `<div class="analysis-card-meta"><strong>${t('orchestrator_sandbox_recommended')}</strong></div>`
     : '';
-  const humanReview = shared.human_review_recommended
+  const humanReview = Boolean(report.human_review_recommended)
     ? `<div class="analysis-card-meta"><strong>${t('orchestrator_human_review')}</strong></div>`
     : '';
 
@@ -1624,7 +1623,7 @@ function renderOrchestratorEvidence(r) {
       <div class="analysis-card">
         <div class="analysis-card-title">${t('orchestrator_verdict_owner')}</div>
         <div class="analysis-card-meta">${t('orchestrator_verdict_public_desc')}</div>
-        ${sandboxRecommended}${humanReview}
+        ${deeperReviewRecommended}${humanReview}
       </div>
     </div>`;
 
@@ -1707,9 +1706,9 @@ function renderResult(r) {
     </div>`;
   }
 
-  html += renderOrchestratorEvidence(r);
+  html += renderSecurityEvidence(r);
 
-  const sandbox = r.dynamic_sandbox || {};
+  const sandbox = r.behavior_review || r.dynamic_sandbox || {};
   if (sandbox.status && !['disabled', 'not_configured'].includes(sandbox.status)) {
     const sandboxRisk = sandbox.verdict === 'malicious' || (sandbox.threat_score || 0) >= 70
       ? 'risky'

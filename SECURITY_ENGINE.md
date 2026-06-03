@@ -4,9 +4,9 @@ Cyber-Guardian uses a hybrid detection model:
 
 1. A canonical 60-family threat registry.
 2. Deterministic static rules for every family.
-3. AI analysis for semantic review, explanation, and ambiguous cases.
-4. Optional dynamic sandbox evidence from an external isolated runner/provider.
-5. A merged verdict that never lets AI downgrade a high-confidence deterministic finding.
+3. Semantic review for intent, explanation, and ambiguous cases.
+4. Optional behavior evidence when deeper review is available.
+5. A merged verdict that never lets semantic review downgrade a high-confidence deterministic finding.
 
 ## Canonical Registry
 
@@ -32,35 +32,25 @@ Every normalized scan response includes:
 - `threat_family_definitions`: definitions for the 60 families.
 - `coverage.total_families`: currently `60`.
 - `coverage.static_families`: currently `60`.
-- `coverage.ai_families`: currently `60`.
+- `coverage.semantic_families`: currently `60`.
 - `coverage.static_covered_families`: list of families with static rules.
-- `dynamic_sandbox`: optional evidence returned by an isolated sandbox runner.
-- `analysis_orchestrator`: the final evidence-routing layer that groups findings by
-  specialist domain and records quality gates.
+- `behavior_review`: optional public evidence returned by deeper behavior review.
+- `security_report`: public decision metadata for the scan.
 - `evidence_report`: plain-language and technical evidence for the most important
   findings.
 - `remediation_plan`: prioritized fix categories that help a developer understand
   what to change before rescanning.
 
-## Orchestrator and Specialist Evidence
+## Evidence and Decisions
 
-The first production phase now uses a lightweight orchestrator. It does not run
-extra model calls for every scan; instead, it routes the merged static, semantic,
-and optional runtime findings into specialist buckets:
+The production response is intentionally public-safe. It summarizes what was found,
+why it matters, and what to fix without exposing internal routing, internal scoring
+gates, or future implementation details.
 
-- code execution;
-- network and exfiltration;
-- prompt and tool-instruction security;
-- secrets and identity;
-- filesystem and local data;
-- supply chain;
-- resource safety;
-- runtime behavior.
-
-The final verdict belongs to the orchestrator, not to a single detector. This keeps
-the product honest: deterministic findings cannot be downgraded, historical clean
-alternatives must be rescanned before recommendation, and runtime claims require
-real isolated-runner evidence before being shown as active runtime protection.
+The final verdict is based on merged evidence, not a single detector. Deterministic
+findings cannot be downgraded, historical clean alternatives must be rescanned before
+recommendation, and deeper behavior claims are shown only when verified evidence is
+available.
 
 ## Rule Requirements
 
@@ -74,12 +64,11 @@ Every deterministic rule defines:
 
 ## Product Rule
 
-The AI may add findings, improve explanation, or classify ambiguous behavior. It must not
+Semantic review may add findings, improve explanation, or classify ambiguous behavior. It must not
 remove or downgrade deterministic findings.
 
-Dynamic sandbox evidence may raise a verdict when runtime behavior is suspicious or
-malicious. Untrusted code is not executed inside the Vercel API; dynamic execution belongs
-in a separate hardened runner/provider with strict time, network, and filesystem limits.
+Behavior evidence may raise a verdict when runtime behavior is suspicious or
+malicious. Untrusted code is not executed inside the Vercel API.
 
 ## Advanced Evasion Coverage
 
@@ -100,9 +89,7 @@ The engine explicitly checks for advanced bypass patterns:
 
 The semantic layer is instructed to perform data-flow analysis and to challenge
 the functional justification for file, network, process, shell, package-install,
-and dynamic-library behavior. The sandbox fuzzing profile also asks a future
-isolated runner to generate edge-case inputs, monitor file integrity events,
-record dynamic library loads, and detect sensitive-file staging.
+and dynamic-library behavior.
 
 ## Quality Notes
 

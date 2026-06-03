@@ -590,8 +590,13 @@ function saveToCache(hash, result) {
 }
 
 function publicScanResponse(result, adminBypass, extra = {}) {
+  const publicResult = normalizeResult(result || {});
+  const behaviorReview = normalizeDynamicSandboxEvidence(publicResult.dynamic_sandbox || result?.behavior_review);
+  delete publicResult.analysis_orchestrator;
+  delete publicResult.dynamic_sandbox;
+  publicResult.behavior_review = behaviorReview;
   return {
-    ...result,
+    ...publicResult,
     ...extra,
     _admin_bypass: Boolean(adminBypass),
   };
@@ -875,7 +880,7 @@ function coverageMetadata() {
   return {
     total_families: THREAT_FAMILIES.length,
     static_families: STATIC_COVERED_FAMILIES.length,
-    ai_families: THREAT_FAMILIES.length,
+    semantic_families: THREAT_FAMILIES.length,
     static_covered_families: STATIC_COVERED_FAMILIES,
   };
 }
@@ -1061,12 +1066,8 @@ function technicalFixForFamily(family) {
 
 function buildEvidenceReport(threats) {
   return threats.slice(0, 12).map((threat, index) => {
-    const specialistKey = specialistKeyForFamily(threat.family);
-    const specialist = SPECIALIST_AGENTS[specialistKey] || SPECIALIST_AGENTS.code_execution;
     return {
       id: `evidence_${index + 1}`,
-      specialist: specialistKey,
-      specialist_name: specialist.name,
       family: cleanText(threat.family || "UNCLASSIFIED", 80),
       severity: cleanText(threat.severity || "MEDIUM", 20).toUpperCase() || "MEDIUM",
       confidence: confidenceForThreat(threat),
@@ -1121,50 +1122,22 @@ function sandboxRecommendedFor(result) {
   return families.some(family => /(LOGIC_BOMB|TIME_BASED|CODE_INJECTION|DYNAMIC_EVAL|SUPPLY_CHAIN_ATTACK|C2_CALLBACK|NETWORK_CALLBACK|FILE_SYSTEM_ATTACK|DATA_HARVESTING|CREDENTIAL_THEFT|BASE64_OBFUSCATION|DYNAMIC)/.test(family));
 }
 
-function buildOrchestratorAnalysis(result) {
+function buildSecurityReport(result) {
   const threats = Array.isArray(result.threats) ? result.threats : [];
   const evidenceReport = buildEvidenceReport(threats);
   const remediationPlan = buildRemediationPlan(threats);
-  const activeBySpecialist = new Map();
-  for (const evidence of evidenceReport) {
-    const bucket = activeBySpecialist.get(evidence.specialist) || [];
-    bucket.push(evidence);
-    activeBySpecialist.set(evidence.specialist, bucket);
-  }
-  const specialistAgents = Object.entries(SPECIALIST_AGENTS).map(([key, info]) => {
-    const findings = activeBySpecialist.get(key) || [];
-    return {
-      key,
-      name: info.name,
-      focus: info.focus,
-      status: findings.length ? "evidence_found" : "no_findings",
-      evidence_count: findings.length,
-      top_families: findings.map(item => item.family).slice(0, 5),
-    };
-  });
   const decision = result.decision_details?.decision || "security_review";
   const highConfidenceFindings = evidenceReport.filter(item => item.confidence >= 0.78).length;
-  const sandboxRecommended = sandboxRecommendedFor(result);
+  const deeperReviewRecommended = sandboxRecommendedFor(result);
   return {
-    version: "orchestrator_v1",
-    mode: "evidence_routing",
-    verdict_owner: "final_orchestrator",
-    safe_verdict_rule: "Only the final orchestrator can mark code safe after deterministic, semantic, and available runtime evidence are merged.",
-    specialist_agents: specialistAgents,
-    shared_state: {
-      evidence_count: evidenceReport.length,
-      high_confidence_findings: highConfidenceFindings,
-      remediation_steps: remediationPlan.length,
-      final_decision: decision,
-      sandbox_recommended: sandboxRecommended,
-      human_review_recommended: decision !== "install_ok",
-    },
-    quality_gates: [
-      "Untrusted code is treated as data, not instructions.",
-      "Deterministic findings cannot be downgraded by semantic analysis.",
-      "Historical clean scans are candidates only and must be rescanned before recommendation.",
-      "Runtime claims require an isolated runner or local runtime agent before being shown as active protection.",
-    ],
+    version: "security_report_v1",
+    evidence_count: evidenceReport.length,
+    high_confidence_findings: highConfidenceFindings,
+    remediation_steps: remediationPlan.length,
+    final_decision: decision,
+    deeper_review_recommended: deeperReviewRecommended,
+    human_review_recommended: decision !== "install_ok",
+    current_source_required: true,
   };
 }
 
@@ -1359,7 +1332,8 @@ function normalizeResult(result) {
     : (normalized.decision_details.decision === "install_ok" ? "safe" : "review");
   normalized.evidence_report = buildEvidenceReport(normalized.threats);
   normalized.remediation_plan = buildRemediationPlan(normalized.threats);
-  normalized.analysis_orchestrator = buildOrchestratorAnalysis(normalized);
+  normalized.security_report = buildSecurityReport(normalized);
+  delete normalized.analysis_orchestrator;
   return normalized;
 }
 
@@ -1392,8 +1366,6 @@ function normalizeDynamicSandboxEvidence(value) {
 
   return {
     enabled: Boolean(value.enabled),
-    provider: cleanText(value.provider || CONFIG.DYNAMIC_SANDBOX_PROVIDER, 80),
-    mode: "dynamic_sandbox",
     status,
     verdict: normalizeSandboxVerdict(value.verdict),
     threat_score: Math.max(0, Math.min(100, Math.round(Number.isFinite(threatScore) ? threatScore : 0))),
@@ -1401,25 +1373,12 @@ function normalizeDynamicSandboxEvidence(value) {
     signals: cleanDisplayList(value.signals, 10),
     report_url: cleanText(value.report_url || "", 500),
     submitted_at: cleanText(value.submitted_at || "", 48),
-    fuzzing_profile: value.fuzzing_profile && typeof value.fuzzing_profile === "object"
-      ? {
-           enabled: Boolean(value.fuzzing_profile.enabled),
-           mode: cleanText(value.fuzzing_profile.mode || "autonomous_ai_fuzzing", 80),
-           objectives: cleanDisplayList(value.fuzzing_profile.objectives, 12),
-           edge_case_inputs: cleanDisplayList(value.fuzzing_profile.edge_case_inputs, 12),
-           honeytokens: cleanDisplayList(value.fuzzing_profile.honeytokens, 12),
-           threat_focus: cleanDisplayList(value.fuzzing_profile.threat_focus, 12),
-           required_evidence: cleanDisplayList(value.fuzzing_profile.required_evidence, 12),
-         }
-      : {},
   };
 }
 
 function sandboxEvidence(status, overrides = {}) {
   return normalizeDynamicSandboxEvidence({
     enabled: CONFIG.DYNAMIC_SANDBOX_ENABLED,
-    provider: CONFIG.DYNAMIC_SANDBOX_PROVIDER,
-    mode: "dynamic_sandbox",
     status,
     verdict: "unknown",
     threat_score: 0,
@@ -1479,17 +1438,17 @@ async function runDynamicSandbox(scope, code, result, codeHash) {
   if (!CONFIG.DYNAMIC_SANDBOX_ENABLED) return sandboxEvidence("disabled");
   if (!CONFIG.DYNAMIC_SANDBOX_WEBHOOK_URL) {
     return sandboxEvidence("not_configured", {
-      summary: "Dynamic sandbox runner is enabled but no isolated runner URL is configured.",
+      summary: "Additional behavior review is not available for this scan.",
     });
   }
   if (!CONFIG.DYNAMIC_SANDBOX_SCOPES.includes(scope)) {
     return sandboxEvidence("skipped", {
-      summary: `Dynamic sandbox is not enabled for ${scope} scans.`,
+      summary: "Additional behavior review was not required for this scan type.",
     });
   }
   if ((result?.threat_score || 0) < CONFIG.DYNAMIC_SANDBOX_MIN_SCORE) {
     return sandboxEvidence("skipped", {
-      summary: `Dynamic sandbox was skipped because the static score is below ${CONFIG.DYNAMIC_SANDBOX_MIN_SCORE}.`,
+      summary: "Additional behavior review was not required by the evidence in this scan.",
     });
   }
 
@@ -1529,7 +1488,7 @@ async function runDynamicSandbox(scope, code, result, codeHash) {
 
     if (!response.ok) {
       return sandboxEvidence("error", {
-        summary: `Dynamic sandbox provider returned HTTP ${response.status}.`,
+        summary: "Additional behavior review did not complete.",
         submitted_at: submittedAt,
       });
     }
@@ -1550,8 +1509,8 @@ async function runDynamicSandbox(scope, code, result, codeHash) {
     clearTimeout(timeoutId);
     return sandboxEvidence("error", {
       summary: err?.name === "AbortError"
-        ? "Dynamic sandbox provider timed out before returning a result."
-        : "Dynamic sandbox provider did not return a usable result.",
+        ? "Additional behavior review timed out before returning a result."
+        : "Additional behavior review did not return a usable result.",
       submitted_at: submittedAt,
     });
   }
@@ -1567,11 +1526,11 @@ function mergeDynamicSandbox(result, sandboxResult) {
   if (sandbox.verdict === "malicious" || sandbox.threat_score >= 70) {
     merged.status = "STATUS_CRITICAL";
     merged.threat_score = Math.max(merged.threat_score, sandbox.threat_score, 70);
-    merged.recommendation = merged.recommendation || "Do not install. Dynamic sandbox behavior indicates high risk.";
+    merged.recommendation = merged.recommendation || "Do not install. Behavior review indicates high risk.";
   } else if (sandbox.verdict === "suspicious" || sandbox.threat_score >= 20) {
     if (merged.status === "STATUS_SAFE") merged.status = "STATUS_MODERATE";
     merged.threat_score = Math.max(merged.threat_score, sandbox.threat_score, 20);
-    merged.recommendation = merged.recommendation || "Review before installing. Dynamic sandbox behavior requires investigation.";
+    merged.recommendation = merged.recommendation || "Review before installing. Behavior review requires investigation.";
   }
 
   return normalizeResult(merged);
@@ -1995,6 +1954,7 @@ if (process.env.NODE_ENV === "test") {
     normalizeResult,
     normalizeDynamicSandboxEvidence,
     mergeDynamicSandbox,
+    publicScanResponse,
     THREAT_FAMILIES,
     THREAT_FAMILY_DEFINITIONS,
     ALL_STATIC_RULES,

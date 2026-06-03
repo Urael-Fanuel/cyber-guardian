@@ -929,7 +929,7 @@ def _site_scan_row(scope: str, result: dict, server=None) -> dict:
         "component_type":   _clean_text(profile.get("component_type") or scope, 48).lower(),
         "capabilities":     _clean_list(profile.get("capabilities"), 8),
         "use_case_tags":    _clean_list(profile.get("use_case_tags") or profile.get("keywords"), 10),
-        "dynamic_sandbox":  result.get("dynamic_sandbox") if isinstance(result.get("dynamic_sandbox"), dict) else {},
+        "dynamic_sandbox":  result.get("behavior_review") if isinstance(result.get("behavior_review"), dict) else (result.get("dynamic_sandbox") if isinstance(result.get("dynamic_sandbox"), dict) else {}),
     }
     if server:
         row.update({
