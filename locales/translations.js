@@ -2164,6 +2164,55 @@ Object.entries(DECISION_GUIDANCE_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SCAN_RESULT_LABEL_COPY = {
+  en: {
+    severity_critical: "Critical",
+    severity_high: "High",
+    severity_medium: "Medium",
+    severity_low: "Low"
+  },
+  he: {
+    severity_critical: "\u05e7\u05e8\u05d9\u05d8\u05d9",
+    severity_high: "\u05d2\u05d1\u05d5\u05d4",
+    severity_medium: "\u05d1\u05d9\u05e0\u05d5\u05e0\u05d9",
+    severity_low: "\u05e0\u05de\u05d5\u05da"
+  },
+  de: {
+    severity_critical: "Kritisch",
+    severity_high: "Hoch",
+    severity_medium: "Mittel",
+    severity_low: "Niedrig"
+  },
+  ja: {
+    severity_critical: "\u91cd\u5927",
+    severity_high: "\u9ad8",
+    severity_medium: "\u4e2d",
+    severity_low: "\u4f4e"
+  },
+  ko: {
+    severity_critical: "\uc2ec\uac01",
+    severity_high: "\ub192\uc74c",
+    severity_medium: "\uc911\uac04",
+    severity_low: "\ub0ae\uc74c"
+  },
+  fr: {
+    severity_critical: "Critique",
+    severity_high: "Eleve",
+    severity_medium: "Moyen",
+    severity_low: "Faible"
+  },
+  pt: {
+    severity_critical: "Critico",
+    severity_high: "Alto",
+    severity_medium: "Medio",
+    severity_low: "Baixo"
+  }
+};
+
+Object.entries(SCAN_RESULT_LABEL_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const ORCHESTRATOR_REPORT_COPY = {
   en: {
     orchestrator_label: "Security evidence",

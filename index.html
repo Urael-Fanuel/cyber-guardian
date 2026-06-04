@@ -1407,8 +1407,24 @@ async function runScan() {
   renderResult(result);
 }
 
+function currentLangCode() {
+  const saved = localStorage.getItem('cg-lang');
+  if (window.TRANSLATIONS?.[saved]) return saved;
+  const docLang = (document.documentElement.lang || 'en').split('-')[0];
+  return window.TRANSLATIONS?.[docLang] ? docLang : 'en';
+}
+
+function translatedText(key) {
+  if (!key) return '';
+  const code = currentLangCode();
+  const value = window.translateContent
+    ? window.translateContent('site', code, key)
+    : t(key);
+  return value && value !== key ? value : '';
+}
+
 function decisionText(key) {
-  return key ? t(key) : '';
+  return translatedText(key);
 }
 
 function renderDecisionDetails(r) {
@@ -1495,7 +1511,7 @@ function renderAlternativeVerification(result, item, source) {
     <div>${escHtml(desc)}</div>
     <div class="alternative-meta">${t('alternative_score_label')}: ${score}/100</div>
     ${files}
-    ${result?.summary ? `<div class="alternative-meta">${escHtml(result.summary)}</div>` : ''}
+    ${localizedSummary(result) ? `<div class="alternative-meta">${escHtml(localizedSummary(result))}</div>` : ''}
     <div class="alternative-actions">
       ${item?.source_url ? `<a class="alternative-link" href="${escHtml(item.source_url)}" target="_blank" rel="noopener noreferrer">${t('alternative_open_source')}</a>` : ''}
       ${isOk ? '' : `<button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_contact_sales')}</button>`}
@@ -1591,6 +1607,82 @@ function threatFixText(tt, details) {
   const family = String(tt.family || '').toUpperCase();
   const suggestion = suggestions.find(item => String(item.family || '').toUpperCase() === family);
   return decisionText(suggestion?.guidance_key || 'fix_default_review');
+}
+
+function impactKeyForThreatFamily(family) {
+  const name = String(family || '').toUpperCase();
+  if (/(REVERSE_SHELL|BIND_SHELL|C2_CALLBACK|OS_COMMAND|PRIVILEGE|SUDO|SUID|SHELL_ESCAPE|REMOTE_CODE_EXECUTION)/.test(name)) return 'impact_command_control';
+  if (/(CREDENTIAL|API_KEY|ENV_VAR|COOKIE|SESSION|AUTH|TOKEN|CLOUD_CREDENTIAL|SECRET)/.test(name)) return 'impact_secrets';
+  if (/(NETWORK|DNS|SSRF|EXFILTRATION|CALLBACK)/.test(name)) return 'impact_network';
+  if (/(PROMPT|JAILBREAK|ROLE_CONFUSION|SYSTEM_OVERRIDE|TOOL_POISONING|TOOL_DESCRIPTION|TOOL_RESULT|CONTEXT)/.test(name)) return 'impact_prompt';
+  if (/(FILE_SYSTEM|PATH|DIRECTORY|SYMLINK|DATA_HARVESTING|SCREEN_CAPTURE|KEYLOGGER|CLIPBOARD)/.test(name)) return 'impact_filesystem';
+  if (/(SUPPLY|DEPENDENCY|TYPOSQUATTING|PACKAGE|INSTALL)/.test(name)) return 'impact_supply_chain';
+  if (/(RESOURCE|MEMORY|ZIP_BOMB|FORK_BOMB|REGEX_DOS|CRYPTO|MINING)/.test(name)) return 'impact_resource';
+  if (/(LOGIC_BOMB|TIME_BASED|BASE64|UNICODE|HEX|CHAR_CODE|ZERO_WIDTH|HOMOGLYPH|OBFUSCATION|DYNAMIC_EVAL|CODE_INJECTION)/.test(name)) return 'impact_hidden_behavior';
+  return 'impact_default_review';
+}
+
+function fixKeyForThreatFamily(family) {
+  const name = String(family || '').toUpperCase();
+  if (/(REVERSE_SHELL|BIND_SHELL|BACKDOOR|C2_CALLBACK|KEYLOGGER|CLIPBOARD|CRYPTO|MINING|RANSOMWARE|WIPER|LOGIC_BOMB)/.test(name)) return 'fix_remove_malicious_behavior';
+  if (/(CREDENTIAL|API_KEY|ENV_VAR|COOKIE|SESSION|AUTH|TOKEN|CLOUD_CREDENTIAL|SECRET)/.test(name)) return 'fix_protect_secrets';
+  if (/(OS_COMMAND|REMOTE_CODE_EXECUTION|SHELL_ESCAPE|DYNAMIC_EVAL|CODE_INJECTION|DESERIALIZATION|TEMPLATE_INJECTION|SQL_INJECTION)/.test(name)) return 'fix_remove_dynamic_execution';
+  if (/(PROMPT|JAILBREAK|ROLE_CONFUSION|SYSTEM_OVERRIDE|TOOL_POISONING|TOOL_DESCRIPTION|TOOL_RESULT|CONTEXT)/.test(name)) return 'fix_harden_instructions';
+  if (/(FILE_SYSTEM|PATH|DIRECTORY|SYMLINK|DATA_HARVESTING|SCREEN_CAPTURE)/.test(name)) return 'fix_limit_file_access';
+  if (/(NETWORK|DNS|SSRF|EXFILTRATION|CALLBACK)/.test(name)) return 'fix_limit_network_access';
+  if (/(SUPPLY|DEPENDENCY|TYPOSQUATTING|PACKAGE|INSTALL)/.test(name)) return 'fix_review_dependency_source';
+  if (/(RESOURCE|MEMORY|ZIP_BOMB|FORK_BOMB|REGEX_DOS)/.test(name)) return 'fix_add_resource_limits';
+  if (/(BASE64|UNICODE|HEX|CHAR_CODE|ZERO_WIDTH|HOMOGLYPH|OBFUSCATION)/.test(name)) return 'fix_remove_obfuscation';
+  return 'fix_default_review';
+}
+
+function evidenceForThreat(result, threat) {
+  const family = String(threat?.family || '').toUpperCase();
+  const evidence = Array.isArray(result?.evidence_report) ? result.evidence_report : [];
+  return evidence.find(item => String(item.family || '').toUpperCase() === family) || null;
+}
+
+function remediationForThreat(result, threat) {
+  const family = String(threat?.family || '').toUpperCase();
+  const remediation = Array.isArray(result?.remediation_plan) ? result.remediation_plan : [];
+  return remediation.find(item => Array.isArray(item.families) && item.families.map(name => String(name || '').toUpperCase()).includes(family)) || null;
+}
+
+function localizedThreatDescription(result, threat) {
+  const item = evidenceForThreat(result, threat);
+  return decisionText(item?.impact_key || impactKeyForThreatFamily(threat?.family))
+    || String(threat?.description || '');
+}
+
+function localizedThreatFix(result, threat, details) {
+  const item = remediationForThreat(result, threat);
+  const suggestion = Array.isArray(details?.fix_suggestions)
+    ? details.fix_suggestions.find(entry => String(entry.family || '').toUpperCase() === String(threat?.family || '').toUpperCase())
+    : null;
+  return decisionText(item?.guidance_key || suggestion?.guidance_key || fixKeyForThreatFamily(threat?.family));
+}
+
+function localizedSummary(result) {
+  const details = result?.decision_details || {};
+  const decision = details.decision || (result?.status === 'STATUS_SAFE' ? 'install_ok' : (result?.status === 'STATUS_CRITICAL' ? 'do_not_install' : 'security_review'));
+  const reason = decisionText(details.reason_key || `decision_${decision}_reason`);
+  const action = decisionText(details.action_key || `decision_${decision}_action`);
+  return [reason, action].filter(Boolean).join(' ');
+}
+
+function localizedRecommendation(result) {
+  const details = result?.decision_details || {};
+  const decision = details.decision || (result?.status === 'STATUS_SAFE' ? 'install_ok' : (result?.status === 'STATUS_CRITICAL' ? 'do_not_install' : 'security_review'));
+  const action = decisionText(details.action_key || `decision_${decision}_action`);
+  const steps = Array.isArray(details.next_step_keys)
+    ? details.next_step_keys.slice(0, 3).map(step => decisionText(step)).filter(Boolean)
+    : [];
+  return [action, ...steps].filter(Boolean).join(' ');
+}
+
+function severityLabel(value) {
+  const normalized = String(value || 'MEDIUM').trim().toLowerCase();
+  return translatedText(`severity_${normalized}`) || String(value || 'MEDIUM');
 }
 
 function renderSecurityEvidence(r) {
@@ -1694,7 +1786,8 @@ function renderResult(r) {
 
   html += renderDecisionDetails(r);
 
-  if (r.summary) html += `<div class="summary-box"><strong>${t('summary_label')}</strong> ${escHtml(r.summary)}</div>`;
+  const summaryText = localizedSummary(r);
+  if (summaryText) html += `<div class="summary-box"><strong>${t('summary_label')}</strong> ${escHtml(summaryText)}</div>`;
 
   const profile = r.code_profile || {};
   const purpose = String(profile.purpose || '').trim();
@@ -1738,13 +1831,13 @@ function renderResult(r) {
     threats.forEach(tt => {
       const sev = (tt.severity||'medium').toLowerCase();
       html += `<div class="t-item ${sev}">
-        <div class="t-sev ${sev}">${tt.severity||'MEDIUM'}</div>
+        <div class="t-sev ${sev}">${escHtml(severityLabel(tt.severity || 'MEDIUM'))}</div>
         <div class="t-body">
           <div class="t-name">${escHtml(tt.family||'Unknown')}</div>
-          <div class="t-desc">${escHtml(tt.description||'')}</div>
+          <div class="t-desc">${escHtml(localizedThreatDescription(r, tt))}</div>
           ${tt.line_hint ? `<div class="t-line"><strong>${t('finding_location_label')}</strong> ${escHtml(tt.line_hint)}</div>` : ''}
           ${tt.evidence ? `<div class="t-evidence">${escHtml(tt.evidence.substring(0,80))}</div>` : ''}
-          <div class="t-fix"><strong>${t('finding_fix_label')}</strong> ${escHtml(threatFixText(tt, decisionDetails))}</div>
+          <div class="t-fix"><strong>${t('finding_fix_label')}</strong> ${escHtml(localizedThreatFix(r, tt, decisionDetails) || threatFixText(tt, decisionDetails))}</div>
         </div>
       </div>`;
     });
@@ -1757,7 +1850,8 @@ function renderResult(r) {
     html += `</div>`;
   }
 
-  if (r.recommendation) html += `<div class="rec-box"><div class="rec-label">${t('recommendation_label')}</div>${escHtml(r.recommendation)}</div>`;
+  const recommendationText = localizedRecommendation(r);
+  if (recommendationText) html += `<div class="rec-box"><div class="rec-label">${t('recommendation_label')}</div>${escHtml(recommendationText)}</div>`;
 
   html += `<div class="actions">
     <button class="act-btn" onclick="copyReport(${score},'${r.status}',${threats.length})">${t('action_copy')}</button>
