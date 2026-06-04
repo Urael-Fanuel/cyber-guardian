@@ -202,10 +202,10 @@ function testPublicResponseHidesInternalAnalysis() {
   assert.equal(publicResult.behavior_review.status, "completed");
   assert.equal(publicResult.behavior_review.fuzzing_profile, undefined);
   assert.equal(publicResult.behavior_review.provider, undefined);
-  assert.equal(publicResult.summary, "");
-  assert.equal(publicResult.recommendation, "");
-  assert.equal(publicResult.threats[0].description, "");
-  assert.equal(publicResult.behavior_review.summary, "");
+  assert.equal(publicResult.summary, "Behavior review indicates high risk.");
+  assert.equal(publicResult.recommendation, "Do not install this package.");
+  assert.equal(publicResult.threats[0].description, "External callback behavior.");
+  assert.equal(result.dynamic_sandbox.summary, "External callback observed.");
 }
 
 function testStaticReverseShell() {
