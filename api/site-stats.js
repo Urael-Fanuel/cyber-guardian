@@ -57,6 +57,59 @@ const BLOCKING_THREAT_FAMILIES = new Set([
 const MAX_ALTERNATIVE_SOURCE_CHARS = 50000;
 const MAX_ALTERNATIVE_SOURCE_FILES = 6;
 
+function tableMissing(error) {
+  return /relation .* does not exist|schema cache|Could not find/i.test(error?.message || '');
+}
+
+function cleanEvidenceText(value, max = 500) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function normalizeEvidenceRow(row) {
+  return {
+    evidence_id: cleanEvidenceText(row.evidence_id, 80),
+    family: cleanEvidenceText(row.family || 'UNCLASSIFIED', 80).toUpperCase(),
+    severity: cleanEvidenceText(row.severity || 'MEDIUM', 20).toUpperCase(),
+    confidence: Math.max(0, Math.min(1, Number(row.confidence || 0))),
+    evidence: cleanEvidenceText(row.evidence, 500),
+    line_hint: cleanEvidenceText(row.line_hint, 500),
+    plain_explanation: cleanEvidenceText(row.plain_explanation, 500),
+    impact_key: cleanEvidenceText(row.impact_key, 80),
+    user_impact: cleanEvidenceText(row.user_impact, 500),
+    fix_key: cleanEvidenceText(row.fix_key, 80),
+    fix_guidance: cleanEvidenceText(row.fix_guidance, 500),
+  };
+}
+
+async function evidenceMapForRecentScans(sb, scans) {
+  const scanRunIds = [...new Set(
+    (scans || [])
+      .slice(0, 10)
+      .map(scan => scan.scan_run_id)
+      .filter(Boolean)
+  )];
+  if (!scanRunIds.length) return new Map();
+
+  const { data, error } = await sb
+    .from('cg_scan_evidence')
+    .select('scan_run_id,evidence_id,family,severity,confidence,evidence,line_hint,plain_explanation,impact_key,user_impact,fix_key,fix_guidance,created_at')
+    .in('scan_run_id', scanRunIds)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    if (!tableMissing(error)) console.error('[site-stats-evidence]', error.message);
+    return new Map();
+  }
+
+  const byRun = new Map();
+  for (const row of data || []) {
+    if (!row.scan_run_id) continue;
+    if (!byRun.has(row.scan_run_id)) byRun.set(row.scan_run_id, []);
+    byRun.get(row.scan_run_id).push(normalizeEvidenceRow(row));
+  }
+  return byRun;
+}
+
 function githubRequestHeaders() {
   const headers = {
     'Accept': 'application/vnd.github+json',
@@ -385,14 +438,15 @@ module.exports = async function handler(req, res) {
 
     if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Not configured' });
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const enrichedSelect = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags';
+    const baseSelect = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags';
+    const enrichedSelect = `scan_run_id,${baseSelect}`;
     let { data: scans, error } = await sb
       .from('site_scans')
       .select(`${enrichedSelect},dynamic_sandbox`)
       .order('scanned_at', { ascending: false })
       .limit(5000);
 
-    if (error && /column .* does not exist|schema cache|Could not find/i.test(error.message || '')) {
+    if (error && tableMissing(error)) {
       const enriched = await sb
         .from('site_scans')
         .select(enrichedSelect)
@@ -402,7 +456,17 @@ module.exports = async function handler(req, res) {
       error = enriched.error;
     }
 
-    if (error && /column .* does not exist|schema cache|Could not find/i.test(error.message || '')) {
+    if (error && tableMissing(error)) {
+      const withoutRunId = await sb
+        .from('site_scans')
+        .select(`${baseSelect},dynamic_sandbox`)
+        .order('scanned_at', { ascending: false })
+        .limit(5000);
+      scans = withoutRunId.data;
+      error = withoutRunId.error;
+    }
+
+    if (error && tableMissing(error)) {
       const legacy = await sb
         .from('site_scans')
         .select('scope,status,threat_score,threat_count,threats_summary,scanned_at')
@@ -457,6 +521,7 @@ module.exports = async function handler(req, res) {
     const blocked_rate = total > 0 ? Math.round((blocked / total) * 100) : 0;
     const detection_rate = attention_rate;
     const avg_threat_score = total > 0 ? Math.round(scans.reduce((a, s) => a + (s.threat_score || 0), 0) / total) : 0;
+    const evidenceByRun = await evidenceMapForRecentScans(sb, scans);
 
     const by_scope = { mcp: 0, skill: 0, extension: 0, supply_chain: 0 };
     for (const s of scans) {
@@ -466,6 +531,7 @@ module.exports = async function handler(req, res) {
 
     // Last 10 scans for recent feed
     const recent = scans.slice(0, 10).map(s => ({
+      scan_run_id:       s.scan_run_id || '',
       scope:            s.scope || normalizeScope(s.scope),
       status:           s.status,
       raw_status:       s.status,
@@ -482,6 +548,7 @@ module.exports = async function handler(req, res) {
       capabilities:     arrayValue(s.capabilities),
       use_case_tags:    arrayValue(s.use_case_tags),
       dynamic_sandbox:  s.dynamic_sandbox && typeof s.dynamic_sandbox === 'object' ? s.dynamic_sandbox : {},
+      evidence:         s.scan_run_id ? (evidenceByRun.get(s.scan_run_id) || []) : [],
       alternatives:     saferAlternatives(s, scans),
     }));
 

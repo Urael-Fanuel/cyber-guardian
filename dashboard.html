@@ -1000,6 +1000,76 @@ Object.entries(DECISION_EXTRA_COPY).forEach(([lang, copy]) => {
   DECISION_COPY[lang] = { ...(DECISION_COPY[lang] || DECISION_COPY.en), ...copy };
 });
 
+const SIMPLE_EVIDENCE_COPY = {
+  en: {
+    plain_words: 'In plain words',
+    where_in_code: 'Where in the code',
+    evidence_signal: 'Evidence found',
+    why_it_matters: 'Why this is dangerous',
+    what_to_fix: 'What to fix now',
+    technical_family: 'Technical finding',
+    no_location: 'No exact location was reported',
+  },
+  he: {
+    plain_words: '\u05d1\u05de\u05d9\u05dc\u05d9\u05dd \u05e4\u05e9\u05d5\u05d8\u05d5\u05ea',
+    where_in_code: '\u05d0\u05d9\u05e4\u05d4 \u05d1\u05e7\u05d5\u05d3',
+    evidence_signal: '\u05d4\u05e8\u05d0\u05d9\u05d4 \u05e9\u05e0\u05de\u05e6\u05d0\u05d4',
+    why_it_matters: '\u05dc\u05de\u05d4 \u05d6\u05d4 \u05de\u05e1\u05d5\u05db\u05df',
+    what_to_fix: '\u05de\u05d4 \u05dc\u05ea\u05e7\u05df \u05e2\u05db\u05e9\u05d9\u05d5',
+    technical_family: '\u05e9\u05dd \u05d8\u05db\u05e0\u05d9',
+    no_location: '\u05dc\u05d0 \u05e6\u05d5\u05d9\u05df \u05de\u05d9\u05e7\u05d5\u05dd \u05de\u05d3\u05d5\u05d9\u05e7',
+  },
+  de: {
+    plain_words: 'Einfach gesagt',
+    where_in_code: 'Stelle im Code',
+    evidence_signal: 'Gefundener Hinweis',
+    why_it_matters: 'Warum das gefaehrlich ist',
+    what_to_fix: 'Jetzt zu korrigieren',
+    technical_family: 'Technischer Befund',
+    no_location: 'Keine genaue Stelle gemeldet',
+  },
+  ja: {
+    plain_words: '\u3084\u3055\u3057\u3044\u8aac\u660e',
+    where_in_code: '\u30b3\u30fc\u30c9\u306e\u5834\u6240',
+    evidence_signal: '\u898b\u3064\u304b\u3063\u305f\u8a3c\u62e0',
+    why_it_matters: '\u306a\u305c\u5371\u967a\u304b',
+    what_to_fix: '\u4eca\u3059\u3050\u4fee\u6b63\u3059\u308b\u3053\u3068',
+    technical_family: '\u6280\u8853\u540d',
+    no_location: '\u6b63\u78ba\u306a\u5834\u6240\u306f\u4e0d\u660e',
+  },
+  ko: {
+    plain_words: '\uc27d\uac8c \uc124\uba85',
+    where_in_code: '\ucf54\ub4dc \uc704\uce58',
+    evidence_signal: '\ubc1c\uacac\ub41c \uc99d\uac70',
+    why_it_matters: '\uc65c \uc704\ud5d8\ud55c\uac00',
+    what_to_fix: '\uc9c0\uae08 \uc218\uc815\ud560 \ub0b4\uc6a9',
+    technical_family: '\uae30\uc220 \uc774\ub984',
+    no_location: '\uc815\ud655\ud55c \uc704\uce58\uac00 \uc5c6\uc2b5\ub2c8\ub2e4',
+  },
+  fr: {
+    plain_words: 'Explication simple',
+    where_in_code: 'Ou dans le code',
+    evidence_signal: 'Indice trouve',
+    why_it_matters: 'Pourquoi c est dangereux',
+    what_to_fix: 'Quoi corriger maintenant',
+    technical_family: 'Nom technique',
+    no_location: 'Aucun emplacement exact signale',
+  },
+  pt: {
+    plain_words: 'Em palavras simples',
+    where_in_code: 'Onde no codigo',
+    evidence_signal: 'Evidencia encontrada',
+    why_it_matters: 'Por que isso e perigoso',
+    what_to_fix: 'O que corrigir agora',
+    technical_family: 'Nome tecnico',
+    no_location: 'Nenhum local exato informado',
+  },
+};
+
+Object.entries(SIMPLE_EVIDENCE_COPY).forEach(([lang, copy]) => {
+  DECISION_COPY[lang] = { ...(DECISION_COPY[lang] || DECISION_COPY.en), ...copy };
+});
+
 const THREAT_EXPLANATIONS = {
   en: {
     credential: 'The code touches passwords, tokens, API keys, SSH keys, or other secrets. Installing it can expose accounts or infrastructure.',
@@ -1248,10 +1318,60 @@ function scanDecision(scanOrStatus, decisionOverride) {
   return { value, className: 'risk-safe', text: c.install_ok, action: c.action_safe };
 }
 
+function evidenceImpactText(item, category) {
+  const explanations = explanationSet();
+  if (currentLang === 'en' && item.user_impact) return item.user_impact;
+  return explanations[category] || explanations.default || item.user_impact || item.plain_explanation || '';
+}
+
+function evidencePlainText(item, category) {
+  const explanations = explanationSet();
+  if (currentLang === 'en' && item.plain_explanation) return item.plain_explanation;
+  return explanations[category] || explanations.default || item.plain_explanation || item.user_impact || '';
+}
+
+function evidenceFixText(item, category, decision) {
+  const c = copySet();
+  const remediations = remediationSet();
+  const shouldReplace = decision.value === 'blocked' && NON_REPAIRABLE_CATEGORIES.has(category);
+  if (shouldReplace) return c.do_not_repair;
+  if (currentLang === 'en' && item.fix_guidance) return item.fix_guidance;
+  return remediations[category] || remediations.default || item.fix_guidance || '';
+}
+
+function evidenceDetailsHtml(scan) {
+  const items = Array.isArray(scan.evidence) ? scan.evidence.filter(Boolean).slice(0, 8) : [];
+  if (!items.length) return '';
+  const decision = scanDecision(scan);
+  return `<div class="threat-list evidence-list">${items.map(item => {
+    const family = String(item.family || 'UNCLASSIFIED').trim().toUpperCase();
+    const category = threatCategory(family);
+    const plain = evidencePlainText(item, category);
+    const impact = evidenceImpactText(item, category);
+    const fix = evidenceFixText(item, category, decision);
+    const location = item.line_hint || decisionText('no_location', 'No exact location was reported');
+    const evidence = item.evidence || '';
+    const severity = String(item.severity || '').trim().toUpperCase();
+    return `<div class="threat-row evidence-row ${decision.value === 'blocked' ? 'do-not-use' : ''}">
+      <div class="threat-name">${escapeHtml(decisionText('technical_family', 'Technical finding'))}: ${escapeHtml(family)}${severity ? ` <span class="feed-meta">${escapeHtml(severity)}</span>` : ''}</div>
+      <div class="threat-desc"><strong>${escapeHtml(decisionText('plain_words', 'In plain words'))}:</strong> ${escapeHtml(plain)}</div>
+      <div class="threat-desc"><strong>${escapeHtml(decisionText('why_it_matters', 'Why this is dangerous'))}:</strong> ${escapeHtml(impact)}</div>
+      <div class="threat-action"><strong>${escapeHtml(decisionText('where_in_code', 'Where in the code'))}:</strong> ${escapeHtml(location)}</div>
+      ${evidence ? `<div class="threat-action"><strong>${escapeHtml(decisionText('evidence_signal', 'Evidence found'))}:</strong> <code>${escapeHtml(evidence)}</code></div>` : ''}
+      <div class="threat-fix"><strong>${escapeHtml(decisionText('what_to_fix', 'What to fix now'))}:</strong> ${escapeHtml(fix)}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
 function threatDetailsHtml(scan) {
   const c = copySet();
   const decision = scanDecision(scan);
-  if (!scan.threats_summary || decision.value === 'safe') {
+  if (decision.value === 'safe') {
+    return `<div class="safe-note">${escapeHtml(c.safe_detail)}</div>`;
+  }
+  const evidenceHtml = evidenceDetailsHtml(scan);
+  if (evidenceHtml) return evidenceHtml;
+  if (!scan.threats_summary) {
     return `<div class="safe-note">${escapeHtml(c.safe_detail)}</div>`;
   }
   const explanations = explanationSet();
