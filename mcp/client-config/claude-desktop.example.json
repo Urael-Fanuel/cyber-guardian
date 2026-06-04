@@ -6,7 +6,9 @@
         "/absolute/path/to/cyber-guardian/mcp/cyberguardian-mcp-server.mjs"
       ],
       "env": {
+        "CG_API_BASE_URL": "https://cyberguardianscan.com",
         "CG_SCAN_API_URL": "https://cyberguardianscan.com/api/scan",
+        "CG_STATS_API_URL": "https://cyberguardianscan.com/api/site-stats",
         "CG_OUTPUT_LANGUAGE": "en"
       }
     }

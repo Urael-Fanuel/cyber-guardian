@@ -70,6 +70,9 @@ npm run mcp:stdio
 It exposes:
 
 - `scan_code` - scan MCP server, AI Skill, IDE extension, GitHub Action, package, or dependency code.
+- `scan_github_source` - fetch and scan current GitHub source.
+- `find_safer_alternative` - search lower-risk historical alternatives and verify the current source when possible.
+- `get_security_stats` - return public scan counts by decision and component type.
 - `service_info` - return supported scopes, limits, and integration notes.
 
 Configuration examples for Claude Desktop and Cursor are in `mcp/client-config/`.

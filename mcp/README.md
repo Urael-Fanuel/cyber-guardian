@@ -10,9 +10,12 @@ It is designed for:
 
 ## What it does
 
-The MCP server exposes two tools:
+The MCP server exposes five tools:
 
 - `scan_code` - sends pasted code or config to Cyber-Guardian and returns a clear decision.
+- `scan_github_source` - fetches current GitHub source through Cyber-Guardian and scans what is live now.
+- `find_safer_alternative` - searches lower-risk historical alternatives and, when possible, verifies the candidate again before recommending it.
+- `get_security_stats` - returns public scan counts by decision and component type.
 - `service_info` - explains supported scan types, limits, and integration notes.
 
 Supported scan scopes:
@@ -45,7 +48,9 @@ https://cyberguardianscan.com/api/scan
 Optional environment variables:
 
 ```text
+CG_API_BASE_URL=https://cyberguardianscan.com
 CG_SCAN_API_URL=https://cyberguardianscan.com/api/scan
+CG_STATS_API_URL=https://cyberguardianscan.com/api/site-stats
 CG_OUTPUT_LANGUAGE=en
 CG_MCP_TIMEOUT_MS=95000
 CG_MCP_MAX_CODE_CHARS=50000
@@ -105,3 +110,17 @@ The response includes a plain-language report and structured JSON with:
 - recommendation
 - code profile
 - account quota, when available
+
+Example safer-alternative call:
+
+```json
+{
+  "scope": "skill",
+  "purpose": "browse and summarize web documentation",
+  "threats": "CREDENTIAL_THEFT,DATA_EXFILTRATION",
+  "verify_now": true,
+  "output_language": "en"
+}
+```
+
+When `verify_now` is true and the candidate has a GitHub source URL, the MCP server asks Cyber-Guardian to fetch the current source and scan it again before returning the recommendation.

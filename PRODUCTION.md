@@ -228,10 +228,18 @@ Run locally:
 npm run mcp:stdio
 ```
 
-This local MCP server calls the existing `/api/scan` endpoint and exposes:
+This local MCP server calls the existing Cyber-Guardian APIs and exposes:
 
 - `scan_code`
+- `scan_github_source`
+- `find_safer_alternative`
+- `get_security_stats`
 - `service_info`
+
+`find_safer_alternative` is deliberately conservative: historical alternatives are
+not treated as trustworthy forever. When the candidate has a GitHub source URL,
+the MCP server can fetch the current source and rescan it before returning the
+recommendation.
 
 Keep `CG_ADMIN_BYPASS_SECRET` owner-only. Customer usage should move to account
 tokens/API keys, not the admin bypass secret.
