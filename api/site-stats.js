@@ -58,7 +58,8 @@ const MAX_ALTERNATIVE_SOURCE_CHARS = 50000;
 const MAX_ALTERNATIVE_SOURCE_FILES = 6;
 
 function tableMissing(error) {
-  return /relation .* does not exist|schema cache|Could not find/i.test(error?.message || '');
+  const message = `${error?.message || ''} ${error?.details || ''} ${error?.hint || ''} ${error?.code || ''}`;
+  return /relation .* does not exist|column .* does not exist|schema cache|Could not find|PGRST20[04]/i.test(message);
 }
 
 function cleanEvidenceText(value, max = 500) {
