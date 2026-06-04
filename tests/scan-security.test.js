@@ -173,6 +173,7 @@ function testPublicResponseHidesInternalAnalysis() {
     threat_score: 88,
     confidence: 0.9,
     summary: "Behavior review indicates high risk.",
+    recommendation: "Do not install this package.",
     threats: [{
       family: "C2_CALLBACK",
       severity: "CRITICAL",
@@ -201,6 +202,10 @@ function testPublicResponseHidesInternalAnalysis() {
   assert.equal(publicResult.behavior_review.status, "completed");
   assert.equal(publicResult.behavior_review.fuzzing_profile, undefined);
   assert.equal(publicResult.behavior_review.provider, undefined);
+  assert.equal(publicResult.summary, "");
+  assert.equal(publicResult.recommendation, "");
+  assert.equal(publicResult.threats[0].description, "");
+  assert.equal(publicResult.behavior_review.summary, "");
 }
 
 function testStaticReverseShell() {

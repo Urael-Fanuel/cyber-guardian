@@ -644,6 +644,12 @@ function saveToCache(hash, result) {
 function publicScanResponse(result, adminBypass, extra = {}) {
   const publicResult = normalizeResult(result || {});
   const behaviorReview = normalizeDynamicSandboxEvidence(publicResult.dynamic_sandbox || result?.behavior_review);
+  publicResult.summary = "";
+  publicResult.recommendation = "";
+  publicResult.threats = Array.isArray(publicResult.threats)
+    ? publicResult.threats.map(threat => ({ ...threat, description: "" }))
+    : [];
+  if (behaviorReview && typeof behaviorReview === "object") behaviorReview.summary = "";
   delete publicResult.analysis_orchestrator;
   delete publicResult.dynamic_sandbox;
   publicResult.behavior_review = behaviorReview;
