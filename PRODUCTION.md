@@ -250,6 +250,10 @@ customer API keys. Do not add it as another Serverless Function to the current
 Hobby deployment because this project has already hit the Vercel Hobby function
 limit. See `mcp/REMOTE_MCP_PLAN.md`.
 
+The repository also includes a first Cloudflare Worker implementation in
+`remote-mcp/`. Use that path for the initial HTTPS MCP beta instead of adding
+more functions to this Vercel project.
+
 ## Editing Public Text
 
 Open `/content-admin.html`, paste the same `CG_ADMIN_BYPASS_SECRET`, choose the

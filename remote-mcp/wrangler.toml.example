@@ -1,0 +1,13 @@
+name = "cyberguardian-remote-mcp"
+main = "worker.js"
+compatibility_date = "2026-06-04"
+
+[vars]
+CG_API_BASE_URL = "https://cyberguardianscan.com"
+
+# Optional for private beta:
+# Set this as a Cloudflare Worker secret, not as a plain var:
+# wrangler secret put CG_REMOTE_MCP_SHARED_TOKEN
+#
+# Optional future customer token:
+# wrangler secret put CG_REMOTE_MCP_API_TOKEN

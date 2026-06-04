@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cyber-Guardian - MCP Security Scanner | First scanner for MCP Servers, AI Skills & IDE Extensions</title>
+<title>Cyber-Guardian | Security Scanner for MCP, AI Skills, IDE Extensions and Supply Chain</title>
 <meta name="description" content="The first security scanner for Model Context Protocol (MCP) servers. Detect malicious code, prompt injection, credential theft and tool poisoning before connecting. Also scans AI Skills and IDE extensions. Powered by an advanced security engine.">
 <meta name="keywords" content="MCP security, MCP scanner, Model Context Protocol security, MCP server audit, AI skill scanner, AI security, MCP security, Cursor MCP, prompt injection scanner">
 <link rel="canonical" href="https://cyberguardianscan.com/">
-<meta property="og:title" content="Cyber-Guardian - The First MCP Security Scanner">
-<meta property="og:description" content="Before you connect an MCP server, scan it. 10,000+ MCP servers exist. Zero are audited.">
+<meta property="og:title" content="Cyber-Guardian Security Scanner">
+<meta property="og:description" content="Scan MCP servers, AI Skills, IDE extensions, GitHub Actions, packages and dependencies before they reach your machine or production workflow.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cyberguardianscan.com/">
 <meta property="og:site_name" content="Cyber-Guardian">
@@ -100,7 +100,7 @@ nav {
 .flag-br::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: #002776; left: 50%; top: 50%; transform: translate(-50%,-50%); }
 
 /* ── HERO ── */
-.hero { position: relative; z-index: 2; padding: 50px 40px 34px; max-width: 1180px; margin: 0 auto; }
+.hero { position: relative; z-index: 2; padding: 56px 40px 34px; max-width: 1180px; margin: 0 auto; }
 .hero-inner { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(320px,0.95fr); gap: 44px; align-items: center; }
 .hero-copy { text-align: left; }
 [dir="rtl"] .hero-copy { text-align: right; }
@@ -144,23 +144,29 @@ h1 .hl { color: var(--cyan); text-shadow: 0 0 26px rgba(0,212,255,0.28); }
 
 /* ── SCANNER CARD ── */
 /* Account access */
-.account-panel { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 26px; padding: 0 20px; }
-.account-box { border: 1px solid rgba(49,74,97,0.76); background: linear-gradient(135deg,rgba(11,17,24,0.92),rgba(17,30,43,0.76)); border-radius: 8px; padding: 22px; display: grid; grid-template-columns: 1fr 1.25fr; gap: 22px; align-items: center; box-shadow: var(--shadow); }
+.account-panel { position: relative; z-index: 2; max-width: 980px; margin: 10px auto 30px; padding: 0 20px; scroll-margin-top: 118px; }
+.account-box { border: 1px solid rgba(49,74,97,0.76); background: linear-gradient(135deg,rgba(11,17,24,0.96),rgba(17,30,43,0.82)); border-radius: 8px; padding: 24px; display: grid; grid-template-columns: minmax(0,0.95fr) minmax(320px,1.05fr); gap: 24px; align-items: stretch; box-shadow: var(--shadow); }
 .account-box.needs-attention { border-color: var(--yellow); box-shadow: 0 0 0 1px rgba(255, 170, 0, 0.35), 0 0 22px rgba(255, 170, 0, 0.12); }
 .account-kicker { color: var(--green); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
 .account-title { font-family: var(--sans); font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 6px; line-height: 1.15; }
-.account-text { color: var(--text-dim); font-size: 12.5px; line-height: 1.7; max-width: 420px; }
-.account-form { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
-.account-input { width: 100%; min-height: 44px; background: rgba(5,8,13,0.78); border: 1px solid rgba(49,74,97,0.76); color: var(--text); border-radius: 8px; padding: 11px 12px; font-family: var(--mono); font-size: 12px; outline: none; }
+.account-text { color: var(--text-dim); font-size: 12.5px; line-height: 1.7; max-width: 440px; }
+.account-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; border: 1px solid rgba(49,74,97,0.72); border-radius: 10px; background: rgba(5,8,13,0.58); margin-bottom: 14px; }
+.account-tab { min-height: 40px; border: 0; border-radius: 7px; background: transparent; color: var(--text-dim); font-family: var(--mono); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+.account-tab.active { background: linear-gradient(135deg,var(--cyan),var(--green)); color: #001018; box-shadow: 0 10px 24px rgba(0,212,255,0.18); }
+.account-form { display: grid; grid-template-columns: 1fr; gap: 12px; border: 1px solid rgba(49,74,97,0.68); background: rgba(5,8,13,0.46); border-radius: 10px; padding: 14px; }
+.account-field { display: grid; gap: 6px; }
+.account-label { color: var(--text-dim); font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; }
+.account-input { width: 100%; min-height: 46px; background: rgba(5,8,13,0.84); border: 1px solid rgba(49,74,97,0.76); color: var(--text); border-radius: 8px; padding: 11px 12px; font-family: var(--mono); font-size: 12px; outline: none; }
 .account-input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,212,255,0.08); }
-.account-actions { display: flex; gap: 8px; flex-wrap: wrap; grid-column: 1 / -1; }
+.account-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .account-btn { border: 1px solid rgba(49,74,97,0.82); background: rgba(17,26,36,0.74); color: var(--text); border-radius: 8px; padding: 10px 14px; font-family: var(--mono); font-size: 10px; letter-spacing: 1px; cursor: pointer; transition: all 0.15s; }
 .account-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,255,0.08); }
-.account-btn.primary { background: linear-gradient(135deg,var(--cyan),var(--green)); color: #001018; border-color: transparent; font-weight: 800; }
-.account-status { grid-column: 1 / -1; min-height: 18px; color: var(--text-dim); font-size: 11px; }
+.account-btn.primary { background: linear-gradient(135deg,var(--cyan),var(--green)); color: #001018; border-color: transparent; font-weight: 800; min-width: 150px; }
+.account-btn.ghost { border-color: transparent; background: transparent; padding-left: 4px; padding-right: 4px; }
+.account-status { min-height: 20px; color: var(--text-dim); font-size: 11px; line-height: 1.6; }
 .account-plan { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .account-pill { border: 1px solid rgba(0,212,255,0.22); color: var(--text); background: rgba(0,212,255,0.055); border-radius: 18px; padding: 5px 10px; font-size: 10px; }
-@media(max-width:760px){ .account-box { grid-template-columns: 1fr; } .account-form { grid-template-columns: 1fr; } }
+@media(max-width:760px){ .account-panel { scroll-margin-top: 146px; } .account-box { grid-template-columns: 1fr; } .account-form { grid-template-columns: 1fr; } }
 
 .wrap { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 76px; padding: 0 20px; animation: fu 0.5s 0.5s both; }
 .card { background: linear-gradient(180deg,rgba(11,17,24,0.94),rgba(7,12,18,0.96)); border: 1px solid rgba(49,74,97,0.82); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); }
@@ -508,19 +514,19 @@ footer a:hover { color: var(--cyan); }
     <span class="pulse-txt" data-i18n="nav_live">LIVE</span>
     <a class="nav-link" href="/resources.html" data-i18n="nav_resources">Resources</a>
     <a class="nav-link" href="/dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
-    <a class="nav-link nav-login" href="#account-panel" data-i18n="nav_account_cta">Sign in / Free account</a>
+    <a class="nav-link nav-login" href="#account-panel" onclick="setAccountMode('signin')" data-i18n="nav_account_cta">Sign in / Free account</a>
   </div>
 </nav>
 
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-copy">
-      <div class="eyebrow" data-i18n="hero_eyebrow">The First MCP Security Scanner - Also covers AI Skills & IDE Extensions</div>
-      <h1><span data-i18n="hero_title_1">Before you connect an MCP Server,</span><br><span class="hl" data-i18n="hero_title_2">scan it.</span></h1>
-      <p class="hero-sub" data-i18n="hero_sub">10,000+ MCP servers exist. Zero are audited.</p>
+      <div class="eyebrow" data-i18n="hero_eyebrow">Security scanner for MCP, AI Skills and developer supply chain</div>
+      <h1><span data-i18n="hero_title_1">Before you connect AI tools,</span><br><span class="hl" data-i18n="hero_title_2">scan the code.</span></h1>
+      <p class="hero-sub" data-i18n="hero_sub">Cyber-Guardian checks MCP servers, AI Skills, IDE extensions, GitHub Actions, packages and dependencies before they touch your machine, secrets or production workflow.</p>
       <div class="hero-actions">
         <a class="hero-cta primary" href="#scanner" data-i18n="hero_primary_cta">Start a free scan</a>
-        <a class="hero-cta secondary" href="#account-panel" data-i18n="hero_secondary_cta">Create free account</a>
+        <a class="hero-cta secondary" href="#account-panel" onclick="setAccountMode('signup')" data-i18n="hero_secondary_cta">Create free account</a>
       </div>
       <div class="hero-proof" aria-label="Cyber-Guardian audiences">
         <span class="proof-pill" data-i18n="proof_solo">Solo developers</span>
@@ -585,12 +591,21 @@ footer a:hover { color: var(--cyan); }
       <div class="account-plan" id="account-plan"></div>
     </div>
     <div class="account-form" id="account-form">
-      <input class="account-input" id="account-email" type="email" autocomplete="email" data-i18n-placeholder="account_email_placeholder" placeholder="email@example.com">
-      <input class="account-input" id="account-password" type="password" autocomplete="current-password" data-i18n-placeholder="account_password_placeholder" placeholder="Password">
+      <div class="account-tabs" role="tablist" aria-label="Account mode">
+        <button type="button" class="account-tab active" id="account-tab-signin" onclick="setAccountMode('signin')" data-i18n="account_tab_signin">Sign in</button>
+        <button type="button" class="account-tab" id="account-tab-signup" onclick="setAccountMode('signup')" data-i18n="account_tab_signup">Create account</button>
+      </div>
+      <div class="account-field">
+        <label class="account-label" for="account-email" data-i18n="account_email_label">Email</label>
+        <input class="account-input" id="account-email" type="email" autocomplete="email" data-i18n-placeholder="account_email_placeholder" placeholder="email@example.com">
+      </div>
+      <div class="account-field">
+        <label class="account-label" for="account-password" data-i18n="account_password_label">Password</label>
+        <input class="account-input" id="account-password" type="password" autocomplete="current-password" data-i18n-placeholder="account_password_placeholder" placeholder="Password">
+      </div>
       <div class="account-actions">
-        <button type="button" class="account-btn primary" onclick="accountSignIn()" data-i18n="account_sign_in">Sign in</button>
-        <button type="button" class="account-btn" onclick="accountSignUp()" data-i18n="account_create">Create account</button>
-        <button type="button" class="account-btn" onclick="accountResetPassword()" data-i18n="account_reset_password">Forgot password?</button>
+        <button type="button" class="account-btn primary" id="account-submit" onclick="accountSubmit()" data-i18n="account_sign_in">Sign in</button>
+        <button type="button" class="account-btn ghost" onclick="accountResetPassword()" data-i18n="account_reset_password">Forgot password?</button>
         <button type="button" class="account-btn primary" onclick="accountUpdatePassword()" id="account-update-password" style="display:none" data-i18n="account_update_password">Update password</button>
         <button type="button" class="account-btn" onclick="accountSignOut()" id="account-signout" style="display:none" data-i18n="account_sign_out">Sign out</button>
       </div>
@@ -653,7 +668,7 @@ footer a:hover { color: var(--cyan); }
 
 <section class="why">
   <div class="section-lbl" data-i18n="why_label">Why MCP security matters</div>
-  <h2 class="section-title" data-i18n="why_title">Why MCP scanning matters - now</h2>
+  <h2 class="section-title" data-i18n="why_title">Why pre-install scanning matters now</h2>
   <p class="section-sub" data-i18n="why_sub">MCP (Model Context Protocol) lets AI assistants connect to anything: your Gmail, Notion, GitHub, files. A malicious MCP server runs on your machine with full permissions.</p>
   <div class="why-grid">
     <div class="why-card">
@@ -690,7 +705,7 @@ footer a:hover { color: var(--cyan); }
     <div class="step">
       <div class="step-n">03</div>
       <div class="step-t" data-i18n="step3_title">Clear Verdict</div>
-      <div class="step-d" data-i18n="step3_desc">SAFE / REVIEW / BLOCK - plain English.</div>
+      <div class="step-d" data-i18n="step3_desc">SAFE / REVIEW / BLOCK in plain English.</div>
     </div>
   </div>
 </section>
@@ -804,7 +819,7 @@ footer a:hover { color: var(--cyan); }
 
 <section class="other">
   <div class="section-lbl" data-i18n="other_label">Also scans</div>
-  <h2 class="section-title" data-i18n="other_title">Beyond MCP - full coverage</h2>
+  <h2 class="section-title" data-i18n="other_title">Full coverage beyond MCP</h2>
   <p class="section-sub" data-i18n="other_sub">Same scanner, dedicated coverage for the tools and supply-chain files developers install or run:</p>
   <div class="other-grid">
     <div class="other-card skills">
@@ -1007,6 +1022,7 @@ setLang(detectLang());
 let accountClient = null;
 let accountSession = null;
 let accountPasswordRecovery = false;
+let accountMode = 'signin';
 
 function accountEls() {
   return {
@@ -1016,6 +1032,9 @@ function accountEls() {
     plan: document.getElementById('account-plan'),
     signout: document.getElementById('account-signout'),
     updatePassword: document.getElementById('account-update-password'),
+    submit: document.getElementById('account-submit'),
+    signinTab: document.getElementById('account-tab-signin'),
+    signupTab: document.getElementById('account-tab-signup'),
   };
 }
 
@@ -1036,6 +1055,27 @@ function setAccountRecoveryMode(enabled) {
   if (updatePassword) updatePassword.style.display = enabled ? 'inline-block' : 'none';
   if (password) password.setAttribute('autocomplete', enabled ? 'new-password' : 'current-password');
 }
+
+function setAccountMode(mode) {
+  accountMode = mode === 'signup' ? 'signup' : 'signin';
+  const { submit, signinTab, signupTab, password } = accountEls();
+  if (signinTab) signinTab.classList.toggle('active', accountMode === 'signin');
+  if (signupTab) signupTab.classList.toggle('active', accountMode === 'signup');
+  if (submit) {
+    submit.textContent = accountMode === 'signup' ? t('account_create') : t('account_sign_in');
+    submit.setAttribute('data-i18n', accountMode === 'signup' ? 'account_create' : 'account_sign_in');
+  }
+  if (password && !accountPasswordRecovery) {
+    password.setAttribute('autocomplete', accountMode === 'signup' ? 'new-password' : 'current-password');
+  }
+  setAccountMessage(accountMode === 'signup' ? t('account_signup_hint') : t('account_signin_hint'));
+}
+
+function refreshAccountUi() {
+  setAccountMode(accountMode);
+}
+
+window.refreshAccountUi = refreshAccountUi;
 
 function renderAccountPlan(info) {
   const { plan, signout } = accountEls();
@@ -1151,6 +1191,11 @@ async function accountSignUp() {
   password.value = '';
   if (accountSession) await loadAccountStatus();
   else setAccountMessage(t('account_check_email'));
+}
+
+async function accountSubmit() {
+  if (accountMode === 'signup') return accountSignUp();
+  return accountSignIn();
 }
 
 async function accountResetPassword() {
@@ -1924,6 +1969,14 @@ document.getElementById('code-input').addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runScan();
 });
 
+document.getElementById('account-form')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    accountSubmit();
+  }
+});
+
+refreshAccountUi();
 initAccountAuth();
 
 // Load mini stats

@@ -30,6 +30,7 @@ It checks 60 canonical threat families before a user decides whether to install 
 | Rate limits | Supabase RPC plus server fallback |
 | Batch scanner | Python scanner for GitHub, npm, MCP directories, Skills, and IDE extensions |
 | MCP integration | Local stdio MCP server in `mcp/cyberguardian-mcp-server.mjs` |
+| Remote MCP | Cloudflare Worker scaffold in `remote-mcp/` for HTTPS MCP connectors |
 
 ## Production Security Controls
 
@@ -78,6 +79,9 @@ It exposes:
 Configuration examples for Claude Desktop and Cursor are in `mcp/client-config/`.
 
 Remote MCP support for ChatGPT or Claude cloud connectors should be deployed as a separate HTTPS MCP service with OAuth/customer authentication. See `mcp/REMOTE_MCP_PLAN.md`.
+
+The first Worker-based remote MCP implementation is in `remote-mcp/`. It should
+be deployed separately from the current Vercel app.
 
 ## Batch Scan Defaults
 
