@@ -169,7 +169,13 @@ h1 .hl { color: var(--cyan); text-shadow: 0 0 26px rgba(0,212,255,0.28); }
 .account-status { min-height: 20px; color: var(--text-dim); font-size: 11px; line-height: 1.6; }
 .account-plan { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .account-pill { border: 1px solid rgba(0,212,255,0.22); color: var(--text); background: rgba(0,212,255,0.055); border-radius: 18px; padding: 5px 10px; font-size: 10px; }
-@media(max-width:760px){ .account-panel { scroll-margin-top: 154px; } .account-box { grid-template-columns: 1fr; padding: 20px; } .account-form { grid-template-columns: 1fr; } .account-actions { grid-template-columns: 1fr; } }
+.account-ready { position: relative; z-index: 2; max-width: 980px; margin: -10px auto 26px; padding: 0 20px; display: none; }
+.account-ready.show { display: block; }
+.account-ready-box { border: 1px solid rgba(0,230,118,0.34); background: linear-gradient(135deg,rgba(0,230,118,0.12),rgba(0,212,255,0.07)); border-radius: 8px; padding: 18px 20px; box-shadow: 0 14px 42px rgba(0,0,0,0.22); display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.account-ready-title { font-family: var(--sans); font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.account-ready-text { color: var(--text-dim); font-size: 12px; line-height: 1.65; }
+.account-ready-btn { border: 0; background: linear-gradient(135deg,var(--cyan),var(--green)); color: #001018; border-radius: 8px; padding: 11px 16px; font-family: var(--sans); font-weight: 800; cursor: pointer; white-space: nowrap; }
+@media(max-width:760px){ .account-panel { scroll-margin-top: 154px; } .account-box { grid-template-columns: 1fr; padding: 20px; } .account-form { grid-template-columns: 1fr; } .account-actions { grid-template-columns: 1fr; } .account-ready-box { display: block; } .account-ready-btn { width: 100%; margin-top: 12px; } }
 @media(max-width:980px){ h1 { font-size: 44px; } }
 @media(max-width:600px){ h1 { font-size: 34px; line-height: 1.12; } }
 
@@ -619,6 +625,16 @@ footer a:hover { color: var(--cyan); }
   </div>
 </section>
 
+<section class="account-ready" id="account-ready-banner" aria-live="polite">
+  <div class="account-ready-box">
+    <div>
+      <div class="account-ready-title" data-i18n="account_verified_title">Your account is active.</div>
+      <div class="account-ready-text" data-i18n="account_verified_body">You are signed in and your scan access is ready. Paste code below to start scanning with your plan.</div>
+    </div>
+    <button type="button" class="account-ready-btn" onclick="scrollToScanner()" data-i18n="account_verified_cta">Start scanning</button>
+  </div>
+</section>
+
 <div class="wrap" id="scanner">
   <div class="card">
     <div class="card-header">
@@ -1028,6 +1044,7 @@ let accountClient = null;
 let accountSession = null;
 let accountPasswordRecovery = false;
 let accountMode = 'signin';
+let accountEmailReturn = false;
 
 function accountEls() {
   return {
@@ -1061,6 +1078,29 @@ function setAccountRecoveryMode(enabled) {
   if (password) password.setAttribute('autocomplete', enabled ? 'new-password' : 'current-password');
 }
 
+function isAccountEmailReturn() {
+  const raw = `${window.location.search || ''} ${window.location.hash || ''}`;
+  return /(access_token|refresh_token|token_hash|type=signup|type=recovery|code=)/i.test(raw);
+}
+
+function cleanAccountReturnUrl() {
+  if (!isAccountEmailReturn() || !window.history?.replaceState) return;
+  window.history.replaceState({}, document.title, `${window.location.origin}${window.location.pathname}`);
+}
+
+function showAccountReadyBanner({ scroll = false } = {}) {
+  const banner = document.getElementById('account-ready-banner');
+  if (banner) banner.classList.add('show');
+  setAccountMessage(t('account_plan_active'));
+  if (scroll) {
+    setTimeout(() => {
+      const target = document.getElementById('scanner') || banner;
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('code-input')?.focus({ preventScroll: true });
+    }, 350);
+  }
+}
+
 function setAccountMode(mode) {
   accountMode = mode === 'signup' ? 'signup' : 'signin';
   const { submit, signinTab, signupTab, password } = accountEls();
@@ -1078,6 +1118,9 @@ function setAccountMode(mode) {
 
 function refreshAccountUi() {
   setAccountMode(accountMode);
+  if (document.getElementById('account-ready-banner')?.classList.contains('show')) {
+    setAccountMessage(t('account_plan_active'));
+  }
 }
 
 window.refreshAccountUi = refreshAccountUi;
@@ -1112,7 +1155,8 @@ async function loadAccountStatus() {
       return;
     }
     renderAccountPlan(data);
-    setAccountMessage(t('account_signed_in'));
+    const readyBannerVisible = document.getElementById('account-ready-banner')?.classList.contains('show');
+    if (!readyBannerVisible) setAccountMessage(t('account_signed_in'));
   } catch {
     setAccountMessage(t('account_status_failed'), true);
   }
@@ -1121,6 +1165,7 @@ async function loadAccountStatus() {
 async function initAccountAuth() {
   renderAccountPlan(null);
   setAccountRecoveryMode(false);
+  accountEmailReturn = isAccountEmailReturn();
   try {
     const config = await fetch('/api/account?mode=config').then(r => r.json());
     if (!config.supabase_configured || !window.supabase) {
@@ -1132,6 +1177,10 @@ async function initAccountAuth() {
     accountSession = data?.session || null;
     renderAccountPlan(accountSession?.user ? { authenticated: true, email: accountSession.user.email, plan_name: 'Loading', quota_remaining: 0, monthly_scan_limit: 0 } : null);
     await loadAccountStatus();
+    if (accountEmailReturn && accountSession?.user && !accountPasswordRecovery) {
+      cleanAccountReturnUrl();
+      showAccountReadyBanner({ scroll: true });
+    }
     accountClient.auth.onAuthStateChange((event, session) => {
       accountSession = session || null;
       if (event === 'PASSWORD_RECOVERY') {
@@ -1143,6 +1192,10 @@ async function initAccountAuth() {
       if (event === 'SIGNED_OUT') setAccountRecoveryMode(false);
       if (event === 'SIGNED_IN' && !accountPasswordRecovery) setAccountRecoveryMode(false);
       loadAccountStatus();
+      if (event === 'SIGNED_IN' && accountEmailReturn && !accountPasswordRecovery) {
+        cleanAccountReturnUrl();
+        showAccountReadyBanner({ scroll: true });
+      }
     });
   } catch {
     setAccountMessage(t('account_status_failed'), true);

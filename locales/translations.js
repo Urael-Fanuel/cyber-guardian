@@ -3312,6 +3312,48 @@ Object.entries(PUBLIC_POLISH_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const ACCOUNT_CONFIRMATION_COPY = {
+  en: {
+    account_verified_title: "Your account is active.",
+    account_verified_body: "You are signed in and your scan access is ready. Paste code below to start scanning with your plan.",
+    account_verified_cta: "Start scanning"
+  },
+  he: {
+    account_verified_title: "החשבון שלך פעיל.",
+    account_verified_body: "התחברת בהצלחה וזכות הסריקה שלך מוכנה. הדבק קוד למטה והתחל לסרוק לפי המסלול שלך.",
+    account_verified_cta: "התחל לסרוק"
+  },
+  de: {
+    account_verified_title: "Ihr Konto ist aktiv.",
+    account_verified_body: "Sie sind angemeldet und Ihr Scan-Zugang ist bereit. Fuegen Sie unten Code ein und starten Sie den Scan mit Ihrem Plan.",
+    account_verified_cta: "Scan starten"
+  },
+  ja: {
+    account_verified_title: "アカウントが有効になりました。",
+    account_verified_body: "サインイン済みで、スキャン利用枠の準備ができています。下にコードを貼り付けて、プランに応じたスキャンを開始できます。",
+    account_verified_cta: "スキャン開始"
+  },
+  ko: {
+    account_verified_title: "계정이 활성화되었습니다.",
+    account_verified_body: "로그인되었고 스캔 권한이 준비되었습니다. 아래에 코드를 붙여넣고 플랜에 따라 스캔을 시작하세요.",
+    account_verified_cta: "스캔 시작"
+  },
+  fr: {
+    account_verified_title: "Votre compte est actif.",
+    account_verified_body: "Vous etes connecte et votre acces aux scans est pret. Collez du code ci-dessous pour lancer un scan avec votre plan.",
+    account_verified_cta: "Lancer un scan"
+  },
+  pt: {
+    account_verified_title: "Sua conta esta ativa.",
+    account_verified_body: "Voce esta conectado e seu acesso a scans esta pronto. Cole o codigo abaixo para comecar a escanear com seu plano.",
+    account_verified_cta: "Iniciar scan"
+  }
+};
+
+Object.entries(ACCOUNT_CONFIRMATION_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const LANGS = {
   en: { name: "English",    flag: "🇺🇸", dir: "ltr" },
   de: { name: "Deutsch",    flag: "🇩🇪", dir: "ltr" },
