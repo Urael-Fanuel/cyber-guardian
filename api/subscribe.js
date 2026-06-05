@@ -85,7 +85,7 @@ async function notifySales(email, ip, origin) {
 
   const html = `
     <h2>New Cyber-Guardian lead</h2>
-    <p>A visitor asked to get MCP threat alerts.</p>
+    <p>A visitor asked to get Cyber-Guardian security updates for AI tools and code threats.</p>
     <table>
       <tr><td><strong>Email</strong></td><td>${escapeHtml(email)}</td></tr>
       <tr><td><strong>Source</strong></td><td>Threat alert signup</td></tr>
