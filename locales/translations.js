@@ -2659,7 +2659,7 @@ const MOAT_COPY = {
     integrity_wrapper_d: "Reports should help users fix risky behavior, avoid unnecessary permissions, or contact the team for deeper review when needed.",
     integrity_firewall_k: "Careful reporting",
     integrity_firewall_t: "Public reports stay focused",
-    integrity_firewall_d: "The public report focuses on user decisions and risk evidence, not internal workflows, private methods, or unreleased capabilities.",
+    integrity_firewall_d: "Reports focus on evidence, risk, and the next decision the user needs to make.",
     integrity_note: "Cyber-Guardian does not present a protection capability as active until it is connected, tested, reliable, and ready for users."
   },
   he: {
@@ -3204,6 +3204,111 @@ const HOMEPAGE_DESIGN_COPY = {
 };
 
 Object.entries(HOMEPAGE_DESIGN_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
+const PUBLIC_POLISH_COPY = {
+  en: {
+    nav_tag: "AI TOOL SECURITY",
+    stat_families: "THREAT FAMILIES",
+    footer_tagline: "AI TOOL SECURITY · 60 THREAT FAMILIES · SECURITY ENGINE",
+    hero_eyebrow: "Security scanner for MCP, AI Skills, IDE extensions and AI supply chain",
+    hero_title_1: "Before AI tools touch your environment,",
+    hero_title_2: "scan the code.",
+    hero_sub: "Cyber-Guardian checks MCP servers, AI Skills, IDE extensions, GitHub Actions, packages and dependencies before they reach your machine, secrets or production workflow.",
+    why_title: "Why pre-install scanning matters now",
+    why_sub: "AI tools can connect to files, repositories, APIs, credentials and production workflows. Unknown code should be checked before it enters your environment.",
+    step3_desc: "Clear install guidance in plain language: safe, fix before use, security review, or do not install.",
+    other_title: "Protection for the AI development supply chain",
+    integrity_firewall_d: "Reports focus on evidence, risk, and the next decision the user needs to make."
+  },
+  he: {
+    nav_tag: "אבטחת כלי AI",
+    stat_families: "משפחות איומים",
+    footer_tagline: "אבטחת כלי AI · 60 משפחות איומים · מנוע אבטחה",
+    hero_eyebrow: "סורק אבטחה ל-MCP, Skills, הרחבות IDE ושרשרת אספקת AI",
+    hero_title_1: "לפני שכלי AI נוגעים בסביבה שלך,",
+    hero_title_2: "סורקים את הקוד.",
+    hero_sub: "Cyber-Guardian בודק שרתי MCP, AI Skills, הרחבות IDE, GitHub Actions, חבילות ותלויות לפני שהם מגיעים למחשב, לסודות או לתהליכי פרודקשן.",
+    why_title: "למה חשוב לסרוק לפני התקנה",
+    why_sub: "כלי AI יכולים להתחבר לקבצים, מאגרים, APIs, הרשאות ותהליכי פרודקשן. קוד לא מוכר צריך להיבדק לפני שהוא נכנס לסביבה שלך.",
+    step3_desc: "המלצת התקנה ברורה בשפה פשוטה: בטוח, לתקן לפני שימוש, בדיקת אבטחה או לא להתקין.",
+    other_title: "הגנה על שרשרת אספקת הפיתוח בעידן ה-AI",
+    integrity_firewall_d: "הדוחות מתמקדים בראיות, בסיכון ובפעולה הבאה שהמשתמש צריך לקבל לגביה החלטה."
+  },
+  de: {
+    nav_tag: "AI-TOOL-SICHERHEIT",
+    stat_families: "BEDROHUNGSFAMILIEN",
+    footer_tagline: "AI-TOOL-SICHERHEIT · 60 BEDROHUNGSFAMILIEN · SECURITY ENGINE",
+    hero_eyebrow: "Security-Scanner fuer MCP, AI Skills, IDE-Erweiterungen und AI Supply Chain",
+    hero_title_1: "Bevor AI-Tools Ihre Umgebung beruehren,",
+    hero_title_2: "scannen Sie den Code.",
+    hero_sub: "Cyber-Guardian prueft MCP-Server, AI Skills, IDE-Erweiterungen, GitHub Actions, Pakete und Dependencies, bevor sie Rechner, Secrets oder Produktionsablaeufe erreichen.",
+    why_title: "Warum Scans vor der Installation jetzt wichtig sind",
+    why_sub: "AI-Tools koennen Dateien, Repositories, APIs, Zugangsdaten und Produktionsablaeufe beruehren. Unbekannter Code sollte vor dem Einsatz geprueft werden.",
+    step3_desc: "Klare Installationshilfe in einfacher Sprache: sicher, vor Nutzung beheben, Security Review oder nicht installieren.",
+    other_title: "Schutz fuer die AI-Entwicklungs-Supply-Chain",
+    integrity_firewall_d: "Berichte konzentrieren sich auf Belege, Risiko und die naechste Entscheidung des Nutzers."
+  },
+  ja: {
+    nav_tag: "AIツールセキュリティ",
+    stat_families: "脅威ファミリー",
+    footer_tagline: "AIツールセキュリティ · 60脅威ファミリー · セキュリティエンジン",
+    hero_eyebrow: "MCP、AI Skills、IDE拡張、AIサプライチェーン向けセキュリティスキャナー",
+    hero_title_1: "AIツールが環境に触れる前に、",
+    hero_title_2: "コードをスキャン。",
+    hero_sub: "Cyber-Guardianは、MCPサーバー、AI Skills、IDE拡張、GitHub Actions、パッケージ、依存関係が端末、秘密情報、本番ワークフローに届く前に確認します。",
+    why_title: "インストール前スキャンが重要な理由",
+    why_sub: "AIツールはファイル、リポジトリ、API、認証情報、本番ワークフローに接続できます。未知のコードは環境に入る前に確認すべきです。",
+    step3_desc: "安全、修正してから使用、セキュリティ確認、インストール禁止をわかりやすく表示します。",
+    other_title: "AI開発サプライチェーンを守る",
+    integrity_firewall_d: "レポートは証拠、リスク、ユーザーが次に判断すべき行動に集中します。"
+  },
+  ko: {
+    nav_tag: "AI 도구 보안",
+    stat_families: "위협군",
+    footer_tagline: "AI 도구 보안 · 60개 위협군 · 보안 엔진",
+    hero_eyebrow: "MCP, AI Skills, IDE 확장, AI 공급망 보안 스캐너",
+    hero_title_1: "AI 도구가 환경에 닿기 전에,",
+    hero_title_2: "코드를 스캔하세요.",
+    hero_sub: "Cyber-Guardian은 MCP 서버, AI Skills, IDE 확장, GitHub Actions, 패키지, 의존성이 컴퓨터, secrets, 프로덕션 워크플로에 닿기 전에 검사합니다.",
+    why_title: "설치 전 스캔이 중요한 이유",
+    why_sub: "AI 도구는 파일, 저장소, API, 자격 증명, 프로덕션 워크플로에 연결될 수 있습니다. 알 수 없는 코드는 환경에 들어가기 전에 확인해야 합니다.",
+    step3_desc: "안전, 사용 전 수정, 보안 검토, 설치 금지를 쉬운 말로 안내합니다.",
+    other_title: "AI 개발 공급망 보호",
+    integrity_firewall_d: "보고서는 증거, 위험, 사용자가 다음에 결정해야 할 행동에 집중합니다."
+  },
+  fr: {
+    nav_tag: "SECURITE DES OUTILS AI",
+    stat_families: "FAMILLES DE MENACES",
+    footer_tagline: "SECURITE DES OUTILS AI · 60 FAMILLES DE MENACES · MOTEUR SECURITE",
+    hero_eyebrow: "Scanner securite pour MCP, AI Skills, extensions IDE et supply chain AI",
+    hero_title_1: "Avant que les outils AI touchent votre environnement,",
+    hero_title_2: "scannez le code.",
+    hero_sub: "Cyber-Guardian verifie serveurs MCP, AI Skills, extensions IDE, GitHub Actions, paquets et dependances avant qu'ils atteignent votre machine, vos secrets ou vos workflows de production.",
+    why_title: "Pourquoi scanner avant installation est essentiel",
+    why_sub: "Les outils AI peuvent toucher fichiers, depots, APIs, identifiants et workflows de production. Le code inconnu doit etre verifie avant d'entrer dans votre environnement.",
+    step3_desc: "Une guidance claire en langage simple : sur, corriger avant usage, revue securite ou ne pas installer.",
+    other_title: "Protection de la supply chain de developpement AI",
+    integrity_firewall_d: "Les rapports se concentrent sur les preuves, le risque et la prochaine decision a prendre."
+  },
+  pt: {
+    nav_tag: "SEGURANCA DE FERRAMENTAS AI",
+    stat_families: "FAMILIAS DE AMEACAS",
+    footer_tagline: "SEGURANCA DE FERRAMENTAS AI · 60 FAMILIAS DE AMEACAS · MOTOR DE SEGURANCA",
+    hero_eyebrow: "Scanner de seguranca para MCP, AI Skills, extensoes IDE e supply chain AI",
+    hero_title_1: "Antes que ferramentas AI toquem seu ambiente,",
+    hero_title_2: "escaneie o codigo.",
+    hero_sub: "Cyber-Guardian verifica servidores MCP, AI Skills, extensoes IDE, GitHub Actions, pacotes e dependencias antes que cheguem a sua maquina, secrets ou workflow de producao.",
+    why_title: "Por que escanear antes de instalar importa",
+    why_sub: "Ferramentas AI podem acessar arquivos, repositorios, APIs, credenciais e workflows de producao. Codigo desconhecido deve ser verificado antes de entrar no seu ambiente.",
+    step3_desc: "Orientacao clara em linguagem simples: seguro, corrigir antes de usar, revisao de seguranca ou nao instalar.",
+    other_title: "Protecao para a supply chain de desenvolvimento AI",
+    integrity_firewall_d: "Os relatorios focam em evidencias, risco e na proxima decisao que o usuario precisa tomar."
+  }
+};
+
+Object.entries(PUBLIC_POLISH_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 

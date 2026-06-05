@@ -319,6 +319,8 @@ const DASH_T = {
     last_scan: 'Last scan:', just_now: 'just now', min_ago: 'm ago', hr_ago: 'h ago', day_ago: 'd ago',
     scope_mcp: 'MCP Server', scope_skill: 'AI Skill', scope_ext: 'IDE Extension',
     score: 'Score', threat: 'threat', threats: 'threats',
+    load_failed: 'Could not load dashboard data.',
+    back_to_scanner: 'Back to scanner',
   },
   he: {
     live: 'נתונים חיים', back: '← סורק',  loading: 'טוען נתונים...',
@@ -792,7 +794,18 @@ async function applyLang(code) {
   if (window._dashData) render(window._dashData);
 }
 
+const DASH_EXTRA_COPY = {
+  en: { load_failed: 'Could not load dashboard data.', back_to_scanner: 'Back to scanner' },
+  he: { load_failed: 'לא ניתן לטעון את נתוני הדשבורד.', back_to_scanner: 'חזרה לסורק' },
+  de: { load_failed: 'Dashboard-Daten konnten nicht geladen werden.', back_to_scanner: 'Zurueck zum Scanner' },
+  ja: { load_failed: 'ダッシュボードデータを読み込めませんでした。', back_to_scanner: 'スキャナーに戻る' },
+  ko: { load_failed: '대시보드 데이터를 불러올 수 없습니다.', back_to_scanner: '스캐너로 돌아가기' },
+  fr: { load_failed: 'Impossible de charger les donnees du tableau de bord.', back_to_scanner: 'Retour au scanner' },
+  pt: { load_failed: 'Nao foi possivel carregar os dados do painel.', back_to_scanner: 'Voltar ao scanner' }
+};
+
 function t(key) {
+  if (DASH_EXTRA_COPY[currentLang]?.[key]) return DASH_EXTRA_COPY[currentLang][key];
   if (DECISION_LABEL_KEYS.has(key)) return DASH_T[currentLang]?.[key] || DASH_T.en[key] || key;
   return DASH_CONTENT_OVERRIDES[currentLang]?.[key] || DASH_T[currentLang]?.[key] || DASH_T.en[key] || key;
 }
@@ -1967,6 +1980,8 @@ async function loadData() {
         <div style="font-size:32px;margin-bottom:12px">⚠️</div>
         <div>Could not load data. <a href="/" style="color:var(--cyan)">Back to scanner →</a></div>
       </div>`;
+    const fallback = document.querySelector('#main-content div div:last-child');
+    if (fallback) fallback.innerHTML = `${t('load_failed')} <a href="/" style="color:var(--cyan)">${t('back_to_scanner')} →</a>`;
   }
 }
 
