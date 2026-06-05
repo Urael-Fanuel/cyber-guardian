@@ -1355,6 +1355,10 @@ function clearAdminAuth() {
 }
 function scanHeaders() {
   const headers = { 'Content-Type': 'application/json' };
+  if (accountToken()) {
+    headers['X-CG-Account-Token'] = accountToken();
+    return headers;
+  }
   const adminBypassSecret = getAdminBypassSecret().trim();
   const adminToken = getAdminToken().trim();
   if (adminToken) {
@@ -1364,8 +1368,6 @@ function scanHeaders() {
   } else if (adminBypassSecret) {
     if (isAsciiHeaderValue(adminBypassSecret)) headers['X-CG-Admin-Secret'] = adminBypassSecret;
     else localStorage.removeItem('cg-admin-secret');
-  } else if (accountToken()) {
-    headers['X-CG-Account-Token'] = accountToken();
   }
   return headers;
 }
