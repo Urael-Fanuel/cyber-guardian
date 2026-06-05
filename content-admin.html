@@ -292,6 +292,7 @@ const ADMIN_COPY = {
     no_email_subscribers: "No email subscribers yet.", no_name: "No name", origin: "Origin", created: "Created", recent_contact_messages: "Recent contact messages",
     latest50: "Latest 50 saved in Supabase", latest100: "Latest 100 saved in Supabase", contact_messages: "Contact messages", email_subscribers: "Email subscribers",
     loaded_messages: "Loaded messages and subscribers at {time}.", loading_messages: "Loading messages and subscribers...", messages_unavailable: "Messages unavailable.",
+    delete_subscriber: "Delete", confirm_delete_subscriber: "Delete {email} from email subscribers?", deleting_subscriber: "Deleting subscriber...", subscriber_deleted: "Subscriber deleted.",
     custom_price: "custom", monthly_suffix: "mo", scans_word: "scans", account_plans_missing: "Account plans are not configured yet. Run migration 009 in Supabase.",
     no_customer_accounts: "No customer accounts yet.", scans_left: "scans left", ends: "Ends", free_no_period: "free/no period", loading_accounts: "Loading customer accounts...",
     loaded_accounts: "Loaded customer accounts at {time}.", account_management_unavailable: "Account management unavailable.", saving_account: "Saving customer account...",
@@ -334,6 +335,7 @@ const ADMIN_COPY = {
     no_email_subscribers: "אין עדיין נרשמים באימייל.", no_name: "ללא שם", origin: "מקור", created: "נוצר", recent_contact_messages: "הודעות יצירת קשר אחרונות",
     latest50: "50 האחרונות שנשמרו ב-Supabase", latest100: "100 האחרונים שנשמרו ב-Supabase", contact_messages: "הודעות יצירת קשר", email_subscribers: "נרשמים באימייל",
     loaded_messages: "הודעות ונרשמים נטענו בשעה {time}.", loading_messages: "טוען הודעות ונרשמים...", messages_unavailable: "ההודעות לא זמינות.",
+    delete_subscriber: "מחק", confirm_delete_subscriber: "למחוק את {email} מרשימת הנרשמים?", deleting_subscriber: "מוחק נרשם...", subscriber_deleted: "הנרשם נמחק.",
     custom_price: "מותאם", monthly_suffix: "חודש", scans_word: "סריקות", account_plans_missing: "מסלולי החשבונות עדיין לא מוגדרים. צריך להריץ מיגרציה 009 ב-Supabase.",
     no_customer_accounts: "אין עדיין חשבונות לקוחות.", scans_left: "סריקות נותרו", ends: "מסתיים", free_no_period: "חינם/ללא תקופה", loading_accounts: "טוען חשבונות לקוחות...",
     loaded_accounts: "חשבונות הלקוחות נטענו בשעה {time}.", account_management_unavailable: "ניהול החשבונות לא זמין.", saving_account: "שומר חשבון לקוח...",
@@ -938,6 +940,9 @@ function renderSubscribers(section) {
         ${row.origin ? `<div>${escapeHtml(tr('origin'))}: ${escapeHtml(row.origin)}</div>` : ''}
         <div>${escapeHtml(tr('created'))}: ${escapeHtml(formatDateTime(row.created_at))}</div>
       </div>
+      <div class="actions">
+        <button class="danger" type="button" data-delete-subscriber="${escapeHtml(row.email)}">${escapeHtml(tr('delete_subscriber'))}</button>
+      </div>
     </div>`).join('')}</div>`;
 }
 
@@ -995,6 +1000,42 @@ async function loadLeads() {
       return;
     }
     renderLeads(data);
+  } catch {
+    leadsStatusEl.textContent = tr('messages_unavailable');
+    leadsStatusEl.className = 'status error';
+  }
+}
+
+async function deleteSubscriber(email) {
+  const token = getToken();
+  if (!token || !email) return;
+  const confirmed = window.confirm(textWithParams('confirm_delete_subscriber', { email }));
+  if (!confirmed) return;
+
+  leadsStatusEl.className = 'status';
+  leadsStatusEl.textContent = tr('deleting_subscriber');
+  try {
+    const response = await fetch('/api/admin-data?section=leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CG-Admin-Token': token },
+      body: JSON.stringify({ action: 'delete_subscriber', email })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      clearToken();
+      updateAuthView();
+      loginStatusEl.textContent = tr('session_expired');
+      loginStatusEl.className = 'status error';
+      return;
+    }
+    if (!response.ok) {
+      leadsStatusEl.textContent = data.error || tr('messages_unavailable');
+      leadsStatusEl.className = 'status error';
+      return;
+    }
+    leadsStatusEl.textContent = tr('subscriber_deleted');
+    leadsStatusEl.className = 'status';
+    await loadLeads();
   } catch {
     leadsStatusEl.textContent = tr('messages_unavailable');
     leadsStatusEl.className = 'status error';
@@ -1331,6 +1372,11 @@ document.getElementById('refresh-leads').onclick = loadLeads;
 document.getElementById('refresh-accounts').onclick = loadAccounts;
 document.getElementById('refresh-integrity').onclick = loadIntegrity;
 document.getElementById('save-account').onclick = saveAccountAccess;
+adminLeadsEl.addEventListener('click', event => {
+  const button = event.target.closest('[data-delete-subscriber]');
+  if (!button) return;
+  deleteSubscriber(button.getAttribute('data-delete-subscriber'));
+});
 document.getElementById('logout').onclick = () => { clearToken(); updateAuthView(); };
 updateAuthView();
 applyAdminTranslations();

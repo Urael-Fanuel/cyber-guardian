@@ -77,6 +77,14 @@ function validEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function parseBody(req) {
+  if (!req.body) return {};
+  if (typeof req.body === "string") {
+    try { return JSON.parse(req.body); } catch { return null; }
+  }
+  return req.body;
+}
+
 function addDays(days) {
   const date = new Date();
   date.setUTCDate(date.getUTCDate() + days);
@@ -121,6 +129,23 @@ async function getLeads(sb) {
     subscribers,
     generated_at: new Date().toISOString(),
   };
+}
+
+async function deleteEmailSubscriber(sb, body) {
+  const email = String(body?.email || "").trim().toLowerCase();
+  if (!validEmail(email)) return { error: "Valid subscriber email is required." };
+
+  const { error } = await sb
+    .from("email_subscribers")
+    .delete()
+    .eq("email", email);
+
+  if (error) {
+    if (tableMissing(error)) return { error: "The email_subscribers table is not configured yet." };
+    throw error;
+  }
+
+  return { ok: true, deleted_email: email };
 }
 
 async function getPlans(sb) {
@@ -350,16 +375,24 @@ module.exports = async function handler(req, res) {
   const section = getSection(req);
   try {
     if (section === "leads") {
+      if (req.method === "POST") {
+        const body = parseBody(req);
+        if (!body) return res.status(400).json({ error: "Invalid request format" });
+        if (body.action === "delete_subscriber") {
+          const result = await deleteEmailSubscriber(sb, body);
+          if (result.error) return res.status(400).json({ error: result.error });
+          return res.status(200).json(result);
+        }
+        return res.status(400).json({ error: "Unknown leads action" });
+      }
       if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
       return res.status(200).json(await getLeads(sb));
     }
 
     if (section === "accounts") {
       if (req.method === "POST") {
-        let body = req.body;
-        if (typeof body === "string") {
-          try { body = JSON.parse(body); } catch { return res.status(400).json({ error: "Invalid request format" }); }
-        }
+        const body = parseBody(req);
+        if (!body) return res.status(400).json({ error: "Invalid request format" });
         const result = await upsertAccount(sb, body);
         if (result.error) return res.status(400).json({ error: result.error });
         return res.status(200).json(result);
