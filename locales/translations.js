@@ -860,7 +860,7 @@ const TRANSLATIONS = {
     nav_tag: "MCP-FIRST · v2.0",
     nav_live: "פעיל",
     hero_eyebrow: "סורק אבטחה ל-MCP, כלי AI ושרשרת אספקת קוד",
-    hero_title_1: "לפני התקנת כלי AI,",
+    hero_title_1: "לפני התקנה,",
     hero_title_2: "סורקים את הקוד.",
     hero_sub: "Cyber-Guardian בודק שרתי MCP, AI Skills, הרחבות IDE, GitHub Actions, חבילות ותלויות לפני שהם נוגעים במחשב, בסודות או בתהליכי פרודקשן.",
     stat_families: "איומי MCP",
@@ -2979,7 +2979,7 @@ const HOMEPAGE_DESIGN_COPY = {
   },
   he: {
     hero_eyebrow: "סורק אבטחה ל-MCP, AI Skills ושרשרת אספקת קוד",
-    hero_title_1: "לפני התקנת כלי AI,",
+    hero_title_1: "לפני התקנה,",
     hero_title_2: "סורקים את הקוד.",
     hero_sub: "Cyber-Guardian בודק שרתי MCP, AI Skills, הרחבות IDE, GitHub Actions, חבילות ותלויות לפני שהם נוגעים במחשב, בסודות או בתהליכי פרודקשן.",
     hero_primary_cta: "התחל סריקה בחינם",
