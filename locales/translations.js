@@ -1568,7 +1568,8 @@ const ACCOUNT_COPY = {
     account_password_short: "Password must be at least 8 characters.",
     account_creating: "Creating account...",
     account_create_failed: "Account creation failed.",
-    account_check_email: "Account created. Check your email if confirmation is required.",
+    account_check_email: "Account created. Check your email if confirmation is required. After confirmation, you will be moved to your scan plan.",
+    account_plan_active: "Your scan plan is ready. You are now using Cyber-Guardian to protect yourself before installing risky code.",
     account_signed_out: "Signed out.",
     account_quota_updated: "Account quota updated."
   },
@@ -1591,7 +1592,8 @@ const ACCOUNT_COPY = {
     account_password_short: "הסיסמה חייבת להיות לפחות 8 תווים.",
     account_creating: "יוצר חשבון...",
     account_create_failed: "יצירת החשבון נכשלה.",
-    account_check_email: "החשבון נוצר. אם נדרש אישור, בדוק את האימייל.",
+    account_check_email: "החשבון נוצר. אם נדרש אישור, בדוק את האימייל. לאחר האישור תועבר למסלול הסריקות שלך.",
+    account_plan_active: "מסלול הסריקות שלך מוכן. מעכשיו אתה משתמש ב-Cyber-Guardian כדי להגן על עצמך לפני התקנת קוד בעייתי.",
     account_signed_out: "התנתקת.",
     account_quota_updated: "מכסת החשבון עודכנה."
   },
@@ -1614,7 +1616,8 @@ const ACCOUNT_COPY = {
     account_password_short: "Passwort muss mindestens 8 Zeichen haben.",
     account_creating: "Konto wird erstellt...",
     account_create_failed: "Kontoerstellung fehlgeschlagen.",
-    account_check_email: "Konto erstellt. Pruefen Sie ggf. Ihre E-Mail.",
+    account_check_email: "Konto erstellt. Pruefen Sie ggf. Ihre E-Mail. Nach der Bestaetigung werden Sie zu Ihrem Scan-Plan weitergeleitet.",
+    account_plan_active: "Ihr Scan-Plan ist bereit. Sie nutzen Cyber-Guardian jetzt, um sich vor riskantem Code zu schuetzen.",
     account_signed_out: "Abgemeldet.",
     account_quota_updated: "Kontingent aktualisiert."
   },
@@ -1637,7 +1640,8 @@ const ACCOUNT_COPY = {
     account_password_short: "パスワードは8文字以上です。",
     account_creating: "アカウント作成中...",
     account_create_failed: "アカウント作成に失敗しました。",
-    account_check_email: "アカウントを作成しました。確認が必要な場合はメールを確認してください。",
+    account_check_email: "アカウントを作成しました。確認が必要な場合はメールを確認してください。確認後、スキャンプランに移動します。",
+    account_plan_active: "スキャンプランの準備ができました。危険なコードをインストールする前にCyber-Guardianで保護できます。",
     account_signed_out: "サインアウトしました。",
     account_quota_updated: "アカウント枠を更新しました。"
   },
@@ -1660,7 +1664,8 @@ const ACCOUNT_COPY = {
     account_password_short: "비밀번호는 8자 이상이어야 합니다.",
     account_creating: "계정 생성 중...",
     account_create_failed: "계정 생성에 실패했습니다.",
-    account_check_email: "계정이 생성되었습니다. 확인이 필요하면 이메일을 확인하세요.",
+    account_check_email: "계정이 생성되었습니다. 확인이 필요하면 이메일을 확인하세요. 확인 후 스캔 플랜으로 이동합니다.",
+    account_plan_active: "스캔 플랜이 준비되었습니다. 이제 Cyber-Guardian으로 위험한 코드를 설치하기 전에 자신을 보호할 수 있습니다.",
     account_signed_out: "로그아웃되었습니다.",
     account_quota_updated: "계정 한도가 업데이트되었습니다."
   },
@@ -1683,7 +1688,8 @@ const ACCOUNT_COPY = {
     account_password_short: "Le mot de passe doit contenir au moins 8 caracteres.",
     account_creating: "Creation du compte...",
     account_create_failed: "Creation du compte echouee.",
-    account_check_email: "Compte cree. Verifiez votre email si une confirmation est requise.",
+    account_check_email: "Compte cree. Verifiez votre email si une confirmation est requise. Apres confirmation, vous serez dirige vers votre plan de scan.",
+    account_plan_active: "Votre plan de scan est pret. Vous utilisez maintenant Cyber-Guardian pour vous proteger avant d'installer du code risque.",
     account_signed_out: "Deconnecte.",
     account_quota_updated: "Quota du compte mis a jour."
   },
@@ -1706,7 +1712,8 @@ const ACCOUNT_COPY = {
     account_password_short: "A senha deve ter pelo menos 8 caracteres.",
     account_creating: "Criando conta...",
     account_create_failed: "Falha ao criar conta.",
-    account_check_email: "Conta criada. Verifique o email se confirmacao for necessaria.",
+    account_check_email: "Conta criada. Verifique o email se confirmacao for necessaria. Depois da confirmacao, voce sera direcionado ao seu plano de scan.",
+    account_plan_active: "Seu plano de scan esta pronto. Agora voce usa o Cyber-Guardian para se proteger antes de instalar codigo arriscado.",
     account_signed_out: "Desconectado.",
     account_quota_updated: "Cota da conta atualizada."
   }

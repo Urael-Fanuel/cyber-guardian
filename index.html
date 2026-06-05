@@ -1162,6 +1162,7 @@ async function accountSignIn() {
   setAccountRecoveryMode(false);
   password.value = '';
   await loadAccountStatus();
+  setAccountMessage(t('account_plan_active'));
 }
 
 function accountRedirectUrl() {
@@ -1194,7 +1195,10 @@ async function accountSignUp() {
   if (error) return setAccountMessage(error.message || t('account_create_failed'), true);
   accountSession = data?.session || null;
   password.value = '';
-  if (accountSession) await loadAccountStatus();
+  if (accountSession) {
+    await loadAccountStatus();
+    setAccountMessage(t('account_plan_active'));
+  }
   else setAccountMessage(t('account_check_email'));
 }
 
