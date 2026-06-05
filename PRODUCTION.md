@@ -95,6 +95,14 @@ Required setup:
   service key.
 - Keep `SUPABASE_SERVICE_KEY` server-side only.
 - Enable Supabase Auth email/password sign-in in the Supabase dashboard.
+- Configure Supabase Auth custom SMTP through Resend for production auth emails:
+  - Sender email: `notifications@cyberguardianscan.com`
+  - Sender name: `Cyber Guardian Scan`
+  - Host: `smtp.resend.com`
+  - Port: `587`
+  - Username: `resend`
+  - Password: a Resend API key with sending access for `cyberguardianscan.com`.
+  - Never commit the Resend API key or SMTP password to GitHub.
 - Run migration `009_user_accounts_and_quotas.sql`.
 
 ## Email Lead Notifications
