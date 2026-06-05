@@ -229,6 +229,13 @@ function testStaticPromptInjection() {
   assert.ok(result.threats.some(t => t.family === "SYSTEM_OVERRIDE"));
 }
 
+function testStaticEicarSignature() {
+  const result = runStaticScan('X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*');
+  assert.equal(result.status, "STATUS_CRITICAL");
+  assert.equal(result.threat_score, 100);
+  assert.ok(result.threats.some(t => t.family === "SUPPLY_CHAIN_ATTACK"));
+}
+
 function testStaticSupplyChainWorkflow() {
   const result = runStaticScan(`name: deploy
 on:
@@ -537,6 +544,7 @@ async function testSupplyChainScopesPersist() {
 testStaticReverseShell();
 testStaticSecretRead();
 testStaticPromptInjection();
+testStaticEicarSignature();
 testStaticSupplyChainWorkflow();
 testAdvancedLotlFileStaging();
 testAdvancedInputDependentActivation();

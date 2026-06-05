@@ -903,6 +903,7 @@ const THREAT_FAMILY_DEFINITIONS = {
 };
 
 const SUPPLEMENTAL_STATIC_RULES = [
+  { family: "SUPPLY_CHAIN_ATTACK", severity: "CRITICAL", score: 100, pattern: /EICAR-STANDARD-ANTIVIRUS-TEST-FILE/i, description: "EICAR antivirus test signature. This standard malware-detection test string must never be reported as clean." },
   { family: "TOOL_POISONING", severity: "HIGH", score: 70, pattern: /(tool|function).{0,80}(description|schema).{0,120}(ignore|secretly|do not tell|hidden)/i, description: THREAT_FAMILY_DEFINITIONS.TOOL_POISONING },
   { family: "INDIRECT_PROMPT_INJECTION", severity: "HIGH", score: 70, pattern: /(webpage|document|tool result|retrieved content).{0,120}(ignore previous|system prompt|developer message|follow these instructions)/i, description: THREAT_FAMILY_DEFINITIONS.INDIRECT_PROMPT_INJECTION },
   { family: "MCP_CREDENTIAL_EXFILTRATION", severity: "CRITICAL", score: 90, pattern: /(mcp|tool).{0,120}(token|secret|api[_-]?key|credential).{0,120}(send|post|upload|exfiltrate)/i, description: THREAT_FAMILY_DEFINITIONS.MCP_CREDENTIAL_EXFILTRATION },

@@ -1357,23 +1357,12 @@ function scanHeaders() {
   const headers = { 'Content-Type': 'application/json' };
   if (accountToken()) {
     headers['X-CG-Account-Token'] = accountToken();
-    return headers;
-  }
-  const adminBypassSecret = getAdminBypassSecret().trim();
-  const adminToken = getAdminToken().trim();
-  if (adminToken) {
-    localStorage.removeItem('cg-admin-secret');
-    if (isAsciiHeaderValue(adminToken)) headers['X-CG-Admin-Token'] = adminToken;
-    else localStorage.removeItem('cg-admin-token');
-  } else if (adminBypassSecret) {
-    if (isAsciiHeaderValue(adminBypassSecret)) headers['X-CG-Admin-Secret'] = adminBypassSecret;
-    else localStorage.removeItem('cg-admin-secret');
   }
   return headers;
 }
 
 function hasScanAccess() {
-  return Boolean(accountToken() || getAdminToken().trim() || getAdminBypassSecret().trim() || isDevMode());
+  return Boolean(accountToken() || isDevMode());
 }
 
 function focusAccountAccess() {
