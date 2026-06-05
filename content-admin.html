@@ -297,6 +297,7 @@ const ADMIN_COPY = {
     no_customer_accounts: "No customer accounts yet.", scans_left: "scans left", ends: "Ends", free_no_period: "free/no period", loading_accounts: "Loading customer accounts...",
     loaded_accounts: "Loaded customer accounts at {time}.", account_management_unavailable: "Account management unavailable.", saving_account: "Saving customer account...",
     could_not_save_account: "Could not save customer account.", customer_created: "Customer account created and plan assigned.", customer_updated: "Customer plan updated.",
+    delete_account: "Delete test account", confirm_delete_account: "Delete {email} from customer accounts and Supabase Auth? Use this only for test accounts.", deleting_account: "Deleting customer account...", account_deleted: "Customer account deleted.",
     login_required_fields: "Username and password are required.", login_failed: "Login failed.", login_key_text_required: "Login, key, and text are required.",
     save_failed: "Save failed.", saved_text: "Saved {key}.", loaded_saved_override: "Loaded saved override.", loaded_default_text: "Loaded default text.", no_default_text: "No default text found for this key."
   },
@@ -340,6 +341,7 @@ const ADMIN_COPY = {
     no_customer_accounts: "אין עדיין חשבונות לקוחות.", scans_left: "סריקות נותרו", ends: "מסתיים", free_no_period: "חינם/ללא תקופה", loading_accounts: "טוען חשבונות לקוחות...",
     loaded_accounts: "חשבונות הלקוחות נטענו בשעה {time}.", account_management_unavailable: "ניהול החשבונות לא זמין.", saving_account: "שומר חשבון לקוח...",
     could_not_save_account: "לא ניתן לשמור את חשבון הלקוח.", customer_created: "חשבון הלקוח נוצר והמסלול הוקצה.", customer_updated: "מסלול הלקוח עודכן.",
+    delete_account: "מחק חשבון בדיקה", confirm_delete_account: "למחוק את {email} מחשבונות הלקוחות ומ-Supabase Auth? להשתמש בזה רק לחשבונות בדיקה.", deleting_account: "מוחק חשבון לקוח...", account_deleted: "חשבון הלקוח נמחק.",
     login_required_fields: "צריך להזין שם משתמש וסיסמה.", login_failed: "ההתחברות נכשלה.", login_key_text_required: "צריך להיות מחובר ולהזין מפתח וטקסט.",
     save_failed: "השמירה נכשלה.", saved_text: "{key} נשמר.", loaded_saved_override: "נטען טקסט שמור.", loaded_default_text: "נטען טקסט ברירת מחדל.", no_default_text: "לא נמצא טקסט ברירת מחדל למפתח הזה."
   }
@@ -1114,6 +1116,7 @@ function renderAccounts(data) {
           <div>
             <div>${formatNumber(row.quota_remaining)} ${escapeHtml(tr('scans_left'))}</div>
             <div class="account-meta">${escapeHtml(tr('ends'))}: ${escapeHtml(formatDateTime(row.current_period_end) || tr('free_no_period'))}</div>
+            <button class="danger" type="button" data-delete-account="${escapeHtml(row.user_id)}" data-delete-account-email="${escapeHtml(row.email)}">${escapeHtml(tr('delete_account'))}</button>
           </div>
         </div>`).join('')}
     </div>`;
@@ -1144,6 +1147,42 @@ async function loadAccounts() {
     renderAccounts(data);
     accountsStatusEl.className = 'status';
     accountsStatusEl.textContent = textWithParams('loaded_accounts', { time: formatDateTime(data.generated_at || new Date().toISOString()) });
+  } catch {
+    accountsStatusEl.textContent = tr('account_management_unavailable');
+    accountsStatusEl.className = 'status error';
+  }
+}
+
+async function deleteAccount(userId, email) {
+  const token = getToken();
+  if (!token || !userId) return;
+  const confirmed = window.confirm(textWithParams('confirm_delete_account', { email }));
+  if (!confirmed) return;
+
+  accountsStatusEl.className = 'status';
+  accountsStatusEl.textContent = tr('deleting_account');
+  try {
+    const response = await fetch('/api/admin-data?section=accounts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CG-Admin-Token': token },
+      body: JSON.stringify({ action: 'delete_account', user_id: userId, email })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      clearToken();
+      updateAuthView();
+      loginStatusEl.textContent = tr('session_expired');
+      loginStatusEl.className = 'status error';
+      return;
+    }
+    if (!response.ok) {
+      accountsStatusEl.textContent = data.error || tr('account_management_unavailable');
+      accountsStatusEl.className = 'status error';
+      return;
+    }
+    accountsStatusEl.textContent = tr('account_deleted');
+    accountsStatusEl.className = 'status';
+    await loadAccounts();
   } catch {
     accountsStatusEl.textContent = tr('account_management_unavailable');
     accountsStatusEl.className = 'status error';
@@ -1376,6 +1415,11 @@ adminLeadsEl.addEventListener('click', event => {
   const button = event.target.closest('[data-delete-subscriber]');
   if (!button) return;
   deleteSubscriber(button.getAttribute('data-delete-subscriber'));
+});
+adminAccountsEl.addEventListener('click', event => {
+  const button = event.target.closest('[data-delete-account]');
+  if (!button) return;
+  deleteAccount(button.getAttribute('data-delete-account'), button.getAttribute('data-delete-account-email'));
 });
 document.getElementById('logout').onclick = () => { clearToken(); updateAuthView(); };
 updateAuthView();

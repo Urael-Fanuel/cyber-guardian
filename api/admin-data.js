@@ -306,6 +306,35 @@ async function upsertAccount(sb, body) {
   };
 }
 
+async function deleteCustomerAccount(sb, body) {
+  const userId = String(body?.user_id || "").trim();
+  const email = String(body?.email || "").trim().toLowerCase();
+  if (!userId && !validEmail(email)) return { error: "Valid customer account id or email is required." };
+
+  let user = null;
+  if (userId) {
+    const { data, error } = await sb.auth.admin.getUserById(userId);
+    if (error) throw error;
+    user = data?.user || null;
+  } else {
+    user = await findUserByEmail(sb, email);
+  }
+  if (!user?.id) return { error: "Customer account was not found." };
+
+  await Promise.all([
+    sb.from("cg_user_scan_usage").delete().eq("user_id", user.id),
+    sb.from("cg_user_subscriptions").delete().eq("user_id", user.id),
+  ].map(async action => {
+    const { error } = await action;
+    if (error && !tableMissing(error)) throw error;
+  }));
+
+  const { error } = await sb.auth.admin.deleteUser(user.id);
+  if (error) throw error;
+
+  return { ok: true, deleted_user_id: user.id, deleted_email: user.email || email };
+}
+
 async function safeTableRows(sb, table, select, orderColumn, limit = 50) {
   const { data, error } = await sb
     .from(table)
@@ -393,6 +422,11 @@ module.exports = async function handler(req, res) {
       if (req.method === "POST") {
         const body = parseBody(req);
         if (!body) return res.status(400).json({ error: "Invalid request format" });
+        if (body.action === "delete_account") {
+          const result = await deleteCustomerAccount(sb, body);
+          if (result.error) return res.status(400).json({ error: result.error });
+          return res.status(200).json(result);
+        }
         const result = await upsertAccount(sb, body);
         if (result.error) return res.status(400).json({ error: result.error });
         return res.status(200).json(result);
