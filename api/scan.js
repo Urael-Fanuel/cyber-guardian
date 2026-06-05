@@ -245,6 +245,43 @@ async function saveScanEvidence(sb, row, result) {
   return true;
 }
 
+function agentRowsForScan(row, result) {
+  const orchestrator = result?.internal_orchestrator || {};
+  const specialists = Array.isArray(orchestrator.specialists) ? orchestrator.specialists : [];
+  if (!specialists.length) return [];
+
+  return specialists.slice(0, 12).map((item, index) => ({
+    scan_run_id: row.scan_run_id,
+    scope: row.scope,
+    source_name: cleanText(row.source_name || "", 160),
+    source_url: cleanText(row.source_url || "", 500),
+    source_owner: cleanText(row.source_owner || "", 120),
+    code_hash: cleanText(row.code_hash || "", 80),
+    agent_key: cleanText(item.key || `specialist_${index + 1}`, 80),
+    agent_name: cleanText(item.name || "", 160),
+    focus: cleanText(item.focus || "", 500),
+    checked: Boolean(item.checked),
+    finding_count: Math.max(0, Math.min(999, Number(item.finding_count || 0))),
+    max_severity: cleanText(item.max_severity || "NONE", 20).toUpperCase(),
+    confidence: Math.max(0, Math.min(1, Number(item.confidence || 0))),
+    needs_sandbox: Boolean(item.needs_sandbox),
+    evidence_ids: Array.isArray(item.evidence_ids) ? item.evidence_ids.slice(0, 12) : [],
+    summary: cleanText(item.summary || "", 500),
+  }));
+}
+
+async function saveScanAgentRuns(sb, row, result) {
+  const rows = agentRowsForScan(row, result);
+  if (!rows.length) return true;
+
+  const { error } = await sb.from("cg_scan_agent_runs").insert(rows);
+  if (error) {
+    if (!tableMissing(error)) console.error("[scan-agent-runs-save]", error.message);
+    return false;
+  }
+  return true;
+}
+
 function trustScoreFromScan(row) {
   const score = Math.max(0, Math.min(100, Number(row.threat_score || 0)));
   if (row.status === "STATUS_SAFE") return Math.max(60, 100 - score);
@@ -334,6 +371,7 @@ async function saveSiteScan(scope, result, context = {}) {
   const inserted = await insertSiteScanWithFallback(sb, row);
   if (inserted) {
     await saveScanEvidence(sb, row, result);
+    await saveScanAgentRuns(sb, row, result);
     await updateRegistryFromScan(sb, row);
   }
   return inserted;
@@ -645,6 +683,7 @@ function publicScanResponse(result, adminBypass, extra = {}) {
   const publicResult = normalizeResult(JSON.parse(JSON.stringify(result || {})));
   const behaviorReview = normalizeDynamicSandboxEvidence(publicResult.dynamic_sandbox || result?.behavior_review);
   delete publicResult.analysis_orchestrator;
+  delete publicResult.internal_orchestrator;
   delete publicResult.dynamic_sandbox;
   publicResult.behavior_review = behaviorReview;
   return {
@@ -1191,6 +1230,100 @@ function buildSecurityReport(result) {
     human_review_recommended: decision !== "install_ok",
     current_source_required: true,
   };
+}
+
+function scopeSpecialists(scope) {
+  const value = String(scope || "").toLowerCase();
+  if (value === "mcp") return ["code_execution", "prompt_security", "secrets_identity", "network_exfiltration", "filesystem"];
+  if (value === "skill") return ["prompt_security", "code_execution", "filesystem", "secrets_identity"];
+  if (value === "extension") return ["code_execution", "filesystem", "secrets_identity", "network_exfiltration", "supply_chain"];
+  if (value === "github_action") return ["supply_chain", "secrets_identity", "code_execution", "network_exfiltration"];
+  if (value === "package") return ["supply_chain", "code_execution", "secrets_identity", "network_exfiltration"];
+  if (value === "dependency") return ["supply_chain", "resource_safety", "code_execution"];
+  return ["code_execution", "secrets_identity", "network_exfiltration"];
+}
+
+function maxSeverityForEvidence(items) {
+  let max = "NONE";
+  for (const item of items) {
+    if (threatSeverityRank(item?.severity) > threatSeverityRank(max)) max = cleanText(item.severity || "NONE", 20).toUpperCase();
+  }
+  return max;
+}
+
+function averageConfidence(items) {
+  if (!items.length) return 0;
+  const total = items.reduce((sum, item) => sum + (Number(item.confidence) || 0), 0);
+  return Number((total / items.length).toFixed(2));
+}
+
+function specialistSummaryText(key, findingCount, maxSeverity) {
+  if (!findingCount) return "No concrete evidence was assigned to this specialist in this scan.";
+  const agent = SPECIALIST_AGENTS[key] || {};
+  return `${agent.name || key} found ${findingCount} evidence item(s), highest severity ${maxSeverity}.`;
+}
+
+function buildOrchestrationReport(result, staticResult = {}, scope = "unknown") {
+  const threats = Array.isArray(result?.threats) ? result.threats : [];
+  const evidenceReport = Array.isArray(result?.evidence_report) ? result.evidence_report : buildEvidenceReport(threats);
+  const activeKeys = new Set(scopeSpecialists(scope));
+
+  for (const threat of threats) activeKeys.add(specialistKeyForFamily(threat.family));
+  for (const threat of (Array.isArray(staticResult?.threats) ? staticResult.threats : [])) activeKeys.add(specialistKeyForFamily(threat.family));
+  if (sandboxRecommendedFor(result)) activeKeys.add("runtime_behavior");
+
+  const specialists = [...activeKeys].map(key => {
+    const agent = SPECIALIST_AGENTS[key] || { name: key, focus: "General security review." };
+    const findings = evidenceReport.filter(item => specialistKeyForFamily(item.family) === key);
+    const maxSeverity = maxSeverityForEvidence(findings);
+    return {
+      key,
+      name: agent.name,
+      focus: agent.focus,
+      checked: true,
+      finding_count: findings.length,
+      max_severity: maxSeverity,
+      confidence: averageConfidence(findings),
+      needs_sandbox: key === "runtime_behavior" || findings.some(item => threatSeverityRank(item.severity) >= 3),
+      evidence_ids: findings.map(item => item.id).filter(Boolean).slice(0, 12),
+      summary: specialistSummaryText(key, findings.length, maxSeverity),
+    };
+  });
+
+  const decision = result?.decision_details || buildDecisionDetails(result);
+  const highConfidence = evidenceReport.filter(item => (Number(item.confidence) || 0) >= 0.78).length;
+  return {
+    version: "orchestrator_v1",
+    intake: {
+      scope: cleanText(scope || "unknown", 48),
+      component_type: cleanText(result?.code_profile?.component_type || scope || "unknown", 48),
+      purpose: cleanText(result?.code_profile?.purpose || "", 280),
+      capability_count: Array.isArray(result?.code_profile?.capabilities) ? result.code_profile.capabilities.length : 0,
+    },
+    static_rules: {
+      status: cleanText(staticResult?.status || "STATUS_AMBIGUOUS", 32),
+      threat_score: Math.max(0, Math.min(100, Number(staticResult?.threat_score || 0))),
+      finding_count: Array.isArray(staticResult?.threats) ? staticResult.threats.length : 0,
+      families: [...new Set((staticResult?.threats || []).map(item => item.family).filter(Boolean))].slice(0, 12),
+    },
+    specialists,
+    aggregator: {
+      final_status: cleanText(result?.status || "STATUS_AMBIGUOUS", 32),
+      final_score: Math.max(0, Math.min(100, Number(result?.threat_score || 0))),
+      decision: cleanText(decision.decision || "security_review", 64),
+      risk_type: cleanText(decision.risk_type || "", 64),
+      evidence_count: evidenceReport.length,
+      high_confidence_findings: highConfidence,
+      sandbox_recommended: sandboxRecommendedFor(result),
+      human_review_recommended: decision.decision !== "install_ok",
+    },
+  };
+}
+
+function applyOrchestration(result, staticResult, scope) {
+  const normalized = normalizeResult(result);
+  normalized.internal_orchestrator = buildOrchestrationReport(normalized, staticResult, scope);
+  return normalized;
 }
 
 function buildDecisionDetails(result) {
@@ -1934,6 +2067,7 @@ async function handler(req, res) {
   if (!apiKey) {
     let result = staticFallbackResult(staticResult, "ANTHROPIC_API_KEY missing");
     result = await attachDynamicSandbox(scope, code, result, codeHash);
+    result = applyOrchestration(result, staticResult, scope);
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, persistContext);
     saveToCache(cacheKey, result);
@@ -1968,6 +2102,7 @@ async function handler(req, res) {
     }
     result = mergeStaticThreats(result, staticResult);
     result = await attachDynamicSandbox(scope, code, result, codeHash);
+    result = applyOrchestration(result, staticResult, scope);
 
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, persistContext);
@@ -1979,6 +2114,7 @@ async function handler(req, res) {
     if (err.name === "AbortError") {
       let result = staticFallbackResult(staticResult, "deep behavior review timed out");
       result = await attachDynamicSandbox(scope, code, result, codeHash);
+      result = applyOrchestration(result, staticResult, scope);
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       saveToCache(cacheKey, result);
@@ -1988,6 +2124,7 @@ async function handler(req, res) {
     if (/Anthropic API/.test(err.message || "")) {
       let result = staticFallbackResult(staticResult, err.message);
       result = await attachDynamicSandbox(scope, code, result, codeHash);
+      result = applyOrchestration(result, staticResult, scope);
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       saveToCache(cacheKey, result);
@@ -2013,5 +2150,7 @@ if (process.env.NODE_ENV === "test") {
     coverageMetadata,
     isAdminBypassRequest,
     normalizeScanScope,
+    buildOrchestrationReport,
+    applyOrchestration,
   };
 }
