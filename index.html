@@ -132,11 +132,22 @@ h1 .hl { color: var(--cyan); text-shadow: 0 0 26px rgba(0,212,255,0.28); }
 .trust-flow-arrow { color: var(--cyan); font-size: 18px; line-height: 1; }
 [dir="rtl"] .trust-flow-arrow { transform: rotate(180deg); }
 .trust-score { color: var(--green); font-family: var(--sans); font-size: 22px; font-weight: 800; white-space: nowrap; }
-.trust-statuses { position: relative; display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; padding: 0 18px 18px; }
-.trust-status { min-height: 34px; display: flex; align-items: center; justify-content: center; padding: 7px; border: 1px solid currentColor; border-radius: 7px; font-size: 8px; font-weight: 700; line-height: 1.35; text-align: center; text-transform: uppercase; }
-.trust-status.safe { color: var(--green); background: rgba(0,230,118,0.06); }
-.trust-status.review { color: var(--orange); background: rgba(255,145,0,0.06); }
-.trust-status.danger { color: var(--red); background: rgba(255,61,61,0.06); }
+.verified-badge { position: relative; margin: 0 18px 10px; display: grid; grid-template-columns: 48px minmax(0,1fr) minmax(92px,auto); align-items: center; gap: 12px; padding: 13px; border: 1px solid rgba(0,230,118,0.52); border-radius: 8px; background: linear-gradient(135deg,rgba(0,230,118,0.1),rgba(5,8,13,0.84) 48%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 34px rgba(0,0,0,0.24); }
+.verified-badge-mark { position: relative; width: 48px; height: 48px; overflow: hidden; border: 1px solid rgba(255,189,46,0.55); border-radius: 8px; background: #080808; box-shadow: 0 0 18px rgba(255,189,46,0.16); }
+.verified-badge-mark img { position: absolute; width: 88px; max-width: none; height: auto; left: 50%; top: -6px; transform: translateX(-50%); }
+.verified-badge-title { color: #fff; font-family: var(--sans); font-size: 12px; font-weight: 800; line-height: 1.35; }
+.verified-badge-note { margin-top: 3px; color: var(--text-dim); font-size: 8.5px; line-height: 1.45; }
+.verified-badge-result { text-align: right; white-space: nowrap; }
+[dir="rtl"] .verified-badge-result { text-align: left; }
+.verified-badge-score-label { color: var(--text-dim); font-size: 7.5px; letter-spacing: 0.7px; line-height: 1.25; text-transform: uppercase; }
+.verified-badge-score { margin-top: 3px; color: var(--green); font-family: var(--sans); font-size: 20px; font-weight: 800; line-height: 1; }
+.verified-badge-status { margin-top: 5px; color: var(--green); font-size: 7.5px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; }
+.badge-variants { position: relative; display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; padding: 0 18px 18px; }
+.badge-variant { min-height: 31px; display: flex; align-items: center; justify-content: center; padding: 6px; border: 1px solid currentColor; border-radius: 7px; font-size: 7px; font-weight: 700; line-height: 1.25; text-align: center; text-transform: uppercase; }
+.badge-variant.safe { color: var(--green); background: rgba(0,230,118,0.06); }
+.badge-variant.review { color: var(--orange); background: rgba(255,145,0,0.06); }
+.badge-variant.danger { color: var(--red); background: rgba(255,61,61,0.06); }
+.badge-variant.rescan { color: var(--text-dim); background: rgba(142,166,185,0.06); }
 @keyframes fu { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
 /* ── STATS ── */
@@ -502,8 +513,15 @@ footer a:hover { color: var(--cyan); }
   .hero-actions, .hero-proof { justify-content: center; }
   .hero-cta { width: 100%; }
   .hero-visual { min-height: auto; }
-  .trust-flow-step { grid-template-columns: 38px 1fr auto; }
-  .trust-statuses { grid-template-columns: 1fr; }
+  .trust-flow-step { grid-template-columns: 38px minmax(0,1fr); }
+  .trust-flow-arrow { display: none; }
+  .trust-score { grid-column: 1 / -1; justify-self: end; font-size: 20px; }
+  .verified-badge { grid-template-columns: 42px 1fr; }
+  .verified-badge-mark { width: 42px; height: 42px; }
+  .verified-badge-mark img { width: 78px; }
+  .verified-badge-result { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; text-align: left; }
+  [dir="rtl"] .verified-badge-result { text-align: right; }
+  .badge-variants { grid-template-columns: repeat(2,1fr); }
   .visual-row { grid-template-columns: 58px 1fr; }
   .visual-state { grid-column: 1 / -1; justify-self: start; }
   [dir="rtl"] .visual-state { justify-self: end; }
@@ -577,10 +595,23 @@ footer a:hover { color: var(--cyan); }
           <span class="trust-score">96/100</span>
         </div>
       </div>
-      <div class="trust-statuses">
-        <span class="trust-status safe" data-i18n="hero_status_safe">Safe for Install</span>
-        <span class="trust-status review" data-i18n="hero_status_review">Needs Review</span>
-        <span class="trust-status danger" data-i18n="hero_status_danger">Danger for Install</span>
+      <div class="verified-badge">
+        <span class="verified-badge-mark" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
+        <div>
+          <div class="verified-badge-title">Verified by Cyber Guardian Scan™</div>
+          <div class="verified-badge-note" data-i18n="verified_badge_note">This exact version was scanned. Rescan is required if the code changes.</div>
+        </div>
+        <div class="verified-badge-result">
+          <div class="verified-badge-score-label" data-i18n="verified_badge_score_label">Security Score</div>
+          <div class="verified-badge-score">96/100</div>
+          <div class="verified-badge-status" data-i18n="hero_status_safe">Safe for Install</div>
+        </div>
+      </div>
+      <div class="badge-variants">
+        <span class="badge-variant safe" data-i18n="hero_status_safe">Safe for Install</span>
+        <span class="badge-variant review" data-i18n="hero_status_review">Needs Review</span>
+        <span class="badge-variant danger" data-i18n="hero_status_danger">Danger for Install</span>
+        <span class="badge-variant rescan" data-i18n="hero_status_rescan">Rescan Required</span>
       </div>
     </div>
   </div>
