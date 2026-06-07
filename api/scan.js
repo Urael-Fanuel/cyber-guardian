@@ -115,7 +115,7 @@ function classifySourceReference(input) {
     return { kind: "source_url", reference: text };
   }
 
-  const installCommand = /^(?:npx|bunx|uvx|pnpm\s+(?:dlx|add|install)|yarn\s+(?:dlx|add)|npm\s+(?:exec|install|i)|pipx?\s+install|python\s+-m\s+pip\s+install|docker\s+pull|gh\s+repo\s+clone|curl\b.+\|\s*(?:sh|bash)|wget\b.+\|\s*(?:sh|bash))\b/i;
+  const installCommand = /^(?:npx|bunx|uvx|pnpm\s+(?:dlx|add|install)|yarn\s+(?:dlx|add)|npm\s+(?:exec|install|i)|pipx?\s+install|python\s+-m\s+pip\s+install|(?:code|code-insiders|codium|cursor)\s+--install-extension|docker\s+pull|gh\s+repo\s+clone|curl\b.+\|\s*(?:sh|bash)|wget\b.+\|\s*(?:sh|bash))\b/i;
   if (installCommand.test(text)) {
     return { kind: "install_command", reference: text };
   }

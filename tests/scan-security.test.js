@@ -50,7 +50,7 @@ Module._load = function patchedLoad(request, parent, isMain) {
 };
 
 const scan = require("../api/scan");
-const { parseSkillsIlCommand, parseNpmCommand, parseNpmReference, parsePypiCommand, parsePypiUrl, parseGithubUrl } = require("../lib/source-resolver");
+const { parseSkillsIlCommand, parseNpmCommand, parseNpmReference, parsePypiCommand, parsePypiUrl, parseIdeExtensionReference, parseGithubUrl } = require("../lib/source-resolver");
 const {
   runStaticScan,
   mergeStaticThreats,
@@ -271,6 +271,10 @@ function testSourceReferenceClassification() {
   assert.equal(parsePypiCommand("uvx mcp-server-fetch@1.4.0").package_name, "mcp-server-fetch");
   assert.equal(parsePypiCommand("python -m pip install example-package==3.2.1").version, "3.2.1");
   assert.equal(parsePypiUrl("https://pypi.org/project/example-package/3.2.1/").version, "3.2.1");
+  assert.equal(classifySourceReference("code --install-extension publisher.extension").kind, "install_command");
+  assert.equal(parseIdeExtensionReference("code --install-extension publisher.extension@1.2.3").version, "1.2.3");
+  assert.equal(parseIdeExtensionReference("https://open-vsx.org/extension/publisher/extension").provider, "open_vsx");
+  assert.equal(parseIdeExtensionReference("https://marketplace.visualstudio.com/items?itemName=publisher.extension").provider, "vs_marketplace");
 }
 
 async function testSourceReferenceDoesNotConsumeOrPersist() {
