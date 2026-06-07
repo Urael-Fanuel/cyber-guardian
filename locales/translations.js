@@ -3250,7 +3250,7 @@ const PUBLIC_POLISH_COPY = {
     hero_primary_cta: "סריקת קוד עכשיו",
     hero_secondary_cta: "חיפוש כלים שנסרקו",
     hero_visual_kicker: "מסלול אימות האמון",
-    hero_visual_version: "הגרסה המדויקת הזו",
+    hero_visual_version: "האימות תקף לגרסה שנסרקה בלבד",
     hero_flow_input: "קוד / כלי AI",
     hero_flow_input_meta: "מאגר, חבילה, MCP, Skill או הרחבה",
     hero_flow_scan_meta: "ראיות אבטחה ואימות סיכונים",
