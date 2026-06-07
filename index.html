@@ -363,6 +363,8 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .source-required-action { max-width: 680px; margin: 14px auto 0; padding: 12px 14px; color: var(--cyan); font-size: 12px; line-height: 1.65; border: 1px solid rgba(0,212,255,0.24); border-radius: 7px; background: rgba(0,212,255,0.055); }
 .source-required-note { margin-top: 12px; color: var(--text-dim); font-size: 10.5px; }
 .source-required-ref { max-width: 680px; margin: 14px auto 0; padding: 9px 11px; color: var(--text-dim); font-size: 10px; line-height: 1.55; overflow-wrap: anywhere; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+.source-resolved-banner { padding: 11px 16px; color: var(--green); font-size: 11px; line-height: 1.65; border-top: 1px solid rgba(0,230,118,0.32); border-bottom: 1px solid rgba(0,230,118,0.32); background: rgba(0,230,118,0.06); }
+.source-resolved-banner a { color: var(--cyan); overflow-wrap: anywhere; }
 .quota-box { padding: 28px 24px; text-align: center; background: var(--orange-dim); border-top: 1px solid var(--border); }
 .quota-title { color: var(--orange); font-family: var(--sans); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
 .quota-msg { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; }
@@ -1917,6 +1919,7 @@ function renderResult(r) {
         </div>
         <div class="source-required-title">${t('source_required_title')}</div>
         <div class="source-required-msg">${t('source_required_body')}</div>
+        ${r.resolution_error ? `<div class="source-required-action">${t('source_required_resolution_failed')}</div>` : ''}
         <div class="source-required-action">${t('source_required_action')}</div>
         <div class="source-required-note">${t('source_required_not_counted')}</div>
         ${reference ? `<div class="source-required-ref"><strong>${t(kindKey)}:</strong> ${escHtml(reference)}</div>` : ''}
@@ -1936,6 +1939,14 @@ function renderResult(r) {
   const decisionDetails = r.decision_details || {};
 
   let html = '';
+  if (r._source_resolution) {
+    const source = r._source_resolution;
+    const sourceLabel = escHtml(source.source_name || source.source_url || '');
+    const sourceLink = /^https:\/\/github\.com\//i.test(String(source.source_url || ''))
+      ? `<a href="${escHtml(source.source_url)}" target="_blank" rel="noopener noreferrer">${sourceLabel}</a>`
+      : sourceLabel;
+    html += `<div class="source-resolved-banner">${t('source_resolved_notice')} ${sourceLink} · ${Number(source.files_scanned || 0)} ${t('source_resolved_files')}</div>`;
+  }
   if (r._from_cache) html += `<div class="cache-banner">⚡ ${t('cache_notice')}</div>`;
 
   html += `

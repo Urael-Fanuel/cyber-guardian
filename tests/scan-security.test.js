@@ -33,6 +33,15 @@ Module._load = function patchedLoad(request, parent, isMain) {
             insertedRows.push({ table, row });
             return { error: null };
           },
+          upsert: async (row) => {
+            insertedRows.push({ table, row });
+            return { error: null };
+          },
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: null, error: null }),
+            }),
+          }),
         }),
       }),
     };
@@ -41,6 +50,7 @@ Module._load = function patchedLoad(request, parent, isMain) {
 };
 
 const scan = require("../api/scan");
+const { parseSkillsIlCommand, parseGithubUrl } = require("../lib/source-resolver");
 const {
   runStaticScan,
   mergeStaticThreats,
@@ -245,6 +255,15 @@ function testSourceReferenceClassification() {
   assert.equal(url.kind, "source_url");
 
   assert.equal(classifySourceReference('const packageName = "skills-il/localization";'), null);
+
+  const skillsIl = parseSkillsIlCommand("npx skills-il add skills-il/localization@v1.1.0-hebrew-document-generator --skill hebrew-document-generator -a claude-code");
+  assert.equal(skillsIl.owner, "skills-il");
+  assert.equal(skillsIl.repo, "localization");
+  assert.equal(skillsIl.ref, "v1.1.0-hebrew-document-generator");
+  assert.equal(skillsIl.path, "hebrew-document-generator");
+
+  assert.equal(parseGithubUrl("http://127.0.0.1/private"), null);
+  assert.equal(parseGithubUrl("https://example.com/source"), null);
 }
 
 async function testSourceReferenceDoesNotConsumeOrPersist() {
@@ -259,7 +278,7 @@ async function testSourceReferenceDoesNotConsumeOrPersist() {
       "x-forwarded-for": "203.0.113.72",
     },
     body: {
-      code: "npx skills-il add skills-il/localization@v1.1.0-hebrew-document-generator --skill hebrew-document-generator -a claude-code",
+      code: "npx unknown-installer add unknown/source@v1 --skill example",
       scope: "skill",
     },
     url: "/api/scan",
@@ -270,6 +289,58 @@ async function testSourceReferenceDoesNotConsumeOrPersist() {
   assert.equal(res.body.counts_as_scan, false);
   assert.equal(rpcCalls.length, 0);
   assert.equal(insertedRows.length, 0);
+}
+
+async function testSupportedSourceIsResolvedAndScanned() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const previousFetch = global.fetch;
+  global.fetch = async (url, options = {}) => {
+    const value = String(url);
+    if (value.includes("api.github.com/repos/skills-il/localization/git/trees/")) {
+      return {
+        ok: true,
+        json: async () => ({ tree: [{ type: "blob", size: 80, path: "hebrew-document-generator/SKILL.md" }] }),
+      };
+    }
+    if (value.includes("raw.githubusercontent.com/skills-il/localization/")) {
+      return {
+        ok: true,
+        headers: { get: () => "80" },
+        text: async () => "# Hebrew Document Generator\nGenerate Hebrew documents safely.",
+      };
+    }
+    return successfulFetch(url, options);
+  };
+
+  try {
+    const res = mockRes();
+    await scan({
+      method: "POST",
+      headers: {
+        origin: "https://cyberguardianscan.com",
+        host: "cyberguardianscan.com",
+        "x-forwarded-for": "203.0.113.73",
+        "x-cg-admin-secret": "developer-secret",
+      },
+      body: {
+        code: "npx skills-il add skills-il/localization@v1.1.0-hebrew-document-generator --skill hebrew-document-generator -a claude-code",
+        scope: "skill",
+      },
+      url: "/api/scan",
+    }, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.notEqual(res.body.status, "STATUS_SOURCE_REQUIRED");
+    assert.equal(res.body._source_resolution.provider, "skills_il");
+    assert.equal(res.body._source_resolution.files_scanned, 1);
+    const siteRows = insertedFor("site_scans");
+    assert.equal(siteRows.length, 1);
+    assert.equal(siteRows[0].row.source_owner, "skills-il");
+    assert.match(siteRows[0].row.source_url, /^https:\/\/github\.com\/skills-il\/localization/);
+  } finally {
+    global.fetch = previousFetch;
+  }
 }
 
 function testStaticSupplyChainWorkflow() {
@@ -598,6 +669,7 @@ testPublicResponseHidesInternalAnalysis();
 
 testManualScanPersistsDashboardMetadata()
   .then(testSourceReferenceDoesNotConsumeOrPersist)
+  .then(testSupportedSourceIsResolvedAndScanned)
   .then(testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata)
   .then(testAdminTokenBypassSkipsUsageLimits)
   .then(testThreatScanPersistsEvidenceRows)

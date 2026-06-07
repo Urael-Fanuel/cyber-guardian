@@ -3494,6 +3494,20 @@ Object.entries(SOURCE_REQUIRED_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SOURCE_RESOLVED_COPY = {
+  en: { source_resolved_notice: "The complete supported source was retrieved safely and scanned from:", source_resolved_files: "source files scanned", source_required_resolution_failed: "Cyber Guardian Scan could not safely retrieve the complete source, so no security verdict was issued." },
+  he: { source_resolved_notice: "המקור המלא והנתמך נמשך בצורה בטוחה ונסרק מתוך:", source_resolved_files: "קובצי מקור נסרקו", source_required_resolution_failed: "Cyber Guardian Scan לא הצליח למשוך בבטחה את המקור המלא, ולכן לא ניתן פסק דין אבטחתי." },
+  de: { source_resolved_notice: "Der vollstaendige unterstuetzte Quellcode wurde sicher abgerufen und gescannt von:", source_resolved_files: "Quelldateien gescannt", source_required_resolution_failed: "Der vollstaendige Quellcode konnte nicht sicher abgerufen werden. Daher wurde kein Sicherheitsurteil erstellt." },
+  ja: { source_resolved_notice: "対応する完全なソースコードを安全に取得し、次の場所からスキャンしました:", source_resolved_files: "個のソースファイルをスキャン", source_required_resolution_failed: "完全なソースを安全に取得できなかったため、セキュリティ判定は発行されませんでした。" },
+  ko: { source_resolved_notice: "지원되는 전체 소스 코드를 안전하게 가져와 다음 위치에서 스캔했습니다:", source_resolved_files: "개의 소스 파일 스캔", source_required_resolution_failed: "전체 소스를 안전하게 가져올 수 없어 보안 판정을 내리지 않았습니다." },
+  fr: { source_resolved_notice: "Le code source complet pris en charge a ete recupere en securite et analyse depuis :", source_resolved_files: "fichiers source analyses", source_required_resolution_failed: "Le code source complet n'a pas pu etre recupere en securite. Aucun verdict n'a donc ete emis." },
+  pt: { source_resolved_notice: "O codigo-fonte completo compativel foi obtido com seguranca e escaneado de:", source_resolved_files: "arquivos-fonte escaneados", source_required_resolution_failed: "Nao foi possivel obter o codigo-fonte completo com seguranca, portanto nenhum veredito foi emitido." }
+};
+
+Object.entries(SOURCE_RESOLVED_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const ACCOUNT_CONFIRMATION_COPY = {
   en: {
     account_verified_title: "Your account is active.",

@@ -4,6 +4,7 @@
 
 const { createClient } = require("@supabase/supabase-js");
 const crypto = require("crypto");
+const { resolveSupportedSource } = require("../lib/source-resolver");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -127,7 +128,7 @@ function classifySourceReference(input) {
   return null;
 }
 
-function sourceRequiredResult(classification) {
+function sourceRequiredResult(classification, resolutionError = "") {
   return {
     status: "STATUS_SOURCE_REQUIRED",
     input_kind: classification?.kind || "source_reference",
@@ -140,6 +141,7 @@ function sourceRequiredResult(classification) {
     recommendation: "Paste the complete source code or submit a supported source repository for scanning.",
     counts_as_scan: false,
     persisted: false,
+    resolution_error: cleanText(resolutionError, 300),
   };
 }
 
@@ -2001,8 +2003,9 @@ async function handler(req, res) {
     try { body = JSON.parse(body); } catch { return res.status(400).json({ error: "Invalid request format" }); }
   }
 
-  const code  = body?.code;
+  let code  = body?.code;
   const scope = normalizeScanScope(body?.scope);
+  let resolvedSource = null;
 
   if (!code || typeof code !== "string" || !code.trim())
     return res.status(200).json({ status:"STATUS_AMBIGUOUS", threat_score:0, confidence:0, summary:"No code provided.", threats:[], safe_patterns_noted:[], recommendation:"Paste some code to scan." });
@@ -2012,7 +2015,13 @@ async function handler(req, res) {
 
   const sourceReference = classifySourceReference(code);
   if (sourceReference) {
-    return res.status(200).json(sourceRequiredResult(sourceReference));
+    try {
+      resolvedSource = await resolveSupportedSource(sourceReference);
+    } catch (err) {
+      return res.status(200).json(sourceRequiredResult(sourceReference, err.message || "The source could not be retrieved safely."));
+    }
+    if (!resolvedSource?.code) return res.status(200).json(sourceRequiredResult(sourceReference));
+    code = resolvedSource.code;
   }
 
   if (code.length < CONFIG.MIN_INPUT_SIZE_CHARS)
@@ -2100,15 +2109,24 @@ async function handler(req, res) {
   const codeHash = await hashCode(code);
   const persistContext = {
     code_hash: codeHash,
-    source_name: body?.source_name || "",
-    source_url: body?.source_url || "",
-    source_owner: body?.source_owner || "",
+    source_name: resolvedSource?.source_name || body?.source_name || "",
+    source_url: resolvedSource?.source_url || body?.source_url || "",
+    source_owner: resolvedSource?.source_owner || body?.source_owner || "",
   };
+  const sourceResponse = resolvedSource ? {
+    _source_resolution: {
+      provider: resolvedSource.provider,
+      source_name: resolvedSource.source_name,
+      source_url: resolvedSource.source_url,
+      source_ref: resolvedSource.source_ref,
+      files_scanned: resolvedSource.files.length,
+    },
+  } : {};
   const cacheKey = `${scope}:${codeHash}`;
   const cached   = getFromCache(cacheKey);
   if (cached) {
     if (!skipPersist) await saveSiteScan(scope, cached, persistContext);
-    return res.status(200).json(publicScanResponse(cached, adminBypass, { _from_cache: true, ...accountResponse(accountUser, accountUsage) }));
+    return res.status(200).json(publicScanResponse(cached, adminBypass, { _from_cache: true, ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
   }
   const staticResult = runStaticScan(code);
 
@@ -2120,7 +2138,7 @@ async function handler(req, res) {
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, persistContext);
     saveToCache(cacheKey, result);
-    return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
+    return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
   }
 
   const controller = new AbortController();
@@ -2156,7 +2174,7 @@ async function handler(req, res) {
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, persistContext);
     saveToCache(cacheKey, result);
-    return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
+    return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
 
   } catch (err) {
     clearTimeout(timeoutId);
@@ -2167,7 +2185,7 @@ async function handler(req, res) {
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       saveToCache(cacheKey, result);
-      return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
+      return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
     }
     console.error("[scan-failed]", err.message);
     if (/Anthropic API/.test(err.message || "")) {
@@ -2177,7 +2195,7 @@ async function handler(req, res) {
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       saveToCache(cacheKey, result);
-      return res.status(200).json(publicScanResponse(result, adminBypass, accountResponse(accountUser, accountUsage)));
+      return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
     }
     return res.status(500).json({ error: "Scan failed. Try again." });
   }
