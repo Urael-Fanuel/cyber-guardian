@@ -100,6 +100,49 @@ function normalizeScanScope(scope) {
   return VALID_SCOPES.has(value) ? value : "mcp";
 }
 
+function classifySourceReference(input) {
+  const text = String(input || "").trim();
+  if (!text) return null;
+
+  const nonEmptyLines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  if (nonEmptyLines.length > 4) return null;
+
+  const hasSourceCodeSyntax = /(?:[{};]|=>|\b(?:function|class|def|const|let|var|import|export|require|module\.exports)\b|<script\b|#!\/)/i.test(text);
+  if (hasSourceCodeSyntax) return null;
+
+  if (/^https?:\/\/[^\s]+$/i.test(text)) {
+    return { kind: "source_url", reference: text };
+  }
+
+  const installCommand = /^(?:npx|bunx|uvx|pnpm\s+(?:dlx|add|install)|yarn\s+(?:dlx|add)|npm\s+(?:exec|install|i)|pipx?\s+install|python\s+-m\s+pip\s+install|docker\s+pull|gh\s+repo\s+clone|curl\b.+\|\s*(?:sh|bash)|wget\b.+\|\s*(?:sh|bash))\b/i;
+  if (installCommand.test(text)) {
+    return { kind: "install_command", reference: text };
+  }
+
+  const packageReference = /^(?:@?[a-z0-9_.-]+\/)?[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*(?:@[a-z0-9_.-]+)?(?:\s+--?[a-z0-9_.-]+(?:\s+\S+)?)?$/i;
+  if (packageReference.test(text) && /(?:\/|@)/.test(text)) {
+    return { kind: "package_reference", reference: text };
+  }
+
+  return null;
+}
+
+function sourceRequiredResult(classification) {
+  return {
+    status: "STATUS_SOURCE_REQUIRED",
+    input_kind: classification?.kind || "source_reference",
+    input_reference: cleanText(classification?.reference || "", 500),
+    threat_score: null,
+    confidence: 1,
+    summary: "The submitted text is a source reference or install command, not the complete source code.",
+    threats: [],
+    safe_patterns_noted: [],
+    recommendation: "Paste the complete source code or submit a supported source repository for scanning.",
+    counts_as_scan: false,
+    persisted: false,
+  };
+}
+
 function getRequestOrigin(req) {
   return req.headers.origin || "";
 }
@@ -1964,11 +2007,16 @@ async function handler(req, res) {
   if (!code || typeof code !== "string" || !code.trim())
     return res.status(200).json({ status:"STATUS_AMBIGUOUS", threat_score:0, confidence:0, summary:"No code provided.", threats:[], safe_patterns_noted:[], recommendation:"Paste some code to scan." });
 
-  if (code.length < CONFIG.MIN_INPUT_SIZE_CHARS)
-    return res.status(200).json({ status:"STATUS_AMBIGUOUS", threat_score:0, confidence:0, summary:"Input too short.", threats:[], safe_patterns_noted:[], recommendation:"Paste a longer code sample." });
-
   if (code.length > CONFIG.MAX_INPUT_SIZE_CHARS)
     return res.status(400).json({ error: `Input too large. Max ${CONFIG.MAX_INPUT_SIZE_CHARS} chars.` });
+
+  const sourceReference = classifySourceReference(code);
+  if (sourceReference) {
+    return res.status(200).json(sourceRequiredResult(sourceReference));
+  }
+
+  if (code.length < CONFIG.MIN_INPUT_SIZE_CHARS)
+    return res.status(200).json({ status:"STATUS_AMBIGUOUS", threat_score:0, confidence:0, summary:"Input too short.", threats:[], safe_patterns_noted:[], recommendation:"Paste a longer code sample." });
 
   const adminBypass = await isAdminBypassRequest(req);
   const skipPersist = String(getHeader(req, "x-cg-skip-persist") || "").trim() === "1";
@@ -2151,6 +2199,7 @@ if (process.env.NODE_ENV === "test") {
     coverageMetadata,
     isAdminBypassRequest,
     normalizeScanScope,
+    classifySourceReference,
     buildOrchestrationReport,
     applyOrchestration,
   };

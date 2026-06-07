@@ -355,6 +355,14 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .error-box { padding: 24px; text-align: center; }
 .error-title { color: var(--red); font-family: var(--sans); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
 .error-msg { font-size: 11px; color: var(--text-dim); }
+.source-required-box { padding: 30px 24px; text-align: center; background: rgba(0,212,255,0.045); border-top: 1px solid rgba(0,212,255,0.28); }
+.source-required-icon { width: 48px; height: 48px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; color: var(--cyan); border: 1px solid rgba(0,212,255,0.42); border-radius: 8px; background: rgba(0,212,255,0.08); }
+.source-required-icon svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.source-required-title { color: #fff; font-family: 'Noto Sans Hebrew','Noto Sans JP','Noto Sans KR',Arial,sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.source-required-msg { max-width: 680px; margin: 0 auto; color: var(--text); font-size: 13px; line-height: 1.75; }
+.source-required-action { max-width: 680px; margin: 14px auto 0; padding: 12px 14px; color: var(--cyan); font-size: 12px; line-height: 1.65; border: 1px solid rgba(0,212,255,0.24); border-radius: 7px; background: rgba(0,212,255,0.055); }
+.source-required-note { margin-top: 12px; color: var(--text-dim); font-size: 10.5px; }
+.source-required-ref { max-width: 680px; margin: 14px auto 0; padding: 9px 11px; color: var(--text-dim); font-size: 10px; line-height: 1.55; overflow-wrap: anywhere; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
 .quota-box { padding: 28px 24px; text-align: center; background: var(--orange-dim); border-top: 1px solid var(--border); }
 .quota-title { color: var(--orange); font-family: var(--sans); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
 .quota-msg { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; }
@@ -1498,28 +1506,36 @@ async function runScan() {
     }
 
     if (!result) result = await response.json();
-    if (result._account) {
-      renderAccountPlan({
-        authenticated: true,
-        email: result._account.email,
-        plan_name: result._account.plan_name,
-        quota_remaining: result._account.quota_remaining,
-        monthly_scan_limit: result._account.quota_limit,
-      });
-      setAccountMessage(t('account_quota_updated'));
-      resetLocalQuota();
-    } else if (result._admin_bypass || isDevMode()) resetLocalQuota();
-    else incrementQuota();
-    if (window.cgTrack) {
-      window.cgTrack('scan_completed', {
+    if (result.status === 'STATUS_SOURCE_REQUIRED') {
+      if (window.cgTrack) window.cgTrack('scan_source_required', {
         scope: currentScope,
-        status: result.status,
-        threat_score: result.threat_score || 0,
-        threat_count: result.threat_count || 0,
-        decision: result.decision || '',
-        input_bucket: inputLengthBucket(code.length),
-        from_cache: Boolean(result._from_cache)
+        input_kind: result.input_kind || 'source_reference',
+        input_bucket: inputLengthBucket(code.length)
       });
+    } else {
+      if (result._account) {
+        renderAccountPlan({
+          authenticated: true,
+          email: result._account.email,
+          plan_name: result._account.plan_name,
+          quota_remaining: result._account.quota_remaining,
+          monthly_scan_limit: result._account.quota_limit,
+        });
+        setAccountMessage(t('account_quota_updated'));
+        resetLocalQuota();
+      } else if (result._admin_bypass || isDevMode()) resetLocalQuota();
+      else incrementQuota();
+      if (window.cgTrack) {
+        window.cgTrack('scan_completed', {
+          scope: currentScope,
+          status: result.status,
+          threat_score: result.threat_score || 0,
+          threat_count: result.threat_count || 0,
+          decision: result.decision || '',
+          input_bucket: inputLengthBucket(code.length),
+          from_cache: Boolean(result._from_cache)
+        });
+      }
     }
 
   } catch (err) {
@@ -1887,6 +1903,26 @@ function renderSecurityEvidence(r) {
 
 function renderResult(r) {
   lastScanResult = r;
+  if (r.status === 'STATUS_SOURCE_REQUIRED') {
+    const kindKey = {
+      install_command: 'source_required_kind_install',
+      source_url: 'source_required_kind_url',
+      package_reference: 'source_required_kind_reference',
+    }[r.input_kind] || 'source_required_kind_reference';
+    const reference = String(r.input_reference || '').trim();
+    document.getElementById('results').innerHTML = `
+      <div class="source-required-box">
+        <div class="source-required-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+        </div>
+        <div class="source-required-title">${t('source_required_title')}</div>
+        <div class="source-required-msg">${t('source_required_body')}</div>
+        <div class="source-required-action">${t('source_required_action')}</div>
+        <div class="source-required-note">${t('source_required_not_counted')}</div>
+        ${reference ? `<div class="source-required-ref"><strong>${t(kindKey)}:</strong> ${escHtml(reference)}</div>` : ''}
+      </div>`;
+    return;
+  }
   const statusMap = {
     STATUS_SAFE:      { cls:'safe',  icon:'✅', title:t('verdict_safe_title'), sub:t('verdict_safe_sub') },
     STATUS_MODERATE:  { cls:'mod',   icon:'⚠️', title:t('verdict_mod_title'),  sub:t('verdict_mod_sub') },

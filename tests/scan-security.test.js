@@ -52,6 +52,7 @@ const {
   ALL_STATIC_RULES,
   coverageMetadata,
   normalizeScanScope,
+  classifySourceReference,
 } = scan._test;
 
 const successfulFetch = async () => ({
@@ -234,6 +235,41 @@ function testStaticEicarSignature() {
   assert.equal(result.status, "STATUS_CRITICAL");
   assert.equal(result.threat_score, 100);
   assert.ok(result.threats.some(t => t.family === "SUPPLY_CHAIN_ATTACK"));
+}
+
+function testSourceReferenceClassification() {
+  const install = classifySourceReference("npx skills-il add skills-il/localization@v1.1.0-hebrew-document-generator --skill hebrew-document-generator -a claude-code");
+  assert.equal(install.kind, "install_command");
+
+  const url = classifySourceReference("https://github.com/example/repository");
+  assert.equal(url.kind, "source_url");
+
+  assert.equal(classifySourceReference('const packageName = "skills-il/localization";'), null);
+}
+
+async function testSourceReferenceDoesNotConsumeOrPersist() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const res = mockRes();
+  await scan({
+    method: "POST",
+    headers: {
+      origin: "https://cyberguardianscan.com",
+      host: "cyberguardianscan.com",
+      "x-forwarded-for": "203.0.113.72",
+    },
+    body: {
+      code: "npx skills-il add skills-il/localization@v1.1.0-hebrew-document-generator --skill hebrew-document-generator -a claude-code",
+      scope: "skill",
+    },
+    url: "/api/scan",
+  }, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.status, "STATUS_SOURCE_REQUIRED");
+  assert.equal(res.body.counts_as_scan, false);
+  assert.equal(rpcCalls.length, 0);
+  assert.equal(insertedRows.length, 0);
 }
 
 function testStaticSupplyChainWorkflow() {
@@ -545,6 +581,7 @@ testStaticReverseShell();
 testStaticSecretRead();
 testStaticPromptInjection();
 testStaticEicarSignature();
+testSourceReferenceClassification();
 testStaticSupplyChainWorkflow();
 testAdvancedLotlFileStaging();
 testAdvancedInputDependentActivation();
@@ -560,6 +597,7 @@ testNormalizeAddsSecurityEvidence();
 testPublicResponseHidesInternalAnalysis();
 
 testManualScanPersistsDashboardMetadata()
+  .then(testSourceReferenceDoesNotConsumeOrPersist)
   .then(testAdminBypassSkipsUsageLimitsButPersistsDashboardMetadata)
   .then(testAdminTokenBypassSkipsUsageLimits)
   .then(testThreatScanPersistsEvidenceRows)

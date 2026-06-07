@@ -3424,6 +3424,76 @@ Object.entries(PUBLIC_POLISH_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SOURCE_REQUIRED_COPY = {
+  en: {
+    source_required_title: "Complete source code was not scanned",
+    source_required_body: "The submitted text is an install command, link, or package reference. It points to code elsewhere, but does not contain the complete source code needed for a reliable security decision.",
+    source_required_action: "Paste the complete source code, or provide a supported source repository that Cyber Guardian Scan can retrieve and verify.",
+    source_required_not_counted: "No security score or install verdict was issued. This submission was not counted as a completed scan.",
+    source_required_kind_install: "Detected install command",
+    source_required_kind_url: "Detected source link",
+    source_required_kind_reference: "Detected source reference"
+  },
+  he: {
+    source_required_title: "קוד המקור המלא לא נסרק",
+    source_required_body: "הטקסט שהוזן הוא פקודת התקנה, קישור או הפניה לחבילה. הוא מפנה לקוד שנמצא במקום אחר, אך אינו מכיל את קוד המקור המלא הדרוש לקבלת החלטת אבטחה אמינה.",
+    source_required_action: "יש להדביק את קוד המקור המלא, או לספק מאגר מקור נתמך ש-Cyber Guardian Scan יכול למשוך ולאמת.",
+    source_required_not_counted: "לא ניתן ציון אבטחה או פסק דין להתקנה. ההגשה הזו לא נספרה כסריקה שהושלמה.",
+    source_required_kind_install: "זוהתה פקודת התקנה",
+    source_required_kind_url: "זוהה קישור למקור",
+    source_required_kind_reference: "זוהתה הפניה למקור"
+  },
+  de: {
+    source_required_title: "Der vollstaendige Quellcode wurde nicht gescannt",
+    source_required_body: "Die Eingabe ist ein Installationsbefehl, Link oder Paketverweis. Sie verweist auf externen Code, enthaelt aber nicht den vollstaendigen Quellcode fuer eine verlaessliche Sicherheitsentscheidung.",
+    source_required_action: "Fuegen Sie den vollstaendigen Quellcode ein oder geben Sie ein unterstuetztes Repository zur Pruefung an.",
+    source_required_not_counted: "Es wurde kein Security Score oder Installationsurteil erstellt. Diese Eingabe wurde nicht als abgeschlossener Scan gezaehlt.",
+    source_required_kind_install: "Installationsbefehl erkannt",
+    source_required_kind_url: "Quelllink erkannt",
+    source_required_kind_reference: "Quellverweis erkannt"
+  },
+  ja: {
+    source_required_title: "完全なソースコードはスキャンされていません",
+    source_required_body: "入力はインストールコマンド、リンク、またはパッケージ参照です。別の場所のコードを指していますが、信頼できるセキュリティ判断に必要な完全なソースコードではありません。",
+    source_required_action: "完全なソースコードを貼り付けるか、Cyber Guardian Scanが取得して検証できる対応リポジトリを指定してください。",
+    source_required_not_counted: "セキュリティスコアやインストール判定は発行されず、完了スキャンとしてカウントされません。",
+    source_required_kind_install: "インストールコマンドを検出",
+    source_required_kind_url: "ソースリンクを検出",
+    source_required_kind_reference: "ソース参照を検出"
+  },
+  ko: {
+    source_required_title: "전체 소스 코드가 스캔되지 않았습니다",
+    source_required_body: "입력한 내용은 설치 명령, 링크 또는 패키지 참조입니다. 다른 위치의 코드를 가리키지만 신뢰할 수 있는 보안 판단에 필요한 전체 소스 코드를 포함하지 않습니다.",
+    source_required_action: "전체 소스 코드를 붙여 넣거나 Cyber Guardian Scan이 가져와 검증할 수 있는 지원 저장소를 제공하세요.",
+    source_required_not_counted: "보안 점수나 설치 판정이 발행되지 않았으며 완료된 스캔으로 계산되지 않습니다.",
+    source_required_kind_install: "설치 명령 감지",
+    source_required_kind_url: "소스 링크 감지",
+    source_required_kind_reference: "소스 참조 감지"
+  },
+  fr: {
+    source_required_title: "Le code source complet n'a pas ete scanne",
+    source_required_body: "Le texte soumis est une commande d'installation, un lien ou une reference de paquet. Il pointe vers du code externe mais ne contient pas le code source complet necessaire a une decision fiable.",
+    source_required_action: "Collez le code source complet ou fournissez un depot pris en charge que Cyber Guardian Scan peut recuperer et verifier.",
+    source_required_not_counted: "Aucun score ni verdict d'installation n'a ete emis. Cette soumission n'a pas ete comptee comme scan termine.",
+    source_required_kind_install: "Commande d'installation detectee",
+    source_required_kind_url: "Lien source detecte",
+    source_required_kind_reference: "Reference source detectee"
+  },
+  pt: {
+    source_required_title: "O codigo-fonte completo nao foi escaneado",
+    source_required_body: "O texto enviado e um comando de instalacao, link ou referencia de pacote. Ele aponta para codigo externo, mas nao contem o codigo-fonte completo necessario para uma decisao confiavel.",
+    source_required_action: "Cole o codigo-fonte completo ou forneca um repositorio compatível que o Cyber Guardian Scan possa buscar e verificar.",
+    source_required_not_counted: "Nenhuma pontuacao ou decisao de instalacao foi emitida. Este envio nao foi contado como scan concluido.",
+    source_required_kind_install: "Comando de instalacao detectado",
+    source_required_kind_url: "Link de origem detectado",
+    source_required_kind_reference: "Referencia de origem detectada"
+  }
+};
+
+Object.entries(SOURCE_REQUIRED_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const ACCOUNT_CONFIRMATION_COPY = {
   en: {
     account_verified_title: "Your account is active.",
