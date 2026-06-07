@@ -50,7 +50,7 @@ Module._load = function patchedLoad(request, parent, isMain) {
 };
 
 const scan = require("../api/scan");
-const { parseSkillsIlCommand, parseGithubUrl } = require("../lib/source-resolver");
+const { parseSkillsIlCommand, parseNpmCommand, parseNpmReference, parsePypiCommand, parsePypiUrl, parseGithubUrl } = require("../lib/source-resolver");
 const {
   runStaticScan,
   mergeStaticThreats,
@@ -264,6 +264,13 @@ function testSourceReferenceClassification() {
 
   assert.equal(parseGithubUrl("http://127.0.0.1/private"), null);
   assert.equal(parseGithubUrl("https://example.com/source"), null);
+  assert.equal(parseNpmCommand("npx -y @modelcontextprotocol/server-filesystem@1.2.3 /tmp").package_name, "@modelcontextprotocol/server-filesystem");
+  assert.equal(parseNpmCommand("npm install example-package@2.1.0").version, "2.1.0");
+  assert.equal(parseNpmReference("@modelcontextprotocol/server-filesystem@1.2.3").package_name, "@modelcontextprotocol/server-filesystem");
+  assert.equal(parseNpmReference("https://www.npmjs.com/package/example-package/v/2.1.0").version, "2.1.0");
+  assert.equal(parsePypiCommand("uvx mcp-server-fetch@1.4.0").package_name, "mcp-server-fetch");
+  assert.equal(parsePypiCommand("python -m pip install example-package==3.2.1").version, "3.2.1");
+  assert.equal(parsePypiUrl("https://pypi.org/project/example-package/3.2.1/").version, "3.2.1");
 }
 
 async function testSourceReferenceDoesNotConsumeOrPersist() {
