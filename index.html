@@ -103,15 +103,16 @@ nav {
 /* ── HERO ── */
 .hero { position: relative; z-index: 2; padding: 56px 40px 34px; max-width: 1180px; margin: 0 auto; }
 .hero-inner { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(320px,0.95fr); gap: 44px; align-items: center; }
-.hero-copy { text-align: left; }
+.hero-copy { min-width: 0; text-align: left; }
 [dir="rtl"] .hero-copy { text-align: right; }
 .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; letter-spacing: 2.5px; color: var(--cyan); text-transform: uppercase; margin-bottom: 18px; animation: fu 0.5s 0.1s both; border: 1px solid rgba(0,212,255,0.24); background: rgba(0,212,255,0.065); padding: 7px 11px; border-radius: 999px; }
 h1 { font-family: var(--sans); font-size: 52px; font-weight: 800; line-height: 1.08; color: #fff; margin-bottom: 18px; letter-spacing: 0; animation: fu 0.5s 0.2s both; text-wrap: balance; }
 h1 br { display: none; }
 h1 span { display: block; }
-h1 [data-i18n="hero_title_1"] { white-space: nowrap; font-size: 0.86em; }
+h1 [data-i18n="hero_title_1"] { font-size: 0.86em; }
 h1 .hl { color: var(--cyan); text-shadow: 0 0 26px rgba(0,212,255,0.28); }
-.hero-sub { font-size: clamp(15px,1.45vw,18px); line-height: 1.75; color: var(--text-dim); max-width: 650px; margin: 0 0 28px; animation: fu 0.5s 0.3s both; }
+.hero-sub { font-size: clamp(14px,1.25vw,16px); line-height: 1.75; color: var(--text-dim); max-width: 650px; margin: 0 0 14px; overflow-wrap: anywhere; animation: fu 0.5s 0.3s both; }
+.hero-question { max-width: 650px; margin: 0 0 24px; color: #fff; font-family: var(--sans); font-size: 15px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; animation: fu 0.5s 0.32s both; }
 .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; animation: fu 0.5s 0.34s both; }
 .hero-cta { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 12px 20px; border-radius: 8px; font-family: var(--sans); font-size: 13px; font-weight: 800; text-decoration: none; transition: all 0.18s; }
 .hero-cta.primary { color: #001018; background: linear-gradient(135deg,var(--cyan),var(--green)); box-shadow: 0 16px 38px rgba(0,212,255,0.22); }
@@ -119,22 +120,23 @@ h1 .hl { color: var(--cyan); text-shadow: 0 0 26px rgba(0,212,255,0.28); }
 .hero-cta:hover { transform: translateY(-2px); }
 .hero-proof { display: flex; gap: 8px; flex-wrap: wrap; animation: fu 0.5s 0.38s both; }
 .proof-pill { color: var(--text-dim); border: 1px solid rgba(49,74,97,0.76); background: rgba(11,17,24,0.72); border-radius: 999px; padding: 6px 10px; font-size: 10.5px; }
-.hero-visual { position: relative; min-height: 330px; border: 1px solid rgba(49,74,97,0.74); border-radius: 8px; background: linear-gradient(145deg,rgba(9,18,27,0.95),rgba(13,28,41,0.74)); box-shadow: var(--shadow); overflow: hidden; animation: fu 0.5s 0.42s both; }
+.hero-visual { position: relative; min-width: 0; min-height: 360px; border: 1px solid rgba(49,74,97,0.74); border-radius: 8px; background: linear-gradient(145deg,rgba(9,18,27,0.98),rgba(13,28,41,0.82)); box-shadow: var(--shadow); overflow: hidden; animation: fu 0.5s 0.42s both; }
 .hero-visual::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(0,212,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.06) 1px, transparent 1px); background-size: 28px 28px; opacity: 0.42; }
-.visual-top { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid rgba(49,74,97,0.62); color: var(--text-dim); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
-.visual-stack { position: relative; display: grid; gap: 12px; padding: 18px; }
-.visual-row { display: grid; grid-template-columns: 76px 1fr auto; align-items: center; gap: 12px; border: 1px solid rgba(49,74,97,0.72); background: rgba(5,8,13,0.56); border-radius: 8px; padding: 13px 14px; }
-.visual-score { font-family: var(--sans); font-size: 26px; font-weight: 800; line-height: 1; }
-.visual-row.safe .visual-score, .visual-row.safe .visual-state { color: var(--green); }
-.visual-row.review .visual-score, .visual-row.review .visual-state { color: var(--orange); }
-.visual-row.block .visual-score, .visual-row.block .visual-state { color: var(--red); }
-.visual-name { color: #fff; font-family: var(--sans); font-size: 15px; font-weight: 800; }
-.visual-meta { color: var(--text-dim); font-size: 10.5px; margin-top: 2px; }
-.visual-state { border: 1px solid currentColor; border-radius: 999px; padding: 4px 8px; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
-.visual-signal { position: relative; margin: 4px 18px 18px; padding: 14px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.24); background: rgba(0,212,255,0.055); }
-.visual-signal-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--text-dim); font-size: 10px; margin-top: 8px; }
-.visual-meter { flex: 1; height: 6px; background: rgba(49,74,97,0.84); border-radius: 999px; overflow: hidden; }
-.visual-meter span { display: block; height: 100%; background: linear-gradient(90deg,var(--cyan),var(--green)); border-radius: inherit; }
+.visual-top { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 16px 18px; border-bottom: 1px solid rgba(49,74,97,0.62); color: var(--text-dim); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
+.trust-flow { position: relative; display: grid; gap: 10px; padding: 18px; }
+.trust-flow-step { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; min-height: 58px; padding: 11px 12px; border: 1px solid rgba(49,74,97,0.72); border-radius: 8px; background: rgba(5,8,13,0.72); }
+.trust-flow-icon { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; color: var(--cyan); border: 1px solid rgba(0,212,255,0.34); border-radius: 8px; background: rgba(0,212,255,0.08); }
+.trust-flow-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.trust-flow-name { color: #fff; font-family: var(--sans); font-size: 14px; font-weight: 800; line-height: 1.25; }
+.trust-flow-meta { color: var(--text-dim); font-size: 9.5px; margin-top: 2px; line-height: 1.45; }
+.trust-flow-arrow { color: var(--cyan); font-size: 18px; line-height: 1; }
+[dir="rtl"] .trust-flow-arrow { transform: rotate(180deg); }
+.trust-score { color: var(--green); font-family: var(--sans); font-size: 22px; font-weight: 800; white-space: nowrap; }
+.trust-statuses { position: relative; display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; padding: 0 18px 18px; }
+.trust-status { min-height: 34px; display: flex; align-items: center; justify-content: center; padding: 7px; border: 1px solid currentColor; border-radius: 7px; font-size: 8px; font-weight: 700; line-height: 1.35; text-align: center; text-transform: uppercase; }
+.trust-status.safe { color: var(--green); background: rgba(0,230,118,0.06); }
+.trust-status.review { color: var(--orange); background: rgba(255,145,0,0.06); }
+.trust-status.danger { color: var(--red); background: rgba(255,61,61,0.06); }
 @keyframes fu { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
 /* ── STATS ── */
@@ -500,6 +502,8 @@ footer a:hover { color: var(--cyan); }
   .hero-actions, .hero-proof { justify-content: center; }
   .hero-cta { width: 100%; }
   .hero-visual { min-height: auto; }
+  .trust-flow-step { grid-template-columns: 38px 1fr auto; }
+  .trust-statuses { grid-template-columns: 1fr; }
   .visual-row { grid-template-columns: 58px 1fr; }
   .visual-state { grid-column: 1 / -1; justify-self: start; }
   [dir="rtl"] .visual-state { justify-self: end; }
@@ -536,12 +540,13 @@ footer a:hover { color: var(--cyan); }
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-copy">
-      <div class="eyebrow" data-i18n="hero_eyebrow">Security scanner for MCP, AI Skills and developer supply chain</div>
-      <h1><span data-i18n="hero_title_1">Before you connect AI tools,</span><br><span class="hl" data-i18n="hero_title_2">scan the code.</span></h1>
-      <p class="hero-sub" data-i18n="hero_sub">Cyber-Guardian checks MCP servers, AI Skills, IDE extensions, GitHub Actions, packages and dependencies before they touch your machine, secrets or production workflow.</p>
+      <div class="eyebrow" data-i18n="hero_eyebrow">The trust standard for AI tools</div>
+      <h1><span data-i18n="hero_title_1">Before You Install AI,</span><br><span class="hl" data-i18n="hero_title_2">Verify It.</span></h1>
+      <p class="hero-sub" data-i18n="hero_sub">Scan MCP servers, AI agents, AI Skills, IDE and VS Code extensions, Cursor tools, GitHub repositories and Actions, npm packages and dependencies before granting access to systems, data, credentials or workflows.</p>
+      <p class="hero-question" data-i18n="hero_question">Has your code been scanned by Cyber Guardian Scan?</p>
       <div class="hero-actions">
-        <a class="hero-cta primary" href="#scanner" data-i18n="hero_primary_cta">Start a free scan</a>
-        <a class="hero-cta secondary" href="#account-panel" onclick="setAccountMode('signup')" data-i18n="hero_secondary_cta">Create free account</a>
+        <a class="hero-cta primary" href="#scanner" data-i18n="hero_primary_cta">Scan Code Now</a>
+        <a class="hero-cta secondary" href="/dashboard.html" data-i18n="hero_secondary_cta">Search Verified Tools</a>
       </div>
       <div class="hero-proof" aria-label="Cyber-Guardian audiences">
         <span class="proof-pill" data-i18n="proof_solo">Solo developers</span>
@@ -552,39 +557,30 @@ footer a:hover { color: var(--cyan); }
     </div>
     <div class="hero-visual" aria-hidden="true">
       <div class="visual-top">
-        <span data-i18n="hero_visual_kicker">Decision engine</span>
-        <span>60 / MCP / SKILL / IDE</span>
+        <span data-i18n="hero_visual_kicker">Trust verification flow</span>
+        <span data-i18n="hero_visual_version">This exact version</span>
       </div>
-      <div class="visual-stack">
-        <div class="visual-row block">
-          <div class="visual-score">92</div>
-          <div>
-            <div class="visual-name" data-i18n="hero_visual_block_title">Credential access</div>
-            <div class="visual-meta" data-i18n="hero_visual_block_meta">Secrets, tokens, environment variables</div>
-          </div>
-          <div class="visual-state" data-i18n="hero_visual_block_state">Block</div>
+      <div class="trust-flow">
+        <div class="trust-flow-step">
+          <span class="trust-flow-icon"><svg viewBox="0 0 24 24"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/><path d="m14.5 4-5 16"/></svg></span>
+          <div><div class="trust-flow-name" data-i18n="hero_flow_input">Code / AI Tool</div><div class="trust-flow-meta" data-i18n="hero_flow_input_meta">Repository, package, MCP, Skill or extension</div></div>
+          <span class="trust-flow-arrow">→</span>
         </div>
-        <div class="visual-row review">
-          <div class="visual-score">48</div>
-          <div>
-            <div class="visual-name" data-i18n="hero_visual_review_title">Permission risk</div>
-            <div class="visual-meta" data-i18n="hero_visual_review_meta">Needs explanation before install</div>
-          </div>
-          <div class="visual-state" data-i18n="hero_visual_review_state">Review</div>
+        <div class="trust-flow-step">
+          <span class="trust-flow-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <div><div class="trust-flow-name">Cyber Guardian Scan</div><div class="trust-flow-meta" data-i18n="hero_flow_scan_meta">Security evidence and risk verification</div></div>
+          <span class="trust-flow-arrow">→</span>
         </div>
-        <div class="visual-row safe">
-          <div class="visual-score">06</div>
-          <div>
-            <div class="visual-name" data-i18n="hero_visual_safe_title">Clean pattern</div>
-            <div class="visual-meta" data-i18n="hero_visual_safe_meta">No high-risk behavior found</div>
-          </div>
-          <div class="visual-state" data-i18n="hero_visual_safe_state">Safe</div>
+        <div class="trust-flow-step">
+          <span class="trust-flow-icon"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19H2"/></svg></span>
+          <div><div class="trust-flow-name" data-i18n="hero_flow_score">Security Score</div><div class="trust-flow-meta" data-i18n="hero_flow_score_meta">Evidence-based install recommendation</div></div>
+          <span class="trust-score">96/100</span>
         </div>
       </div>
-      <div class="visual-signal">
-        <div class="visual-signal-line"><span data-i18n="hero_signal_static">Static rules</span><div class="visual-meter"><span style="width:86%"></span></div></div>
-        <div class="visual-signal-line"><span data-i18n="hero_signal_semantic">Intent review</span><div class="visual-meter"><span style="width:72%"></span></div></div>
-        <div class="visual-signal-line"><span data-i18n="hero_signal_decision">Install decision</span><div class="visual-meter"><span style="width:94%"></span></div></div>
+      <div class="trust-statuses">
+        <span class="trust-status safe" data-i18n="hero_status_safe">Safe for Install</span>
+        <span class="trust-status review" data-i18n="hero_status_review">Needs Review</span>
+        <span class="trust-status danger" data-i18n="hero_status_danger">Danger for Install</span>
       </div>
     </div>
   </div>
