@@ -163,6 +163,8 @@ canvas { max-height: 200px; }
 .decision-line strong { color: var(--green); }
 .feed-item.risk-mod .decision-line strong { color: var(--orange); }
 .feed-item.risk-crit .decision-line strong { color: var(--red); }
+.verified-trust-mark { display: inline-flex; align-items: center; gap: 7px; margin: 2px 0 10px; padding: 7px 10px; color: var(--green); font-size: 11px; font-weight: 800; line-height: 1.4; border: 1px solid rgba(0,230,118,0.42); border-radius: 5px; background: rgba(0,230,118,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.03); }
+.verified-trust-mark::before { content: '✓'; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; color: #04120b; border-radius: 50%; background: var(--green); font-weight: 900; }
 .decision-note { border: 1px solid rgba(0,212,255,0.2); background: rgba(0,212,255,0.06); color: var(--text); font-size: 12px; line-height: 1.7; padding: 12px 14px; margin-bottom: 14px; }
 .threat-list { display: grid; gap: 7px; margin-top: 8px; }
 .threat-row { border: 1px solid var(--border); background: rgba(8,18,30,0.62); padding: 9px 11px; }
@@ -1603,6 +1605,10 @@ function scopeLabel(scope) {
 
 function renderRecentScan(s) {
   const decision = scanDecision(s);
+  const securityScore = Number.isFinite(Number(s.security_score)) ? Number(s.security_score) : 0;
+  const verifiedMark = decision.value === 'safe' && securityScore >= 96
+    ? `<div class="verified-trust-mark">Verified by Cyber Guardian Scan™</div>`
+    : '';
   return `
     <div class="feed-item detailed ${decision.className}">
       <div class="fi-scope ${scopeClass(s.scope)}" style="margin-top:4px">${scopeEmoji(s.scope)}</div>
@@ -1610,10 +1616,11 @@ function renderRecentScan(s) {
       <div class="feed-main">
         <div class="feed-top">
           <span>${scopeLabel(s.scope)}</span>
-          <span class="feed-meta">${t('score')}: ${s.threat_score}/100</span>
+          <span class="feed-meta">Cyber Guardian Security Score™: ${securityScore}/100</span>
           <span class="feed-meta">${s.threat_count} ${s.threat_count !== 1 ? t('threats') : t('threat')}</span>
           <span class="feed-meta">${timeAgo(s.scanned_at)}</span>
         </div>
+        ${verifiedMark}
         ${purposeHtml(s)}
         ${sandboxEvidenceHtml(s)}
         <div class="decision-line"><strong>${escapeHtml(decision.text)}</strong></div>
@@ -1840,7 +1847,7 @@ function render(d) {
               <div class="fi-scope" style="margin-top:4px">${scopeEmoji(s.scope)}</div>
               <div class="fi-status ${statusClass(s.status)}" style="margin-top:4px">${statusLabel(s.status)}</div>
               <div class="fi-score" style="flex:1">
-                ${scopeLabel(s.scope)} · ${t('score')}: ${s.threat_score}/100 · ${s.threat_count} ${s.threat_count !== 1 ? t('threats') : t('threat')}
+                ${scopeLabel(s.scope)} · Cyber Guardian Security Score™: ${s.security_score || 0}/100 · ${s.threat_count} ${s.threat_count !== 1 ? t('threats') : t('threat')}
                 ${showThreats ? `<div style="font-size:11px;color:var(--orange);margin-top:4px">⚠ ${threatNames}</div>` : ''}
               </div>
               <div class="fi-time" style="margin-top:4px">${timeAgo(s.scanned_at)}</div>

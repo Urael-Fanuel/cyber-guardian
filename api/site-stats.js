@@ -1,5 +1,6 @@
 // api/site-stats.js — Cyber-Guardian Site Scan Statistics
 const { createClient } = require('@supabase/supabase-js');
+const { securityScoreForResult, isVerifiedInstallResult } = require('../lib/security-score');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -270,8 +271,9 @@ function threatFamilies(summary) {
 }
 
 function classifyScan(scan) {
-  if (!scan || scan.status === 'STATUS_SAFE') return 'safe';
+  if (!scan) return 'review';
   const families = threatFamilies(scan.threats_summary);
+  if (scan.status === 'STATUS_SAFE' && Number(scan.threat_count || 0) === 0 && families.length === 0) return 'safe';
   if (families.some(name => BLOCKING_THREAT_FAMILIES.has(name))) return 'blocked';
   return 'review';
 }
@@ -546,6 +548,8 @@ module.exports = async function handler(req, res) {
       raw_status:       s.status,
       decision:         classifyScan(s),
       threat_score:     s.threat_score,
+      security_score:   securityScoreForResult(s, classifyScan(s)),
+      verified_by_cyber_guardian: isVerifiedInstallResult(s, classifyScan(s)),
       threat_count:     s.threat_count,
       threats_summary:  s.threats_summary || '',
       scanned_at:       s.scanned_at,

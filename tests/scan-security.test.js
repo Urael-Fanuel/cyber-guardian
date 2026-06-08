@@ -63,6 +63,7 @@ const {
   coverageMetadata,
   normalizeScanScope,
   classifySourceReference,
+  securityScoreForResult,
 } = scan._test;
 
 const successfulFetch = async () => ({
@@ -115,6 +116,42 @@ function testCoverageMetadata() {
   assert.equal(coverage.semantic_families, 60);
   assert.equal(coverage.static_families, 60);
   assert.ok(coverage.static_covered_families.includes("REVERSE_SHELL"));
+}
+
+function testSecurityScoreMatchesInstallDecision() {
+  const safe = normalizeResult({
+    status: "STATUS_SAFE",
+    threat_score: 8,
+    confidence: 0.9,
+    threats: [],
+  });
+  const review = normalizeResult({
+    status: "STATUS_MODERATE",
+    threat_score: 8,
+    confidence: 0.8,
+    threats: [{ family: "UNCLASSIFIED", severity: "LOW" }],
+  });
+  const blocked = normalizeResult({
+    status: "STATUS_CRITICAL",
+    threat_score: 92,
+    confidence: 0.95,
+    threats: [{ family: "REVERSE_SHELL", severity: "CRITICAL" }],
+  });
+
+  assert.equal(securityScoreForResult(safe), 98);
+  assert.ok(safe.security_score >= 96);
+  assert.equal(safe.verified_by_cyber_guardian, true);
+  assert.ok(review.security_score < 96);
+  assert.equal(review.verified_by_cyber_guardian, false);
+  assert.ok(blocked.security_score <= 39);
+  assert.equal(blocked.verified_by_cyber_guardian, false);
+  assert.equal(securityScoreForResult({
+    status: "STATUS_SAFE",
+    decision: "safe",
+    threat_score: 8,
+    threat_count: 1,
+    threats_summary: "UNCLASSIFIED",
+  }), 92);
 }
 
 function testEveryFamilyHasDefinitionAndStaticRule() {
@@ -723,6 +760,7 @@ testDynamicSandboxCanRaiseVerdict();
 testScopeNormalization();
 testCanonicalSixtyFamilies();
 testCoverageMetadata();
+testSecurityScoreMatchesInstallDecision();
 testEveryFamilyHasDefinitionAndStaticRule();
 testNormalizeAddsSixtyFamilyMetadata();
 testNormalizeAddsSecurityEvidence();
