@@ -3424,6 +3424,118 @@ Object.entries(PUBLIC_POLISH_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SECURITY_SCORE_SECTION_COPY = {
+  en: {
+    security_score_label: "Cyber Guardian Security Score™",
+    security_score_title: "One clear score, backed by focused security checks",
+    security_score_sub: "The overall score helps you make an install decision. The subscores show which security areas strengthened or reduced that result.",
+    security_score_summary_copy: "No meaningful security concerns were found in the scanned version based on the available evidence.",
+    security_score_breakdown_title: "Security score breakdown",
+    security_score_breakdown_copy: "Each area is evaluated separately so you can see where trust is strong and where closer review may be needed.",
+    security_score_scale: "Higher score = stronger protection and lower detected risk",
+    security_score_code_safety: "Code Safety",
+    security_score_credentials: "Credential Risk",
+    security_score_prompt: "Prompt Injection Risk",
+    security_score_supply_chain: "Supply Chain Risk",
+    security_score_permissions: "Permissions Risk",
+    security_score_note: "The score applies only to the exact version that was scanned and is based on current findings. If the code changes, a new scan is required."
+  },
+  he: {
+    security_score_label: "ציון האבטחה של Cyber Guardian™",
+    security_score_title: "ציון ברור אחד, המבוסס על בדיקות אבטחה ממוקדות",
+    security_score_sub: "הציון הכולל עוזר לקבל החלטת התקנה. ציוני המשנה מראים אילו תחומי אבטחה חיזקו או הפחיתו את התוצאה.",
+    security_score_summary_copy: "בהתבסס על הראיות הזמינות, לא נמצאו בגרסה שנסרקה בעיות אבטחה משמעותיות.",
+    security_score_breakdown_title: "פירוט ציון האבטחה",
+    security_score_breakdown_copy: "כל תחום נבדק בנפרד, כדי להראות היכן רמת האמון גבוהה והיכן ייתכן שנדרשת בדיקה מעמיקה יותר.",
+    security_score_scale: "ציון גבוה יותר = הגנה חזקה יותר וסיכון מזוהה נמוך יותר",
+    security_score_code_safety: "בטיחות הקוד",
+    security_score_credentials: "סיכון לפרטי גישה",
+    security_score_prompt: "סיכון להזרקת פרומפט",
+    security_score_supply_chain: "סיכון בשרשרת האספקה",
+    security_score_permissions: "סיכון בהרשאות",
+    security_score_note: "הציון תקף רק לגרסה המדויקת שנסרקה ומבוסס על הממצאים הנוכחיים. אם הקוד משתנה, נדרשת סריקה חדשה."
+  },
+  de: {
+    security_score_label: "Cyber Guardian Security Score™",
+    security_score_title: "Ein klarer Score, gestuetzt durch gezielte Sicherheitspruefungen",
+    security_score_sub: "Der Gesamtscore hilft bei der Installationsentscheidung. Teilscores zeigen, welche Sicherheitsbereiche das Ergebnis staerken oder senken.",
+    security_score_summary_copy: "Auf Grundlage der verfuegbaren Belege wurden in der gescannten Version keine wesentlichen Sicherheitsbedenken gefunden.",
+    security_score_breakdown_title: "Aufschluesselung des Security Scores",
+    security_score_breakdown_copy: "Jeder Bereich wird einzeln bewertet, damit starke Vertrauenssignale und Pruefbedarf sichtbar werden.",
+    security_score_scale: "Hoeherer Score = staerkerer Schutz und niedrigeres erkanntes Risiko",
+    security_score_code_safety: "Codesicherheit",
+    security_score_credentials: "Risiko fuer Zugangsdaten",
+    security_score_prompt: "Prompt-Injection-Risiko",
+    security_score_supply_chain: "Supply-Chain-Risiko",
+    security_score_permissions: "Berechtigungsrisiko",
+    security_score_note: "Der Score gilt nur fuer die exakt gescannte Version und basiert auf den aktuellen Erkenntnissen. Bei Codeaenderungen ist ein neuer Scan erforderlich."
+  },
+  ja: {
+    security_score_label: "Cyber Guardian セキュリティスコア™",
+    security_score_title: "重点的なセキュリティ検査に基づく、明確な一つのスコア",
+    security_score_sub: "総合スコアはインストール判断を支援し、各項目のスコアは結果を高めた点と注意が必要な点を示します。",
+    security_score_summary_copy: "利用可能な証拠に基づき、スキャンしたバージョンでは重大なセキュリティ上の懸念は見つかりませんでした。",
+    security_score_breakdown_title: "セキュリティスコアの内訳",
+    security_score_breakdown_copy: "各領域を個別に評価し、信頼できる点と追加確認が必要な点を明確にします。",
+    security_score_scale: "スコアが高いほど保護が強く、検出されたリスクが低いことを示します",
+    security_score_code_safety: "コードの安全性",
+    security_score_credentials: "認証情報リスク",
+    security_score_prompt: "プロンプトインジェクションリスク",
+    security_score_supply_chain: "サプライチェーンリスク",
+    security_score_permissions: "権限リスク",
+    security_score_note: "このスコアはスキャンした正確なバージョンにのみ適用され、現在の検出結果に基づきます。コードが変更された場合は再スキャンが必要です。"
+  },
+  ko: {
+    security_score_label: "Cyber Guardian 보안 점수™",
+    security_score_title: "집중 보안 검사에 근거한 하나의 명확한 점수",
+    security_score_sub: "종합 점수는 설치 결정을 돕고, 세부 점수는 결과를 높이거나 낮춘 보안 영역을 보여 줍니다.",
+    security_score_summary_copy: "사용 가능한 증거를 기준으로 스캔된 버전에서 의미 있는 보안 문제가 발견되지 않았습니다.",
+    security_score_breakdown_title: "보안 점수 세부 내역",
+    security_score_breakdown_copy: "각 영역을 별도로 평가하여 신뢰가 높은 부분과 추가 검토가 필요한 부분을 보여 줍니다.",
+    security_score_scale: "점수가 높을수록 보호가 강하고 탐지된 위험이 낮습니다",
+    security_score_code_safety: "코드 안전성",
+    security_score_credentials: "자격 증명 위험",
+    security_score_prompt: "프롬프트 인젝션 위험",
+    security_score_supply_chain: "공급망 위험",
+    security_score_permissions: "권한 위험",
+    security_score_note: "이 점수는 스캔된 정확한 버전에만 적용되며 현재 발견 사항을 기준으로 합니다. 코드가 변경되면 다시 스캔해야 합니다."
+  },
+  fr: {
+    security_score_label: "Cyber Guardian Security Score™",
+    security_score_title: "Un score clair, appuye par des controles de securite cibles",
+    security_score_sub: "Le score global aide a prendre une decision d'installation. Les sous-scores montrent les domaines qui renforcent ou reduisent le resultat.",
+    security_score_summary_copy: "D'apres les preuves disponibles, aucun probleme de securite significatif n'a ete trouve dans la version scannee.",
+    security_score_breakdown_title: "Detail du score de securite",
+    security_score_breakdown_copy: "Chaque domaine est evalue separement pour montrer les points de confiance et ceux qui peuvent necessiter un examen approfondi.",
+    security_score_scale: "Score plus eleve = protection plus forte et risque detecte plus faible",
+    security_score_code_safety: "Securite du code",
+    security_score_credentials: "Risque lie aux identifiants",
+    security_score_prompt: "Risque d'injection de prompt",
+    security_score_supply_chain: "Risque de supply chain",
+    security_score_permissions: "Risque lie aux permissions",
+    security_score_note: "Le score s'applique uniquement a la version exacte scannee et repose sur les constats actuels. Si le code change, un nouveau scan est requis."
+  },
+  pt: {
+    security_score_label: "Cyber Guardian Security Score™",
+    security_score_title: "Uma pontuacao clara, apoiada por verificacoes de seguranca focadas",
+    security_score_sub: "A pontuacao geral ajuda na decisao de instalacao. As subpontuacoes mostram quais areas fortaleceram ou reduziram o resultado.",
+    security_score_summary_copy: "Com base nas evidencias disponiveis, nenhum problema de seguranca significativo foi encontrado na versao escaneada.",
+    security_score_breakdown_title: "Detalhamento da pontuacao de seguranca",
+    security_score_breakdown_copy: "Cada area e avaliada separadamente para mostrar onde a confianca e forte e onde uma revisao mais profunda pode ser necessaria.",
+    security_score_scale: "Pontuacao maior = protecao mais forte e menor risco detectado",
+    security_score_code_safety: "Seguranca do codigo",
+    security_score_credentials: "Risco de credenciais",
+    security_score_prompt: "Risco de injecao de prompt",
+    security_score_supply_chain: "Risco da cadeia de suprimentos",
+    security_score_permissions: "Risco de permissoes",
+    security_score_note: "A pontuacao vale apenas para a versao exata que foi escaneada e se baseia nas descobertas atuais. Se o codigo mudar, um novo scan sera necessario."
+  }
+};
+
+Object.entries(SECURITY_SCORE_SECTION_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const SOURCE_REQUIRED_COPY = {
   en: {
     source_required_title: "Complete source code was not scanned",

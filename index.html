@@ -405,6 +405,40 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .trust-note { margin-top: 14px; border: 1px solid rgba(255,189,46,0.28); background: rgba(255,189,46,0.06); color: var(--text); padding: 14px 16px; font-size: 12px; line-height: 1.7; }
 @media(max-width:700px){ .trust-grid { grid-template-columns: 1fr; } }
 
+.security-score-section { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
+.security-score-card { display: grid; grid-template-columns: minmax(230px,0.78fr) minmax(0,1.5fr); overflow: hidden; border: 1px solid rgba(49,74,97,0.82); border-radius: 8px; background: rgba(11,17,24,0.9); box-shadow: var(--shadow); }
+.security-score-summary { display: flex; flex-direction: column; justify-content: center; min-height: 330px; padding: 34px; border-right: 1px solid var(--border); background: linear-gradient(145deg,rgba(0,230,118,0.12),rgba(5,8,13,0.92) 58%); }
+[dir="rtl"] .security-score-summary { border-right: none; border-left: 1px solid var(--border); }
+.security-score-brand { color: var(--cyan); font-size: 10px; font-weight: 800; letter-spacing: 1.7px; line-height: 1.5; text-transform: uppercase; }
+[dir="rtl"] .security-score-brand { letter-spacing: 0; text-transform: none; }
+.security-score-number { margin-top: 20px; color: var(--green); font-family: var(--sans); font-size: 70px; font-weight: 800; line-height: 0.95; }
+.security-score-number span { color: #AABCCB; font-size: 22px; font-weight: 700; }
+.security-score-status { margin-top: 17px; color: #fff; font-family: var(--sans); font-size: 21px; font-weight: 800; line-height: 1.3; }
+.security-score-summary-copy { margin-top: 12px; color: #AABCCB; font-size: 11.5px; line-height: 1.75; }
+.security-score-details { padding: 30px; }
+.security-score-details-title { color: #fff; font-family: var(--sans); font-size: 18px; font-weight: 800; line-height: 1.35; }
+.security-score-details-copy { margin-top: 7px; color: var(--text-dim); font-size: 11.5px; line-height: 1.7; }
+.security-score-scale { display: inline-flex; margin-top: 13px; padding: 6px 9px; color: var(--green); font-size: 9.5px; font-weight: 800; line-height: 1.45; border: 1px solid rgba(0,230,118,0.28); border-radius: 4px; background: rgba(0,230,118,0.06); }
+.security-subscore-list { display: grid; gap: 15px; margin-top: 25px; }
+.security-subscore-row { display: grid; grid-template-columns: minmax(130px,0.9fr) minmax(100px,1.4fr) 42px; align-items: center; gap: 13px; }
+.security-subscore-name { color: #D8E5EE; font-size: 11.5px; font-weight: 700; line-height: 1.4; }
+.security-subscore-track { height: 7px; overflow: hidden; border-radius: 999px; background: rgba(49,74,97,0.45); }
+.security-subscore-fill { display: block; width: var(--score); height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--cyan),var(--green)); }
+.security-subscore-value { color: #fff; font-family: var(--sans); font-size: 12px; font-weight: 800; text-align: right; }
+[dir="rtl"] .security-subscore-value { text-align: left; }
+.security-score-note { margin-top: 24px; padding-top: 17px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 10.5px; line-height: 1.7; }
+@media(max-width:760px) {
+  .security-score-card { grid-template-columns: 1fr; }
+  .security-score-summary { min-height: auto; padding: 26px; border-right: none; border-left: none !important; border-bottom: 1px solid var(--border); }
+  .security-score-number { font-size: 58px; }
+  .security-score-details { padding: 24px; }
+}
+@media(max-width:520px) {
+  .security-score-section { padding: 0 12px; }
+  .security-subscore-row { grid-template-columns: minmax(0,1fr) 40px; gap: 8px 10px; }
+  .security-subscore-track { grid-column: 1 / -1; grid-row: 2; }
+}
+
 .seo-hub { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
 .seo-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 22px; }
 .seo-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 18px; min-height: 180px; border-top: 3px solid var(--cyan); }
@@ -776,6 +810,53 @@ footer a:hover { color: var(--cyan); }
       <div class="step-n">03</div>
       <div class="step-t" data-i18n="step3_title">Clear Verdict</div>
       <div class="step-d" data-i18n="step3_desc">SAFE / REVIEW / BLOCK in plain English.</div>
+    </div>
+  </div>
+</section>
+
+<section class="security-score-section">
+  <div class="section-lbl" data-i18n="security_score_label">Cyber Guardian Security Score™</div>
+  <h2 class="section-title" data-i18n="security_score_title">One clear score, backed by focused security checks</h2>
+  <p class="section-sub" data-i18n="security_score_sub">The overall score helps you make an install decision. The subscores show which security areas strengthened or reduced that result.</p>
+  <div class="security-score-card">
+    <div class="security-score-summary">
+      <div class="security-score-brand">Cyber Guardian Security Score™</div>
+      <div class="security-score-number">96 <span>/ 100</span></div>
+      <div class="security-score-status" data-i18n="hero_status_safe">Safe for Install</div>
+      <div class="security-score-summary-copy" data-i18n="security_score_summary_copy">No meaningful security concerns were found in the scanned version based on the available evidence.</div>
+    </div>
+    <div class="security-score-details">
+      <div class="security-score-details-title" data-i18n="security_score_breakdown_title">Security score breakdown</div>
+      <div class="security-score-details-copy" data-i18n="security_score_breakdown_copy">Each area is evaluated separately so you can see where trust is strong and where closer review may be needed.</div>
+      <div class="security-score-scale" data-i18n="security_score_scale">Higher score = stronger protection and lower detected risk</div>
+      <div class="security-subscore-list">
+        <div class="security-subscore-row">
+          <div class="security-subscore-name" data-i18n="security_score_code_safety">Code Safety</div>
+          <div class="security-subscore-track"><span class="security-subscore-fill" style="--score:98%"></span></div>
+          <div class="security-subscore-value">98</div>
+        </div>
+        <div class="security-subscore-row">
+          <div class="security-subscore-name" data-i18n="security_score_credentials">Credential Risk</div>
+          <div class="security-subscore-track"><span class="security-subscore-fill" style="--score:100%"></span></div>
+          <div class="security-subscore-value">100</div>
+        </div>
+        <div class="security-subscore-row">
+          <div class="security-subscore-name" data-i18n="security_score_prompt">Prompt Injection Risk</div>
+          <div class="security-subscore-track"><span class="security-subscore-fill" style="--score:94%"></span></div>
+          <div class="security-subscore-value">94</div>
+        </div>
+        <div class="security-subscore-row">
+          <div class="security-subscore-name" data-i18n="security_score_supply_chain">Supply Chain Risk</div>
+          <div class="security-subscore-track"><span class="security-subscore-fill" style="--score:95%"></span></div>
+          <div class="security-subscore-value">95</div>
+        </div>
+        <div class="security-subscore-row">
+          <div class="security-subscore-name" data-i18n="security_score_permissions">Permissions Risk</div>
+          <div class="security-subscore-track"><span class="security-subscore-fill" style="--score:93%"></span></div>
+          <div class="security-subscore-value">93</div>
+        </div>
+      </div>
+      <div class="security-score-note" data-i18n="security_score_note">The score applies only to the exact version that was scanned and is based on current findings. If the code changes, a new scan is required.</div>
     </div>
   </div>
 </section>
