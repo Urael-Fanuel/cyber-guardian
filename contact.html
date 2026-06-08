@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact Cyber-Guardian</title>
+<title>Contact Cyber Guardian Scan</title>
 <style>
 :root { --bg:#050A0F; --bg2:#0B1118; --bg3:#111A24; --text:#E6F1FF; --dim:#7A9BB0; --cyan:#00D4FF; --green:#00E676; --red:#FF3D3D; --border:#1E3446; --border2:#2D5A73; --sans:Inter,Arial,sans-serif; --mono:"JetBrains Mono",Consolas,monospace; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--mono); }
 body::before { content:''; position: fixed; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px); background-size: 40px 40px; }
 nav { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; padding: 18px 28px; border-bottom: 1px solid var(--border); }
-.logo { font-family: var(--sans); font-weight: 800; color: #fff; text-decoration: none; }
+.logo { font-family: var(--sans); font-weight: 800; color: #fff; text-decoration: none; white-space: nowrap; }
 .nav-r { display:flex; align-items:center; gap:12px; }
 .static-lang-switcher { display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end; align-items:center; }
 .static-lang-btn { width:auto; min-width:44px; min-height:30px; display:inline-flex; align-items:center; justify-content:center; background:#1E2D3D; border:1px solid #2A3F54; color:#7A9BB0; padding:5px 9px; font-size:15px; border-radius:4px; cursor:pointer; font-family:var(--mono); letter-spacing:1px; transition:all 0.15s; line-height:1; }
@@ -52,7 +52,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
 </head>
 <body>
 <nav>
-  <a class="logo" href="/">Cyber-Guardian</a>
+  <a class="logo" href="/">Cyber Guardian Scan</a>
   <div class="nav-r">
     <div class="static-lang-switcher" id="static-lang-switcher"></div>
     <a class="back" href="/" data-static-i18n="back_scanner">Back to scanner</a>
@@ -61,7 +61,7 @@ button:disabled { opacity: 0.55; cursor: wait; }
 
 <main>
   <div class="eyebrow" data-static-i18n="contact">Contact</div>
-  <h1 data-static-i18n="contact_title">Talk to Cyber-Guardian</h1>
+  <h1 data-static-i18n="contact_title">Talk to Cyber Guardian Scan</h1>
   <p class="sub" data-static-i18n="contact_sub">Use this form for larger scan-volume requests, procurement questions, support, or security issues. Your message stays inside the site and goes to the right inbox.</p>
 
   <form class="panel" id="contact-form">
