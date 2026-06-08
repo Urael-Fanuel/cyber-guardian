@@ -3536,6 +3536,139 @@ Object.entries(SECURITY_SCORE_SECTION_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SCAN_FRESHNESS_COPY = {
+  en: {
+    freshness_label: "Version-bound verification",
+    freshness_title: "Trust follows the exact code, not just the tool name",
+    freshness_sub: "Cyber Guardian Scan connects every verification to a specific version, commit and code fingerprint. When the code changes, the previous verification expires.",
+    freshness_explainer_title: "A fingerprint proves what was scanned",
+    freshness_explainer_copy: "The code fingerprint changes when the source changes. That prevents an old clean result from being presented as verification for a newer, modified version.",
+    freshness_version: "Version",
+    freshness_commit: "Commit",
+    freshness_fingerprint: "Code fingerprint",
+    freshness_current_title: "Verified Current",
+    freshness_current_copy: "The current code matches the exact version and fingerprint that were scanned.",
+    freshness_changed_title: "Changed Since Scan",
+    freshness_changed_copy: "The source no longer matches the verified fingerprint. The earlier result is no longer current.",
+    freshness_danger_title: "Danger for Install",
+    freshness_danger_copy: "The scanned version contains serious security risks and should not be installed.",
+    freshness_rescan_title: "Rescan Required",
+    freshness_rescan_copy: "Scan the changed code again before relying on its previous verification or installing it."
+  },
+  he: {
+    freshness_label: "אימות הקשור לגרסה",
+    freshness_title: "האמון שייך לקוד המדויק, לא רק לשם הכלי",
+    freshness_sub: "Cyber Guardian Scan מקשר כל אימות לגרסה, ל-commit ולטביעת קוד מסוימים. כאשר הקוד משתנה, תוקף האימות הקודם פג.",
+    freshness_explainer_title: "טביעת הקוד מוכיחה מה בדיוק נסרק",
+    freshness_explainer_copy: "טביעת הקוד משתנה כאשר קוד המקור משתנה. כך תוצאה נקייה ישנה אינה יכולה לשמש כאישור לגרסה חדשה ששונתה.",
+    freshness_version: "גרסה",
+    freshness_commit: "Commit",
+    freshness_fingerprint: "טביעת קוד",
+    freshness_current_title: "האימות עדכני",
+    freshness_current_copy: "הקוד הנוכחי תואם בדיוק לגרסה ולטביעת הקוד שנסרקו.",
+    freshness_changed_title: "הקוד השתנה מאז הסריקה",
+    freshness_changed_copy: "קוד המקור אינו תואם עוד לטביעה שאומתה. התוצאה הקודמת אינה עדכנית.",
+    freshness_danger_title: "מסוכן להתקנה",
+    freshness_danger_copy: "הגרסה שנסרקה מכילה סיכוני אבטחה חמורים ואין להתקין אותה.",
+    freshness_rescan_title: "נדרשת סריקה מחדש",
+    freshness_rescan_copy: "יש לסרוק שוב את הקוד שהשתנה לפני שמסתמכים על האימות הקודם או מתקינים אותו."
+  },
+  de: {
+    freshness_label: "Versionsgebundene Verifizierung",
+    freshness_title: "Vertrauen gilt fuer den exakten Code, nicht nur fuer den Tool-Namen",
+    freshness_sub: "Cyber Guardian Scan verbindet jede Verifizierung mit einer bestimmten Version, einem Commit und einem Code-Fingerabdruck. Aendert sich der Code, laeuft die vorherige Verifizierung ab.",
+    freshness_explainer_title: "Ein Fingerabdruck belegt, was gescannt wurde",
+    freshness_explainer_copy: "Der Code-Fingerabdruck aendert sich mit dem Quellcode. So kann ein altes sauberes Ergebnis nicht als Verifizierung fuer eine neuere geaenderte Version dienen.",
+    freshness_version: "Version",
+    freshness_commit: "Commit",
+    freshness_fingerprint: "Code-Fingerabdruck",
+    freshness_current_title: "Aktuell verifiziert",
+    freshness_current_copy: "Der aktuelle Code entspricht exakt der gescannten Version und dem Fingerabdruck.",
+    freshness_changed_title: "Seit dem Scan geaendert",
+    freshness_changed_copy: "Der Quellcode entspricht nicht mehr dem verifizierten Fingerabdruck. Das fruehere Ergebnis ist nicht mehr aktuell.",
+    freshness_danger_title: "Gefahr bei Installation",
+    freshness_danger_copy: "Die gescannte Version enthaelt schwerwiegende Sicherheitsrisiken und sollte nicht installiert werden.",
+    freshness_rescan_title: "Erneuter Scan erforderlich",
+    freshness_rescan_copy: "Scannen Sie den geaenderten Code erneut, bevor Sie der vorherigen Verifizierung vertrauen oder ihn installieren."
+  },
+  ja: {
+    freshness_label: "バージョンに紐づく検証",
+    freshness_title: "信頼はツール名ではなく、正確なコードに紐づきます",
+    freshness_sub: "Cyber Guardian Scan は各検証を特定のバージョン、コミット、コードフィンガープリントに結び付けます。コードが変わると以前の検証は失効します。",
+    freshness_explainer_title: "フィンガープリントがスキャン対象を証明します",
+    freshness_explainer_copy: "ソースが変わるとコードフィンガープリントも変わります。古い安全な結果が、変更後の新しいバージョンの検証として使われることを防ぎます。",
+    freshness_version: "バージョン",
+    freshness_commit: "コミット",
+    freshness_fingerprint: "コードフィンガープリント",
+    freshness_current_title: "現在の検証済み",
+    freshness_current_copy: "現在のコードは、スキャンされた正確なバージョンとフィンガープリントに一致しています。",
+    freshness_changed_title: "スキャン後に変更",
+    freshness_changed_copy: "ソースは検証済みフィンガープリントと一致しません。以前の結果は最新ではありません。",
+    freshness_danger_title: "インストール危険",
+    freshness_danger_copy: "スキャンされたバージョンには重大なセキュリティリスクがあり、インストールすべきではありません。",
+    freshness_rescan_title: "再スキャンが必要",
+    freshness_rescan_copy: "以前の検証を信頼したりインストールしたりする前に、変更されたコードを再スキャンしてください。"
+  },
+  ko: {
+    freshness_label: "버전에 연결된 검증",
+    freshness_title: "신뢰는 도구 이름이 아니라 정확한 코드에 적용됩니다",
+    freshness_sub: "Cyber Guardian Scan은 각 검증을 특정 버전, 커밋 및 코드 지문에 연결합니다. 코드가 변경되면 이전 검증은 만료됩니다.",
+    freshness_explainer_title: "지문은 무엇이 스캔되었는지 증명합니다",
+    freshness_explainer_copy: "소스가 변경되면 코드 지문도 변경됩니다. 이전의 깨끗한 결과가 수정된 새 버전의 검증으로 제시되는 것을 방지합니다.",
+    freshness_version: "버전",
+    freshness_commit: "커밋",
+    freshness_fingerprint: "코드 지문",
+    freshness_current_title: "현재 검증됨",
+    freshness_current_copy: "현재 코드는 스캔된 정확한 버전 및 지문과 일치합니다.",
+    freshness_changed_title: "스캔 이후 변경됨",
+    freshness_changed_copy: "소스가 검증된 지문과 더 이상 일치하지 않습니다. 이전 결과는 최신 상태가 아닙니다.",
+    freshness_danger_title: "설치 위험",
+    freshness_danger_copy: "스캔된 버전에 심각한 보안 위험이 있으므로 설치하지 않아야 합니다.",
+    freshness_rescan_title: "재스캔 필요",
+    freshness_rescan_copy: "이전 검증을 신뢰하거나 설치하기 전에 변경된 코드를 다시 스캔하세요."
+  },
+  fr: {
+    freshness_label: "Verification liee a la version",
+    freshness_title: "La confiance suit le code exact, pas seulement le nom de l'outil",
+    freshness_sub: "Cyber Guardian Scan relie chaque verification a une version, un commit et une empreinte de code precis. Si le code change, la verification precedente expire.",
+    freshness_explainer_title: "Une empreinte prouve ce qui a ete scanne",
+    freshness_explainer_copy: "L'empreinte du code change lorsque la source change. Un ancien resultat propre ne peut donc pas servir de verification pour une nouvelle version modifiee.",
+    freshness_version: "Version",
+    freshness_commit: "Commit",
+    freshness_fingerprint: "Empreinte du code",
+    freshness_current_title: "Verification actuelle",
+    freshness_current_copy: "Le code actuel correspond exactement a la version et a l'empreinte scannees.",
+    freshness_changed_title: "Modifie depuis le scan",
+    freshness_changed_copy: "La source ne correspond plus a l'empreinte verifiee. Le resultat precedent n'est plus actuel.",
+    freshness_danger_title: "Dangereux a installer",
+    freshness_danger_copy: "La version scannee contient des risques de securite graves et ne doit pas etre installee.",
+    freshness_rescan_title: "Nouveau scan requis",
+    freshness_rescan_copy: "Scannez a nouveau le code modifie avant de vous fier a la verification precedente ou de l'installer."
+  },
+  pt: {
+    freshness_label: "Verificacao vinculada a versao",
+    freshness_title: "A confianca acompanha o codigo exato, nao apenas o nome da ferramenta",
+    freshness_sub: "O Cyber Guardian Scan vincula cada verificacao a uma versao, commit e impressao digital de codigo especificos. Quando o codigo muda, a verificacao anterior expira.",
+    freshness_explainer_title: "A impressao digital prova o que foi escaneado",
+    freshness_explainer_copy: "A impressao digital muda quando o codigo-fonte muda. Isso impede que um resultado limpo antigo seja apresentado como verificacao de uma versao nova e modificada.",
+    freshness_version: "Versao",
+    freshness_commit: "Commit",
+    freshness_fingerprint: "Impressao digital do codigo",
+    freshness_current_title: "Verificacao atual",
+    freshness_current_copy: "O codigo atual corresponde exatamente a versao e a impressao digital que foram escaneadas.",
+    freshness_changed_title: "Alterado desde o scan",
+    freshness_changed_copy: "O codigo-fonte nao corresponde mais a impressao digital verificada. O resultado anterior nao esta mais atual.",
+    freshness_danger_title: "Perigoso para instalar",
+    freshness_danger_copy: "A versao escaneada contem riscos graves de seguranca e nao deve ser instalada.",
+    freshness_rescan_title: "Novo scan necessario",
+    freshness_rescan_copy: "Escaneie novamente o codigo alterado antes de confiar na verificacao anterior ou instala-lo."
+  }
+};
+
+Object.entries(SCAN_FRESHNESS_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const SOURCE_REQUIRED_COPY = {
   en: {
     source_required_title: "Complete source code was not scanned",

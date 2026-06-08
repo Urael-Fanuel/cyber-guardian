@@ -441,6 +441,37 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
   .security-subscore-track { grid-column: 1 / -1; grid-row: 2; }
 }
 
+.freshness-section { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
+.freshness-panel { display: grid; grid-template-columns: minmax(240px,0.85fr) minmax(0,1.35fr); overflow: hidden; border: 1px solid rgba(49,74,97,0.82); border-radius: 8px; background: rgba(11,17,24,0.9); box-shadow: var(--shadow); }
+.freshness-explainer { padding: 32px; border-right: 1px solid var(--border); background: linear-gradient(145deg,rgba(0,212,255,0.1),rgba(5,8,13,0.94) 62%); }
+[dir="rtl"] .freshness-explainer { border-right: none; border-left: 1px solid var(--border); }
+.freshness-icon { width: 54px; height: 54px; display: inline-flex; align-items: center; justify-content: center; color: var(--cyan); border: 1px solid rgba(0,212,255,0.42); border-radius: 8px; background: rgba(0,212,255,0.07); }
+.freshness-icon svg { width: 29px; height: 29px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.freshness-explainer-title { margin-top: 20px; color: #fff; font-family: var(--sans); font-size: 20px; font-weight: 800; line-height: 1.35; }
+.freshness-explainer-copy { margin-top: 10px; color: var(--text-dim); font-size: 11.5px; line-height: 1.75; }
+.freshness-identifiers { display: grid; gap: 8px; margin-top: 22px; }
+.freshness-identifier { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 11px; border: 1px solid rgba(49,74,97,0.7); border-radius: 5px; background: rgba(5,8,13,0.6); }
+.freshness-identifier span { color: var(--text-dim); font-size: 9px; font-weight: 700; text-transform: uppercase; }
+.freshness-identifier code { color: var(--cyan); font-size: 10px; overflow-wrap: anywhere; }
+.freshness-statuses { display: grid; gap: 1px; padding: 1px; background: var(--border); }
+.freshness-status { display: grid; grid-template-columns: 12px minmax(130px,0.65fr) minmax(0,1fr); align-items: center; gap: 14px; padding: 20px 22px; background: var(--bg2); }
+.freshness-dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; }
+.freshness-status.current { color: var(--green); }
+.freshness-status.changed, .freshness-status.rescan { color: var(--orange); }
+.freshness-status.danger { color: var(--red); }
+.freshness-status-name { color: currentColor; font-family: var(--sans); font-size: 13px; font-weight: 800; line-height: 1.35; }
+.freshness-status-copy { color: var(--text-dim); font-size: 10.5px; line-height: 1.65; }
+@media(max-width:760px) {
+  .freshness-panel { grid-template-columns: 1fr; }
+  .freshness-explainer { padding: 25px; border-right: none; border-left: none !important; border-bottom: 1px solid var(--border); }
+}
+@media(max-width:520px) {
+  .freshness-section { padding: 0 12px; }
+  .freshness-status { grid-template-columns: 12px minmax(0,1fr); gap: 7px 12px; padding: 17px; }
+  .freshness-status-copy { grid-column: 2; }
+  .freshness-identifier { display: grid; gap: 5px; }
+}
+
 .seo-hub { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
 .seo-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 22px; }
 .seo-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 18px; min-height: 180px; border-top: 3px solid var(--cyan); }
@@ -859,6 +890,48 @@ footer a:hover { color: var(--cyan); }
         </div>
       </div>
       <div class="security-score-note" data-i18n="security_score_note">The score applies only to the exact version that was scanned and is based on current findings. If the code changes, a new scan is required.</div>
+    </div>
+  </div>
+</section>
+
+<section class="freshness-section">
+  <div class="section-lbl" data-i18n="freshness_label">Version-bound verification</div>
+  <h2 class="section-title" data-i18n="freshness_title">Trust follows the exact code, not just the tool name</h2>
+  <p class="section-sub" data-i18n="freshness_sub">Cyber Guardian Scan connects every verification to a specific version, commit and code fingerprint. When the code changes, the previous verification expires.</p>
+  <div class="freshness-panel">
+    <div class="freshness-explainer">
+      <span class="freshness-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 11a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/><path d="M5.2 18.8A9 9 0 0 1 18.8 5.2"/><path d="M8.5 21.3A12 12 0 0 1 21.3 8.5"/><path d="M2.7 15.5A12 12 0 0 1 15.5 2.7"/></svg>
+      </span>
+      <div class="freshness-explainer-title" data-i18n="freshness_explainer_title">A fingerprint proves what was scanned</div>
+      <div class="freshness-explainer-copy" data-i18n="freshness_explainer_copy">The code fingerprint changes when the source changes. That prevents an old clean result from being presented as verification for a newer, modified version.</div>
+      <div class="freshness-identifiers" aria-label="Verification identity example">
+        <div class="freshness-identifier"><span data-i18n="freshness_version">Version</span><code>v1.4.2</code></div>
+        <div class="freshness-identifier"><span data-i18n="freshness_commit">Commit</span><code>84fd21b</code></div>
+        <div class="freshness-identifier"><span data-i18n="freshness_fingerprint">Code fingerprint</span><code>sha256:7c91...e4a2</code></div>
+      </div>
+    </div>
+    <div class="freshness-statuses">
+      <div class="freshness-status current">
+        <span class="freshness-dot" aria-hidden="true"></span>
+        <div class="freshness-status-name" data-i18n="freshness_current_title">Verified Current</div>
+        <div class="freshness-status-copy" data-i18n="freshness_current_copy">The current code matches the exact version and fingerprint that were scanned.</div>
+      </div>
+      <div class="freshness-status changed">
+        <span class="freshness-dot" aria-hidden="true"></span>
+        <div class="freshness-status-name" data-i18n="freshness_changed_title">Changed Since Scan</div>
+        <div class="freshness-status-copy" data-i18n="freshness_changed_copy">The source no longer matches the verified fingerprint. The earlier result is no longer current.</div>
+      </div>
+      <div class="freshness-status danger">
+        <span class="freshness-dot" aria-hidden="true"></span>
+        <div class="freshness-status-name" data-i18n="freshness_danger_title">Danger for Install</div>
+        <div class="freshness-status-copy" data-i18n="freshness_danger_copy">The scanned version contains serious security risks and should not be installed.</div>
+      </div>
+      <div class="freshness-status rescan">
+        <span class="freshness-dot" aria-hidden="true"></span>
+        <div class="freshness-status-name" data-i18n="freshness_rescan_title">Rescan Required</div>
+        <div class="freshness-status-copy" data-i18n="freshness_rescan_copy">Scan the changed code again before relying on its previous verification or installing it.</div>
+      </div>
     </div>
   </div>
 </section>
