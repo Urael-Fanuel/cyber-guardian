@@ -299,8 +299,8 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .t-line, .t-fix { margin-top: 6px; font-size: 10.5px; color: var(--text); line-height: 1.5; }
 .t-fix { color: var(--cyan); }
 .clean-box { padding: 36px 24px; text-align: center; }
-.scan-verified-mark { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; color: var(--green); font-size: 12px; font-weight: 800; line-height: 1.5; border-top: 1px solid rgba(0,230,118,0.35); border-bottom: 1px solid rgba(0,230,118,0.35); background: rgba(0,230,118,0.07); }
-.scan-verified-mark::before { content: '✓'; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; color: #04120b; border-radius: 50%; background: var(--green); font-weight: 900; }
+.scan-result-verification { margin-top: 14px; margin-bottom: 14px; }
+.scan-result-verification .verified-badge-note { font-size: 9.5px; line-height: 1.45; }
 .clean-icon { font-size: 44px; margin-bottom: 12px; }
 .clean-title { font-family: var(--sans); font-size: 20px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
 .clean-desc { font-size: 12px; color: var(--text-dim); line-height: 1.7; }
@@ -2033,7 +2033,19 @@ function renderResult(r) {
   if (r._from_cache) html += `<div class="cache-banner">⚡ ${t('cache_notice')}</div>`;
 
   if (r.verified_by_cyber_guardian && score >= 96) {
-    html += `<div class="scan-verified-mark">Verified by Cyber Guardian Scan™</div>`;
+    html += `
+    <div class="verified-badge scan-result-verification">
+      <span class="verified-badge-mark" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
+      <div>
+        <div class="verified-badge-title">Verified by Cyber Guardian Scan&trade;</div>
+        <div class="verified-badge-note">This exact version was scanned. Rescan is required if the code changes.</div>
+      </div>
+      <div class="verified-badge-result">
+        <div class="verified-badge-score-label">Security Score</div>
+        <div class="verified-badge-score">${score}/100</div>
+        <div class="verified-badge-status">Safe for Install</div>
+      </div>
+    </div>`;
   }
 
   html += `

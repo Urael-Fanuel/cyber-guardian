@@ -163,8 +163,23 @@ canvas { max-height: 200px; }
 .decision-line strong { color: var(--green); }
 .feed-item.risk-mod .decision-line strong { color: var(--orange); }
 .feed-item.risk-crit .decision-line strong { color: var(--red); }
-.verified-trust-mark { display: inline-flex; align-items: center; gap: 7px; margin: 2px 0 10px; padding: 7px 10px; color: var(--green); font-size: 11px; font-weight: 800; line-height: 1.4; border: 1px solid rgba(0,230,118,0.42); border-radius: 5px; background: rgba(0,230,118,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.03); }
-.verified-trust-mark::before { content: '✓'; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; color: #04120b; border-radius: 50%; background: var(--green); font-weight: 900; }
+.verified-trust-card { display: grid; grid-template-columns: 54px minmax(0,1fr) minmax(110px,auto); align-items: center; gap: 13px; margin: 4px 0 12px; padding: 12px 14px; border: 1px solid rgba(0,230,118,0.54); border-radius: 8px; background: linear-gradient(135deg,rgba(0,230,118,0.09),rgba(5,8,13,0.88) 48%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 30px rgba(0,0,0,0.2); }
+.verified-trust-logo { position: relative; width: 54px; height: 54px; overflow: hidden; border: 1px solid rgba(255,189,46,0.58); border-radius: 8px; background: #080808; box-shadow: 0 0 18px rgba(255,189,46,0.17); }
+.verified-trust-logo img { position: absolute; width: 98px; max-width: none; height: auto; left: 50%; top: -7px; transform: translateX(-50%); }
+.verified-trust-title { color: #fff; font-family: var(--sans); font-size: 13px; font-weight: 800; line-height: 1.35; }
+.verified-trust-note { margin-top: 4px; color: var(--text-dim); font-size: 9px; line-height: 1.45; }
+.verified-trust-result { text-align: right; white-space: nowrap; }
+[dir="rtl"] .verified-trust-result { text-align: left; }
+.verified-trust-score-label { color: var(--text-dim); font-size: 8.5px; font-weight: 700; text-transform: uppercase; }
+.verified-trust-score { margin-top: 4px; color: var(--green); font-family: var(--sans); font-size: 22px; font-weight: 800; line-height: 1; }
+.verified-trust-status { margin-top: 6px; color: var(--green); font-size: 8.5px; font-weight: 800; text-transform: uppercase; }
+@media (max-width: 680px) {
+  .verified-trust-card { grid-template-columns: 46px minmax(0,1fr); }
+  .verified-trust-logo { width: 46px; height: 46px; }
+  .verified-trust-logo img { width: 84px; }
+  .verified-trust-result { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; text-align: left; }
+  [dir="rtl"] .verified-trust-result { text-align: right; }
+}
 .decision-note { border: 1px solid rgba(0,212,255,0.2); background: rgba(0,212,255,0.06); color: var(--text); font-size: 12px; line-height: 1.7; padding: 12px 14px; margin-bottom: 14px; }
 .threat-list { display: grid; gap: 7px; margin-top: 8px; }
 .threat-row { border: 1px solid var(--border); background: rgba(8,18,30,0.62); padding: 9px 11px; }
@@ -1607,7 +1622,18 @@ function renderRecentScan(s) {
   const decision = scanDecision(s);
   const securityScore = Number.isFinite(Number(s.security_score)) ? Number(s.security_score) : 0;
   const verifiedMark = decision.value === 'safe' && securityScore >= 96
-    ? `<div class="verified-trust-mark">Verified by Cyber Guardian Scan™</div>`
+    ? `<div class="verified-trust-card">
+        <span class="verified-trust-logo" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
+        <div>
+          <div class="verified-trust-title">Verified by Cyber Guardian Scan&trade;</div>
+          <div class="verified-trust-note">This exact version was scanned. Rescan is required if the code changes.</div>
+        </div>
+        <div class="verified-trust-result">
+          <div class="verified-trust-score-label">Security Score</div>
+          <div class="verified-trust-score">${securityScore}/100</div>
+          <div class="verified-trust-status">Safe for Install</div>
+        </div>
+      </div>`
     : '';
   return `
     <div class="feed-item detailed ${decision.className}">
