@@ -243,7 +243,12 @@ function testPublicResponseHidesInternalAnalysis() {
     },
   });
 
-  const publicResult = publicScanResponse(result, false);
+  const publicResult = publicScanResponse(result, false, {
+    scan_metadata: {
+      scanned_at: "2026-06-08T12:00:00.000Z",
+      code_fingerprint: "abc123",
+    },
+  });
   assert.ok(publicResult.security_report);
   assert.equal(publicResult.analysis_orchestrator, undefined);
   assert.equal(publicResult.dynamic_sandbox, undefined);
@@ -253,6 +258,7 @@ function testPublicResponseHidesInternalAnalysis() {
   assert.equal(publicResult.summary, "Behavior review indicates high risk.");
   assert.equal(publicResult.recommendation, "Do not install this package.");
   assert.equal(publicResult.threats[0].description, "External callback behavior.");
+  assert.equal(publicResult.scan_metadata.code_fingerprint, "abc123");
   assert.equal(result.dynamic_sandbox.summary, "External callback observed.");
 }
 

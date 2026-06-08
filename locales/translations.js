@@ -3669,6 +3669,76 @@ Object.entries(SCAN_FRESHNESS_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const LIVE_SCAN_RESULT_COPY = {
+  en: {
+    input_label: "Paste code, a GitHub repository, npm/PyPI package, MCP server, or supported AI tool source",
+    placeholder: "Paste source code, an install command, a GitHub URL, an npm/PyPI package reference, an MCP server, AI Skill, IDE extension, workflow, or dependency manifest.\n\nCyber Guardian Scan retrieves supported public sources when possible and verifies the exact code fingerprint that was scanned.",
+    result_metadata_title: "Scan identity",
+    result_scan_date: "Scan date",
+    result_fingerprint: "Code fingerprint",
+    result_source: "Source",
+    result_version_commit: "Version / commit"
+  },
+  he: {
+    input_label: "הדבק קוד, מאגר GitHub, חבילת npm/PyPI, שרת MCP או מקור נתמך של כלי AI",
+    placeholder: "הדבק קוד מקור, פקודת התקנה, קישור GitHub, הפניה לחבילת npm/PyPI, שרת MCP, AI Skill, הרחבת IDE, workflow או קובץ תלויות.\n\nCyber Guardian Scan מושך מקורות ציבוריים נתמכים כאשר ניתן ומאמת את טביעת הקוד המדויקת שנסרקה.",
+    result_metadata_title: "זהות הסריקה",
+    result_scan_date: "תאריך הסריקה",
+    result_fingerprint: "טביעת קוד",
+    result_source: "מקור",
+    result_version_commit: "גרסה / commit"
+  },
+  de: {
+    input_label: "Code, GitHub-Repository, npm/PyPI-Paket, MCP-Server oder unterstuetzte AI-Tool-Quelle einfuegen",
+    placeholder: "Fuegen Sie Quellcode, Installationsbefehl, GitHub-URL, npm/PyPI-Paket, MCP-Server, AI Skill, IDE-Erweiterung, Workflow oder Dependency-Manifest ein.\n\nCyber Guardian Scan ruft unterstuetzte oeffentliche Quellen ab und verifiziert den exakten gescannten Code-Fingerabdruck.",
+    result_metadata_title: "Scan-Identitaet",
+    result_scan_date: "Scan-Datum",
+    result_fingerprint: "Code-Fingerabdruck",
+    result_source: "Quelle",
+    result_version_commit: "Version / Commit"
+  },
+  ja: {
+    input_label: "コード、GitHubリポジトリ、npm/PyPIパッケージ、MCPサーバー、対応するAIツールのソースを貼り付け",
+    placeholder: "ソースコード、インストールコマンド、GitHub URL、npm/PyPIパッケージ、MCPサーバー、AI Skill、IDE拡張、ワークフロー、依存関係マニフェストを貼り付けてください。\n\nCyber Guardian Scanは対応する公開ソースを取得し、スキャンした正確なコードフィンガープリントを検証します。",
+    result_metadata_title: "スキャン識別情報",
+    result_scan_date: "スキャン日時",
+    result_fingerprint: "コードフィンガープリント",
+    result_source: "ソース",
+    result_version_commit: "バージョン / コミット"
+  },
+  ko: {
+    input_label: "코드, GitHub 저장소, npm/PyPI 패키지, MCP 서버 또는 지원되는 AI 도구 소스를 붙여넣으세요",
+    placeholder: "소스 코드, 설치 명령, GitHub URL, npm/PyPI 패키지, MCP 서버, AI Skill, IDE 확장, 워크플로 또는 의존성 manifest를 붙여넣으세요.\n\nCyber Guardian Scan은 지원되는 공개 소스를 가져오고 스캔된 정확한 코드 지문을 검증합니다.",
+    result_metadata_title: "스캔 식별 정보",
+    result_scan_date: "스캔 날짜",
+    result_fingerprint: "코드 지문",
+    result_source: "소스",
+    result_version_commit: "버전 / 커밋"
+  },
+  fr: {
+    input_label: "Collez du code, un depot GitHub, un paquet npm/PyPI, un serveur MCP ou une source AI prise en charge",
+    placeholder: "Collez le code source, une commande d'installation, une URL GitHub, un paquet npm/PyPI, un serveur MCP, un AI Skill, une extension IDE, un workflow ou un manifeste de dependances.\n\nCyber Guardian Scan recupere les sources publiques prises en charge et verifie l'empreinte exacte du code scanne.",
+    result_metadata_title: "Identite du scan",
+    result_scan_date: "Date du scan",
+    result_fingerprint: "Empreinte du code",
+    result_source: "Source",
+    result_version_commit: "Version / commit"
+  },
+  pt: {
+    input_label: "Cole codigo, repositorio GitHub, pacote npm/PyPI, servidor MCP ou fonte de ferramenta AI suportada",
+    placeholder: "Cole codigo-fonte, comando de instalacao, URL do GitHub, pacote npm/PyPI, servidor MCP, AI Skill, extensao IDE, workflow ou manifesto de dependencias.\n\nO Cyber Guardian Scan busca fontes publicas suportadas e verifica a impressao digital exata do codigo escaneado.",
+    result_metadata_title: "Identidade do scan",
+    result_scan_date: "Data do scan",
+    result_fingerprint: "Impressao digital do codigo",
+    result_source: "Origem",
+    result_version_commit: "Versao / commit"
+  }
+};
+
+Object.entries(LIVE_SCAN_RESULT_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const SOURCE_REQUIRED_COPY = {
   en: {
     source_required_title: "Complete source code was not scanned",

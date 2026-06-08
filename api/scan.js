@@ -2126,11 +2126,20 @@ async function handler(req, res) {
       files_scanned: resolvedSource.files.length,
     },
   } : {};
+  const scanMetadataResponse = {
+    scan_metadata: {
+      scanned_at: new Date().toISOString(),
+      code_fingerprint: codeHash,
+      source_url: persistContext.source_url,
+      source_name: persistContext.source_name,
+      source_ref: resolvedSource?.source_ref || body?.source_ref || body?.version || body?.commit_hash || "",
+    },
+  };
   const cacheKey = `${scope}:${codeHash}`;
   const cached   = skipCache ? null : getFromCache(cacheKey);
   if (cached) {
     if (!skipPersist) await saveSiteScan(scope, cached, persistContext);
-    return res.status(200).json(publicScanResponse(cached, adminBypass, { _from_cache: true, ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
+    return res.status(200).json(publicScanResponse(cached, adminBypass, { _from_cache: true, ...sourceResponse, ...scanMetadataResponse, ...accountResponse(accountUser, accountUsage) }));
   }
   const staticResult = runStaticScan(code);
 
@@ -2142,7 +2151,7 @@ async function handler(req, res) {
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, persistContext);
     saveToCache(cacheKey, result);
-    return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
+    return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...scanMetadataResponse, ...accountResponse(accountUser, accountUsage) }));
   }
 
   const controller = new AbortController();
@@ -2178,7 +2187,7 @@ async function handler(req, res) {
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, persistContext);
     saveToCache(cacheKey, result);
-    return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
+    return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...scanMetadataResponse, ...accountResponse(accountUser, accountUsage) }));
 
   } catch (err) {
     clearTimeout(timeoutId);
@@ -2189,7 +2198,7 @@ async function handler(req, res) {
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       saveToCache(cacheKey, result);
-      return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
+      return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...scanMetadataResponse, ...accountResponse(accountUser, accountUsage) }));
     }
     console.error("[scan-failed]", err.message);
     if (/Anthropic API/.test(err.message || "")) {
@@ -2199,7 +2208,7 @@ async function handler(req, res) {
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       saveToCache(cacheKey, result);
-      return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
+      return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...scanMetadataResponse, ...accountResponse(accountUser, accountUsage) }));
     }
     return res.status(500).json({ error: "Scan failed. Try again." });
   }
