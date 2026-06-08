@@ -181,6 +181,8 @@ jobs:
           MAX_REPO_SCAN_BYTES:  "900000"
           MAX_ITEM_SECONDS:     "45"
           MAX_CG_SCAN_SECONDS:  "45"
+          CG_INCONCLUSIVE_RETRIES: "1"
+          MIN_PUBLIC_SOURCE_CHARS: "300"
           MAX_RUNTIME_MINUTES:  "10"
         run: |
           echo "══════════════════════════════════════"

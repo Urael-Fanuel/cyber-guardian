@@ -618,6 +618,56 @@ async function testCachedScanStillPersistsCurrentScope() {
   assert.equal(siteRows[1].row.scope, "mcp");
 }
 
+async function testAdminCanSkipInconclusiveCacheForRetry() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const originalFetch = global.fetch;
+  let calls = 0;
+  global.fetch = async (...args) => {
+    calls++;
+    return successfulFetch(...args);
+  };
+
+  try {
+    const code = 'console.log("admin cache refresh test unique source");';
+    const first = mockRes();
+    await scan({
+      method: "POST",
+      headers: {
+        origin: "https://cyberguardianscan.com",
+        host: "cyberguardianscan.com",
+        "x-forwarded-for": "203.0.113.61",
+        "x-cg-admin-secret": "developer-secret",
+        "x-cg-skip-persist": "1",
+      },
+      body: { code, scope: "skill" },
+      url: "/api/scan",
+    }, first);
+
+    const second = mockRes();
+    await scan({
+      method: "POST",
+      headers: {
+        origin: "https://cyberguardianscan.com",
+        host: "cyberguardianscan.com",
+        "x-forwarded-for": "203.0.113.61",
+        "x-cg-admin-secret": "developer-secret",
+        "x-cg-skip-persist": "1",
+        "x-cg-skip-cache": "1",
+      },
+      body: { code, scope: "skill" },
+      url: "/api/scan",
+    }, second);
+
+    assert.equal(first.statusCode, 200);
+    assert.equal(second.statusCode, 200);
+    assert.equal(calls, 2);
+    assert.notEqual(second.body._from_cache, true);
+  } finally {
+    global.fetch = originalFetch || successfulFetch;
+  }
+}
+
 async function testBatchScannerCanSkipApiPersistence() {
   insertedRows.length = 0;
   rpcCalls.length = 0;
@@ -686,6 +736,7 @@ testManualScanPersistsDashboardMetadata()
   .then(testThreatScanPersistsEvidenceRows)
   .then(testProviderTimeoutFallsBackToCompletedScan)
   .then(testCachedScanStillPersistsCurrentScope)
+  .then(testAdminCanSkipInconclusiveCacheForRetry)
   .then(testBatchScannerCanSkipApiPersistence)
   .then(testSupplyChainScopesPersist)
   .then(() => console.log("scan-security tests: ok"))

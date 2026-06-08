@@ -49,6 +49,8 @@ CG_SCAN_DELAY  = float(os.environ.get("CG_SCAN_DELAY", 1.0))  # seconds between 
 CG_ADMIN_BYPASS_SECRET = os.environ.get("CG_ADMIN_BYPASS_SECRET", "")
 MAX_ITEM_SECONDS = int(os.environ.get("MAX_ITEM_SECONDS", "90"))
 MAX_CG_SCAN_SECONDS = int(os.environ.get("MAX_CG_SCAN_SECONDS", "75"))
+CG_INCONCLUSIVE_RETRIES = max(0, int(os.environ.get("CG_INCONCLUSIVE_RETRIES", "1")))
+MIN_PUBLIC_SOURCE_CHARS = max(80, int(os.environ.get("MIN_PUBLIC_SOURCE_CHARS", "300")))
 if not SCAN_SCOPES:
     SCAN_SCOPES = ["mcp"]
 
@@ -507,12 +509,22 @@ async def fetch_github_repositories(client: httpx.AsyncClient, limit: int, queri
             r = await client.get(url, headers=headers, params=params, timeout=20)
             r.raise_for_status()
             for item in r.json().get("items", []):
+                if item.get("archived") or item.get("disabled") or item.get("fork"):
+                    continue
                 results[item["full_name"]] = item
         except Exception as e:
             log.warning(f"GitHub search error [{query}]: {e}")
         await asyncio.sleep(GITHUB_DELAY)
 
-    repos = list(results.values())
+    repos = sorted(
+        results.values(),
+        key=lambda item: (
+            int(item.get("stargazers_count") or 0),
+            int(item.get("forks_count") or 0),
+            str(item.get("pushed_at") or ""),
+        ),
+        reverse=True,
+    )
     if not repos:
         return []
     start = SCAN_OFFSET % len(repos)
@@ -663,7 +675,6 @@ NPM_SKILL_SEARCH_TERMS = [
     "claude skill",
     "cursor skill",
     "ai skill",
-    "prompt injection skill",
     "agent skill",
 ]
 
@@ -697,12 +708,22 @@ async def fetch_npm_packages(client: httpx.AsyncClient, limit: int, terms: list[
             r.raise_for_status()
             for obj in r.json().get("objects", []):
                 pkg = obj.get("package", {})
+                pkg["_search_quality"] = float(obj.get("score", {}).get("final") or 0)
+                pkg["_search_popularity"] = float(obj.get("score", {}).get("detail", {}).get("popularity") or 0)
                 results[pkg["name"]] = pkg
         except Exception as e:
             log.warning(f"npm search error [{term}]: {e}")
         await asyncio.sleep(NPM_DELAY)
 
-    packages = list(results.values())
+    packages = sorted(
+        results.values(),
+        key=lambda pkg: (
+            float(pkg.get("_search_quality") or 0),
+            float(pkg.get("_search_popularity") or 0),
+            str(pkg.get("date") or ""),
+        ),
+        reverse=True,
+    )
     if not packages:
         return []
     start = SCAN_OFFSET % len(packages)
@@ -868,7 +889,12 @@ async def scan_mcpso_server(client: httpx.AsyncClient, item: dict) -> Optional[S
 #  CYBER-GUARDIAN AI SCANNER
 # ─────────────────────────────────────────────
 
-async def scan_with_cyber_guardian(client: httpx.AsyncClient, code: str, scope: str = "mcp") -> dict:
+async def scan_with_cyber_guardian(
+    client: httpx.AsyncClient,
+    code: str,
+    scope: str = "mcp",
+    skip_cache: bool = False,
+) -> dict:
     """Send code to Cyber-Guardian AI scanner and get threat analysis."""
     if not code or not code.strip():
         return {}
@@ -876,6 +902,8 @@ async def scan_with_cyber_guardian(client: httpx.AsyncClient, code: str, scope: 
     headers["X-CG-Skip-Persist"] = "1"
     if CG_ADMIN_BYPASS_SECRET:
         headers["X-CG-Admin-Secret"] = CG_ADMIN_BYPASS_SECRET
+    if skip_cache and CG_ADMIN_BYPASS_SECRET:
+        headers["X-CG-Skip-Cache"] = "1"
     try:
         r = await client.post(
             f"{CYBER_GUARDIAN_URL}/api/scan",
@@ -955,6 +983,20 @@ def metadata_code_for_server(server: ScannedServer, scope: str) -> str:
         f"version: {server.version}",
         f"files_scanned: {server.files_scanned}",
     ]).strip()
+
+
+def scan_result_is_conclusive(result: dict) -> bool:
+    """Only publish verdicts backed by a completed result and usable evidence."""
+    if not isinstance(result, dict):
+        return False
+    status = result.get("status")
+    threats = result.get("threats") if isinstance(result.get("threats"), list) else []
+    confidence = float(result.get("confidence") or 0)
+    if status == "STATUS_SAFE":
+        return not threats and confidence >= 0.60
+    if status in {"STATUS_MODERATE", "STATUS_CRITICAL"}:
+        return len(threats) > 0
+    return False
 
 
 def save_site_scan(sb: Client, scope: str, result: dict, server=None) -> bool:
@@ -1202,19 +1244,39 @@ async def run_scan():
         return fallback_scope_limit(index)
 
     async def scan_cg_and_save(scope: str, source_code: str, server=None):
-        if not source_code and server:
-            source_code = metadata_code_for_server(server, scope)
-        if not source_code:
-            return
-        try:
-            cg_result = await asyncio.wait_for(
-                scan_with_cyber_guardian(client, source_code, scope),
-                timeout=MAX_CG_SCAN_SECONDS,
+        source_code = str(source_code or "").strip()
+        if len(source_code) < MIN_PUBLIC_SOURCE_CHARS:
+            log.warning(
+                f"  [CG] skipped public verdict: incomplete source scope={scope} "
+                f"source={getattr(server, 'name', 'unknown')} chars={len(source_code)}"
             )
-            if cg_result:
+            return
+
+        for attempt in range(CG_INCONCLUSIVE_RETRIES + 1):
+            try:
+                cg_result = await asyncio.wait_for(
+                    scan_with_cyber_guardian(client, source_code, scope, skip_cache=attempt > 0),
+                    timeout=MAX_CG_SCAN_SECONDS,
+                )
+            except asyncio.TimeoutError:
+                cg_result = {}
+                log.warning(
+                    f"  [CG] timed out scope={scope} source={getattr(server, 'name', 'unknown')} "
+                    f"attempt={attempt + 1}"
+                )
+
+            if scan_result_is_conclusive(cg_result):
                 save_site_scan(sb, scope, cg_result, server)
-        except asyncio.TimeoutError:
-            log.warning(f"  [CG] timed out scope={scope} source={getattr(server, 'name', 'unknown')}")
+                break
+
+            log.warning(
+                f"  [CG] inconclusive result not published scope={scope} "
+                f"source={getattr(server, 'name', 'unknown')} status={cg_result.get('status')} "
+                f"threats={len(cg_result.get('threats') or [])} confidence={cg_result.get('confidence')} "
+                f"attempt={attempt + 1}"
+            )
+            if attempt < CG_INCONCLUSIVE_RETRIES:
+                await asyncio.sleep(CG_SCAN_DELAY)
         await asyncio.sleep(CG_SCAN_DELAY)
 
     async def scan_github_items(scope: str, repos: list[dict], save_mcp_rows: bool):

@@ -276,6 +276,13 @@ function classifyScan(scan) {
   return 'review';
 }
 
+function isConclusivePublicScan(scan) {
+  if (!scan || !scan.status || scan.status === 'STATUS_AMBIGUOUS') return false;
+  if (scan.status === 'STATUS_SAFE') return true;
+  const threatCount = Number(scan.threat_count || 0);
+  return threatCount > 0 || threatFamilies(scan.threats_summary).length > 0;
+}
+
 function normalizeScope(scope) {
   const value = String(scope || '').trim().toLowerCase();
   if (value === 'mcp' || value.includes('mcp')) return 'mcp';
@@ -477,6 +484,7 @@ module.exports = async function handler(req, res) {
       error = legacy.error;
     }
     if (error) throw error;
+    scans = (scans || []).filter(isConclusivePublicScan);
 
     if (!scans || scans.length === 0) {
       if (mode === 'alternatives') {

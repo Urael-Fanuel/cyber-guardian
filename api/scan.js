@@ -743,7 +743,7 @@ function setCors(res, origin) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CG-Admin-Secret, X-CG-Admin-Token, X-CG-Account-Token");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CG-Admin-Secret, X-CG-Admin-Token, X-CG-Account-Token, X-CG-Skip-Cache");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Content-Type", "application/json");
 }
@@ -2029,6 +2029,7 @@ async function handler(req, res) {
 
   const adminBypass = await isAdminBypassRequest(req);
   const skipPersist = String(getHeader(req, "x-cg-skip-persist") || "").trim() === "1";
+  const skipCache = adminBypass && String(getHeader(req, "x-cg-skip-cache") || "").trim() === "1";
   let accountUser = null;
   let accountUsage = null;
 
@@ -2123,7 +2124,7 @@ async function handler(req, res) {
     },
   } : {};
   const cacheKey = `${scope}:${codeHash}`;
-  const cached   = getFromCache(cacheKey);
+  const cached   = skipCache ? null : getFromCache(cacheKey);
   if (cached) {
     if (!skipPersist) await saveSiteScan(scope, cached, persistContext);
     return res.status(200).json(publicScanResponse(cached, adminBypass, { _from_cache: true, ...sourceResponse, ...accountResponse(accountUser, accountUsage) }));
