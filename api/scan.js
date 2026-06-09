@@ -64,7 +64,8 @@ const CONFIG = {
   MAX_TOKENS: intEnv("ANTHROPIC_MAX_TOKENS", 2500),
   USAGE_MODE: process.env.SCAN_USAGE_MODE || "strict",
   ADMIN_BYPASS_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || "",
-  ADMIN_TOKEN_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "",
+  ADMIN_TOKEN_SECRET: process.env.CG_ADMIN_TOKEN_SECRET || process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "",
+  ADMIN_TOKEN_VERSION: String(process.env.CG_ADMIN_TOKEN_VERSION || "1"),
   DYNAMIC_SANDBOX_ENABLED: boolEnv("DYNAMIC_SANDBOX_ENABLED", false),
   DYNAMIC_SANDBOX_WEBHOOK_URL: process.env.DYNAMIC_SANDBOX_WEBHOOK_URL || "",
   DYNAMIC_SANDBOX_API_KEY: process.env.DYNAMIC_SANDBOX_API_KEY || "",
@@ -513,7 +514,7 @@ function isAdminToken(req) {
   if (left.length !== right.length || !crypto.timingSafeEqual(left, right)) return false;
   try {
     const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-    return parsed.role === "admin" && Number(parsed.exp || 0) > Math.floor(Date.now() / 1000);
+    return parsed.role === "admin" && String(parsed.ver || "1") === CONFIG.ADMIN_TOKEN_VERSION && Number(parsed.exp || 0) > Math.floor(Date.now() / 1000);
   } catch {
     return false;
   }

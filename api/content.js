@@ -4,7 +4,8 @@ const crypto = require("crypto");
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const ADMIN_BYPASS_SECRET = process.env.CG_ADMIN_BYPASS_SECRET || "";
-const ADMIN_TOKEN_SECRET = process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "";
+const ADMIN_TOKEN_SECRET = process.env.CG_ADMIN_TOKEN_SECRET || process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "";
+const ADMIN_TOKEN_VERSION = String(process.env.CG_ADMIN_TOKEN_VERSION || "1");
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || ("https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app" + (process.env.VERCEL_ENV === "production" ? "" : ",http://localhost:3000,http://localhost:5173")))
   .split(",").map(s => s.trim()).filter(Boolean);
 
@@ -54,7 +55,7 @@ function isAdminToken(req) {
   if (left.length !== right.length || !crypto.timingSafeEqual(left, right)) return false;
   try {
     const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-    return parsed.role === "admin" && Number(parsed.exp || 0) > Math.floor(Date.now() / 1000);
+    return parsed.role === "admin" && String(parsed.ver || "1") === ADMIN_TOKEN_VERSION && Number(parsed.exp || 0) > Math.floor(Date.now() / 1000);
   } catch {
     return false;
   }
