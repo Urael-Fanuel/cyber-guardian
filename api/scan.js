@@ -50,7 +50,7 @@ function anthropicFallbackModels(primary) {
 }
 
 const CONFIG = {
-  ALLOWED_ORIGINS: (process.env.ALLOWED_ORIGINS || "https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
+  ALLOWED_ORIGINS: (process.env.ALLOWED_ORIGINS || ("https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app" + (process.env.VERCEL_ENV === "production" ? "" : ",http://localhost:3000,http://localhost:5173")))
     .split(",").map(s => s.trim()).filter(Boolean),
   MAX_REQUESTS_PER_MINUTE: intEnv("SCAN_MAX_REQUESTS_PER_MINUTE", 5),
   MAX_REQUESTS_PER_HOUR:   intEnv("SCAN_MAX_REQUESTS_PER_HOUR", 20),

@@ -4,7 +4,7 @@ const ADMIN_USERNAME = process.env.CG_ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD = process.env.CG_ADMIN_PASSWORD || process.env.CG_ADMIN_BYPASS_SECRET || "";
 const TOKEN_SECRET = process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "";
 const ADMIN_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app,http://localhost:3000,http://localhost:5173")
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || ("https://cyberguardianscan.com,https://cyber-guardian-mu.vercel.app" + (process.env.VERCEL_ENV === "production" ? "" : ",http://localhost:3000,http://localhost:5173")))
   .split(",").map(s => s.trim()).filter(Boolean);
 
 function setCors(req, res) {
