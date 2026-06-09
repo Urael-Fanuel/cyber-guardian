@@ -1456,12 +1456,70 @@ function lineHintFor(content, index) {
   return `line ${line}: ${snippet.slice(0, 180)}`;
 }
 
+// Instruction/deception threats legitimately live in descriptions, comments, and
+// tool metadata, so these families are matched against the FULL submission text.
+// Every other (behavioral) family is matched only against the executable code view,
+// so documentation that merely names "os.system" or "C2" never raises a false alarm.
+const TEXT_SURFACE_FAMILIES = new Set([
+  "PROMPT_INJECTION",
+  "INDIRECT_PROMPT_INJECTION",
+  "TOOL_POISONING",
+  "TOOL_DESCRIPTION_MANIPULATION",
+  "TOOL_RESULT_INJECTION",
+  "CROSS_TOOL_CONFUSION",
+  "ROLE_CONFUSION",
+  "SYSTEM_OVERRIDE",
+  "JAILBREAK",
+  "MCP_AUTH_BYPASS",
+  "MCP_SESSION_HIJACKING",
+  "RESOURCE_HIJACKING",
+  "CONTEXT_EXFILTRATION",
+]);
+
+// Remove comments so a descriptive comment ("# does not use os.system") cannot
+// trigger a behavioral rule. String literals are intentionally preserved, because
+// real payloads (e.g. a reverse-shell command) live inside string arguments.
+function stripComments(code) {
+  return String(code || "")
+    .replace(/\/\*[\s\S]*?\*\//g, " ")     // /* block comments */
+    .replace(/"""[\s\S]*?"""/g, " ")        // python triple-quoted docstrings
+    .replace(/'''[\s\S]*?'''/g, " ")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1 ")  // // line comments (keep URL "://")
+    .replace(/(^|\s)#[^\n]*/g, "$1 ");       // # line comments
+}
+
+// Documentation/prose with no real executable code (e.g. a markdown skill with no
+// code fence): nothing to scan behaviorally, so the code view is empty.
+function looksLikeProse(text) {
+  const value = String(text || "");
+  const hasFrontmatter = /^\s*---\s*\r?\n[\s\S]*?\r?\n---\s*\r?\n/.test(value);
+  const headerCount = (value.match(/^#{1,6}\s/gm) || []).length;
+  const codeSignals = (value.match(/[;{}]|=>|\b(?:function|def|const|let|var|import|require|class|return|async|await)\b/g) || []).length;
+  return (hasFrontmatter || headerCount >= 2) && codeSignals < 5;
+}
+
+// Build the executable-code view used for behavioral rule matching: prefer fenced
+// code blocks; otherwise the whole input — unless it is clearly documentation.
+function extractCodeView(input) {
+  const text = String(input || "");
+  const fenced = [...text.matchAll(/```[a-zA-Z0-9_+-]*\r?\n?([\s\S]*?)```/g)]
+    .map(match => match[1])
+    .filter(block => block && block.trim());
+  if (fenced.length) return stripComments(fenced.join("\n"));
+  if (looksLikeProse(text)) return "";
+  return stripComments(text);
+}
+
 function runStaticScan(code) {
+  const fullText = String(code || "");
+  const codeView = extractCodeView(fullText);
   const threats = [];
   let threatScore = 0;
 
   for (const rule of ALL_STATIC_RULES) {
-    const match = rule.pattern.exec(code);
+    const haystack = TEXT_SURFACE_FAMILIES.has(rule.family) ? fullText : codeView;
+    if (!haystack) continue;
+    const match = rule.pattern.exec(haystack);
     if (!match) continue;
     threatScore = Math.max(threatScore, rule.score);
     threats.push({
@@ -1469,7 +1527,7 @@ function runStaticScan(code) {
       severity: rule.severity,
       description: rule.description,
       evidence: match[0].slice(0, 160),
-      line_hint: lineHintFor(code, match.index),
+      line_hint: lineHintFor(haystack, match.index),
     });
   }
 
