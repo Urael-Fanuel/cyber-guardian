@@ -121,6 +121,21 @@ function githubRequestHeaders() {
   return headers;
 }
 
+// Only these GitHub-owned hosts may be fetched for alternative-source verification.
+// The last two are legitimate redirect targets GitHub itself uses for raw content.
+const ALTERNATIVE_SOURCE_HOSTS = [
+  'github.com',
+  'raw.githubusercontent.com',
+  'api.github.com',
+  'codeload.github.com',
+  'objects.githubusercontent.com',
+];
+
+function trustedSourceHost(hostname) {
+  return ALTERNATIVE_SOURCE_HOSTS.some(host =>
+    hostname === host || (host.startsWith('*.') && hostname.endsWith(host.slice(1))));
+}
+
 function parseGithubSourceUrl(value) {
   let url;
   try {
@@ -170,19 +185,31 @@ function parseGithubSourceUrl(value) {
 }
 
 async function fetchTextWithLimit(url, headers = {}) {
+  const initial = new URL(url);
+  if (initial.protocol !== 'https:' || !trustedSourceHost(initial.hostname)) {
+    throw new Error('Source host is not trusted.');
+  }
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error(`Source fetch failed: ${response.status}`);
-  const contentLength = parseInt(response.headers.get('content-length') || '0', 10);
-  if (contentLength > MAX_ALTERNATIVE_SOURCE_CHARS * 2) {
-    throw new Error('Source file is too large for verification.');
+  // Re-check the host after any redirect, so a GitHub URL cannot bounce us to an untrusted host.
+  if (!trustedSourceHost(new URL(response.url || url).hostname)) {
+    throw new Error('Source redirected to an untrusted host.');
   }
   const text = await response.text();
   return text.slice(0, MAX_ALTERNATIVE_SOURCE_CHARS);
 }
 
 async function fetchGithubJson(url) {
+  const initial = new URL(url);
+  if (initial.protocol !== 'https:' || !trustedSourceHost(initial.hostname)) {
+    throw new Error('GitHub host is not trusted.');
+  }
   const response = await fetch(url, { headers: githubRequestHeaders() });
   if (!response.ok) throw new Error(`GitHub API failed: ${response.status}`);
+  // Re-check the host after any redirect before trusting the response.
+  if (!trustedSourceHost(new URL(response.url || url).hostname)) {
+    throw new Error('GitHub request redirected to an untrusted host.');
+  }
   return response.json();
 }
 
