@@ -62,7 +62,7 @@ const CONFIG = {
   ANTHROPIC_TIMEOUT_MS: Math.min(intEnv("ANTHROPIC_TIMEOUT_MS", 60000), 60000),
   MODEL: anthropicModelEnv(),
   MAX_TOKENS: intEnv("ANTHROPIC_MAX_TOKENS", 2500),
-  USAGE_MODE: process.env.SCAN_USAGE_MODE || "fallback",
+  USAGE_MODE: process.env.SCAN_USAGE_MODE || "strict",
   ADMIN_BYPASS_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || "",
   ADMIN_TOKEN_SECRET: process.env.CG_ADMIN_BYPASS_SECRET || process.env.CG_ADMIN_PASSWORD || "",
   DYNAMIC_SANDBOX_ENABLED: boolEnv("DYNAMIC_SANDBOX_ENABLED", false),
