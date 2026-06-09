@@ -466,6 +466,13 @@ function getHeader(req, name) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+function clientIp(req) {
+  const real = req.headers["x-real-ip"];
+  if (real) return String(real).trim();
+  const xff = String(req.headers["x-forwarded-for"] || "").split(",").map(s => s.trim()).filter(Boolean);
+  return xff.length ? xff[xff.length - 1] : "unknown";
+}
+
 async function isAdminBypassRequest(req) {
   const configuredSecret = CONFIG.ADMIN_BYPASS_SECRET.trim();
   const providedSecret = String(getHeader(req, "x-cg-admin-secret") || "").trim();
@@ -1997,7 +2004,7 @@ async function handler(req, res) {
   if (rejectDisallowedOrigin(req, res)) return;
   if (req.method !== "POST")   return res.status(405).json({ error: "Method not allowed" });
 
-  const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
+  const ip = clientIp(req);
   let usingSupabaseUsage = false;
 
   // Parse body (Vercel auto-parses JSON, but fallback if string)

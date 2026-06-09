@@ -22,6 +22,13 @@ function getOrigin(req) {
   return req.headers.origin || "";
 }
 
+function clientIp(req) {
+  const real = req.headers["x-real-ip"];
+  if (real) return String(real).trim();
+  const xff = String(req.headers["x-forwarded-for"] || "").split(",").map(s => s.trim()).filter(Boolean);
+  return xff.length ? xff[xff.length - 1] : "unknown";
+}
+
 function isAllowedOrigin(origin) {
   return !origin || ALLOWED_ORIGINS.includes(origin);
 }
@@ -135,7 +142,7 @@ module.exports = async function handler(req, res) {
   if (rejectDisallowedOrigin(req, res)) return;
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
+  const ip = clientIp(req);
   if (!checkRateLimit(ip)) return res.status(429).json({ error: "Too many requests." });
 
   let body = req.body;
