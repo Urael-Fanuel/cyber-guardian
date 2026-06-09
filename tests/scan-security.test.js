@@ -138,9 +138,23 @@ function testSecurityScoreMatchesInstallDecision() {
     threats: [{ family: "REVERSE_SHELL", severity: "CRITICAL" }],
   });
 
+  const verified = normalizeResult({
+    status: "STATUS_SAFE",
+    threat_score: 8,
+    confidence: 0.9,
+    threats: [],
+    dynamic_sandbox: { status: "completed", verdict: "clean" },
+  });
+
   assert.equal(securityScoreForResult(safe), 98);
   assert.ok(safe.security_score >= 96);
-  assert.equal(safe.verified_by_cyber_guardian, true);
+  // Model SAFE + static clean, but the dynamic sandbox never ran:
+  // corroboration is incomplete, so the verified badge is withheld.
+  assert.equal(safe.verified_by_cyber_guardian, false);
+  assert.equal(safe.verification_level, "no_issues_detected");
+  // Full 3-source corroboration: model SAFE + static clean + sandbox completed clean.
+  assert.equal(verified.verified_by_cyber_guardian, true);
+  assert.equal(verified.verification_level, "verified");
   assert.ok(review.security_score < 96);
   assert.equal(review.verified_by_cyber_guardian, false);
   assert.ok(blocked.security_score <= 39);

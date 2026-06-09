@@ -4,7 +4,7 @@
 
 const { createClient } = require("@supabase/supabase-js");
 const crypto = require("crypto");
-const { securityScoreForResult, isVerifiedInstallResult } = require("../lib/security-score");
+const { securityScoreForResult, isVerifiedInstallResult, verificationLevelForResult } = require("../lib/security-score");
 const { resolveSupportedSource } = require("../lib/source-resolver");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -1571,6 +1571,7 @@ function normalizeResult(result) {
     : (normalized.decision_details.decision === "install_ok" ? "safe" : "review");
   normalized.security_score = securityScoreForResult(normalized);
   normalized.verified_by_cyber_guardian = isVerifiedInstallResult(normalized, normalized.decision);
+  normalized.verification_level = verificationLevelForResult(normalized, normalized.decision);
   normalized.evidence_report = buildEvidenceReport(normalized.threats);
   normalized.remediation_plan = buildRemediationPlan(normalized.threats);
   normalized.security_report = buildSecurityReport(normalized);
