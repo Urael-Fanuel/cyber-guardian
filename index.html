@@ -2323,17 +2323,24 @@ function renderResult(r) {
   const recommendationText = localizedRecommendation(r);
   if (recommendationText) html += `<div class="rec-box"><div class="rec-label">${t('recommendation_label')}</div>${escHtml(recommendationText)}</div>`;
 
-  if (r.status === 'STATUS_SAFE' && score >= 96) {
+  const _shareSourceUrl = r._source_resolution && r._source_resolution.source_url ? r._source_resolution.source_url : null;
+  if (r.status === 'STATUS_SAFE' && score >= 96 && _shareSourceUrl) {
+    const sourceName = escHtml(r._source_resolution.source_name || _shareSourceUrl);
     const siteUrl = 'https://cyberguardianscan.com';
-    const tweetText = t('share_pride_tweet').replace('{score}', score).replace('{url}', siteUrl);
+    const tweetText = t('share_pride_tweet')
+      .replace('{score}', score)
+      .replace('{source_name}', r._source_resolution.source_name || _shareSourceUrl)
+      .replace('{source_url}', _shareSourceUrl)
+      .replace('{site_url}', siteUrl);
     const tweetEncoded = encodeURIComponent(tweetText);
-    const urlEncoded = encodeURIComponent(siteUrl);
+    const sourceUrlEncoded = encodeURIComponent(_shareSourceUrl);
+    const bodyText = t('share_pride_body').replace('{score}', score).replace('{source_name}', sourceName);
     html += `<div class="share-pride-section">
       <div class="share-pride-title">🛡️ ${escHtml(t('share_pride_title'))}</div>
-      <div class="share-pride-body">${escHtml(t('share_pride_body').replace('{score}', score))}</div>
+      <div class="share-pride-body">${bodyText}</div>
       <div class="share-pride-buttons">
         <a class="share-btn" href="https://twitter.com/intent/tweet?text=${tweetEncoded}" target="_blank" rel="noopener noreferrer">𝕏 ${escHtml(t('share_btn_x'))}</a>
-        <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=${urlEncoded}" target="_blank" rel="noopener noreferrer">in ${escHtml(t('share_btn_linkedin'))}</a>
+        <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=${sourceUrlEncoded}" target="_blank" rel="noopener noreferrer">in ${escHtml(t('share_btn_linkedin'))}</a>
         <button class="share-btn" data-share-text="${escHtml(tweetText)}" onclick="cgCopyShareLink(this)">${escHtml(t('share_btn_copy'))}</button>
       </div>
     </div>`;
