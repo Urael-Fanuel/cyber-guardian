@@ -475,6 +475,43 @@ module.exports = async function handler(req, res) {
 
     if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ error: 'Not configured' });
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Code-history search: look up whether a code fingerprint (hash) or a source
+    // name/URL was already scanned, and return its verdict + Verified badge.
+    if (mode === 'search') {
+      const hash = String(url.searchParams.get('hash') || '').trim().toLowerCase();
+      const q = String(url.searchParams.get('q') || '').trim();
+      const searchCols = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_hash';
+      let searchQuery = sb.from('site_scans').select(searchCols).order('scanned_at', { ascending: false }).limit(20);
+      if (/^[a-f0-9]{16,64}$/.test(hash)) {
+        searchQuery = searchQuery.eq('code_hash', hash);
+      } else if (q.length >= 3) {
+        const term = q.replace(/[%,()*]/g, ' ').slice(0, 120);
+        searchQuery = searchQuery.or(`source_name.ilike.%${term}%,source_url.ilike.%${term}%`);
+      } else {
+        return res.status(400).json({ error: 'Provide a code fingerprint (hash) or a search term of at least 3 characters.' });
+      }
+      const { data: searchRows, error: searchError } = await searchQuery;
+      if (searchError) {
+        if (tableMissing(searchError)) return res.status(200).json({ status: 'empty', matches: [] });
+        throw searchError;
+      }
+      const matches = (searchRows || []).filter(isConclusivePublicScan).map(s => {
+        const decision = classifyScan(s);
+        return {
+          source_name: s.source_name || '',
+          source_url: s.source_url || '',
+          scope: s.scope || '',
+          decision,
+          security_score: securityScoreForResult(s, decision),
+          verified_by_cyber_guardian: isVerifiedInstallResult(s, decision),
+          scanned_at: s.scanned_at,
+          code_fingerprint: s.code_hash || '',
+        };
+      });
+      return res.status(200).json({ status: matches.length ? 'found' : 'not_found', matches });
+    }
+
     const baseSelect = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags';
     const enrichedSelect = `scan_run_id,${baseSelect}`;
     let { data: scans, error } = await sb

@@ -1255,6 +1255,7 @@ async def run_scan():
             )
             return
 
+        last_result = {}
         for attempt in range(CG_INCONCLUSIVE_RETRIES + 1):
             try:
                 cg_result = await asyncio.wait_for(
@@ -1268,18 +1269,26 @@ async def run_scan():
                     f"attempt={attempt + 1}"
                 )
 
+            if isinstance(cg_result, dict) and cg_result.get("status"):
+                last_result = cg_result
+
             if scan_result_is_conclusive(cg_result):
                 save_site_scan(sb, scope, cg_result, server)
                 break
 
             log.warning(
-                f"  [CG] inconclusive result not published scope={scope} "
+                f"  [CG] inconclusive result scope={scope} "
                 f"source={getattr(server, 'name', 'unknown')} status={cg_result.get('status')} "
                 f"threats={len(cg_result.get('threats') or [])} confidence={cg_result.get('confidence')} "
                 f"attempt={attempt + 1}"
             )
             if attempt < CG_INCONCLUSIVE_RETRIES:
                 await asyncio.sleep(CG_SCAN_DELAY)
+        else:
+            # No conclusive verdict after retries — still record the scan in history
+            # so every scanned code is saved. The public dashboard filters non-verdicts.
+            if last_result.get("status"):
+                save_site_scan(sb, scope, last_result, server)
         await asyncio.sleep(CG_SCAN_DELAY)
 
     async def scan_github_items(scope: str, repos: list[dict], save_mcp_rows: bool):
