@@ -3823,6 +3823,55 @@ Object.entries(SOURCE_RESOLVED_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SCAN_COVERAGE_COPY = {
+  en: {
+    coverage_partial_title: "Partial deep-scan coverage",
+    coverage_partial_body_files: "Deep AI analysis covered the {scanned} highest-risk files out of {total} relevant files. Static security rules covered the rest.",
+    coverage_partial_body_chars: "The source is very large: the highest-risk portion received deep AI analysis, and static security rules covered the entire input.",
+    coverage_partial_capped: "No threats were found in the scanned files, so the verdict is capped at \"Needs review\" instead of \"Safe\". For a definitive \"Safe\" verdict, scan a smaller subdirectory, file, or package version."
+  },
+  he: {
+    coverage_partial_title: "כיסוי סריקת עומק חלקי",
+    coverage_partial_body_files: "ניתוח ה-AI המעמיק כיסה את {scanned} הקבצים בעלי הסיכון הגבוה ביותר מתוך {total} קבצים רלוונטיים. כללי האבטחה הסטטיים כיסו את השאר.",
+    coverage_partial_body_chars: "המקור גדול במיוחד: החלק בעל הסיכון הגבוה ביותר עבר ניתוח AI מעמיק, וכללי האבטחה הסטטיים כיסו את הקלט במלואו.",
+    coverage_partial_capped: "לא נמצאו איומים בקבצים שנסרקו, ולכן הפסיקה הוגבלה ל\"דורש בדיקה\" במקום \"בטוח\". לקבלת פסיקת \"בטוח\" ודאית, סרקו תיקיית משנה, קובץ או גרסת חבילה קטנה יותר."
+  },
+  de: {
+    coverage_partial_title: "Teilweise Tiefenscan-Abdeckung",
+    coverage_partial_body_files: "Die tiefe KI-Analyse umfasste die {scanned} Dateien mit dem hoechsten Risiko von {total} relevanten Dateien. Statische Sicherheitsregeln deckten den Rest ab.",
+    coverage_partial_body_chars: "Die Quelle ist sehr gross: der Teil mit dem hoechsten Risiko erhielt eine tiefe KI-Analyse, und statische Sicherheitsregeln deckten die gesamte Eingabe ab.",
+    coverage_partial_capped: "In den gescannten Dateien wurden keine Bedrohungen gefunden. Das Urteil ist daher auf \"Pruefung erforderlich\" statt \"Sicher\" begrenzt. Fuer ein endgueltiges \"Sicher\"-Urteil scannen Sie ein kleineres Unterverzeichnis, eine Datei oder eine Paketversion."
+  },
+  ja: {
+    coverage_partial_title: "ディープスキャンの部分カバレッジ",
+    coverage_partial_body_files: "AIによる詳細分析は、関連する{total}個のファイルのうちリスクが最も高い{scanned}個を対象としました。残りは静的セキュリティルールでカバーされています。",
+    coverage_partial_body_chars: "ソースが非常に大きいため、リスクが最も高い部分を詳細に分析し、入力全体は静的セキュリティルールでカバーしました。",
+    coverage_partial_capped: "スキャンしたファイルに脅威は見つかりませんでしたが、完全なカバレッジではないため、判定は「安全」ではなく「要確認」に制限されています。確定的な「安全」判定を得るには、より小さなサブディレクトリ、ファイル、またはパッケージバージョンをスキャンしてください。"
+  },
+  ko: {
+    coverage_partial_title: "부분 정밀 스캔 범위",
+    coverage_partial_body_files: "AI 정밀 분석은 관련 파일 {total}개 중 위험도가 가장 높은 {scanned}개를 검사했습니다. 나머지는 정적 보안 규칙으로 검사되었습니다.",
+    coverage_partial_body_chars: "소스가 매우 커서 위험도가 가장 높은 부분을 정밀 분석했으며, 전체 입력은 정적 보안 규칙으로 검사했습니다.",
+    coverage_partial_capped: "스캔한 파일에서는 위협이 발견되지 않았지만, 전체를 검사하지 못했기 때문에 판정은 \"안전\" 대신 \"검토 필요\"로 제한됩니다. 확정적인 \"안전\" 판정을 받으려면 더 작은 하위 디렉터리, 파일 또는 패키지 버전을 스캔하세요."
+  },
+  fr: {
+    coverage_partial_title: "Couverture partielle de l'analyse approfondie",
+    coverage_partial_body_files: "L'analyse IA approfondie a couvert les {scanned} fichiers les plus a risque sur {total} fichiers pertinents. Les regles de securite statiques ont couvert le reste.",
+    coverage_partial_body_chars: "La source est tres volumineuse : la partie la plus a risque a recu une analyse IA approfondie et les regles de securite statiques ont couvert l'ensemble de l'entree.",
+    coverage_partial_capped: "Aucune menace n'a ete trouvee dans les fichiers analyses. Le verdict est donc limite a \"Examen requis\" au lieu de \"Sans danger\". Pour un verdict \"Sans danger\" definitif, analysez un sous-dossier, un fichier ou une version de paquet plus petit."
+  },
+  pt: {
+    coverage_partial_title: "Cobertura parcial da analise profunda",
+    coverage_partial_body_files: "A analise profunda de IA cobriu os {scanned} arquivos de maior risco entre {total} arquivos relevantes. As regras estaticas de seguranca cobriram o restante.",
+    coverage_partial_body_chars: "O codigo-fonte e muito grande: a parte de maior risco recebeu analise profunda de IA e as regras estaticas de seguranca cobriram toda a entrada.",
+    coverage_partial_capped: "Nenhuma ameaca foi encontrada nos arquivos escaneados, entao o veredito e limitado a \"Requer revisao\" em vez de \"Seguro\". Para um veredito \"Seguro\" definitivo, escaneie um subdiretorio, arquivo ou versao de pacote menor."
+  }
+};
+
+Object.entries(SCAN_COVERAGE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const ACCOUNT_CONFIRMATION_COPY = {
   en: {
     account_verified_title: "Your account is active.",

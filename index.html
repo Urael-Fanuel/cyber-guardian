@@ -377,6 +377,11 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .source-required-ref { max-width: 680px; margin: 14px auto 0; padding: 9px 11px; color: var(--text-dim); font-size: 10px; line-height: 1.55; overflow-wrap: anywhere; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
 .source-resolved-banner { padding: 11px 16px; color: var(--green); font-size: 11px; line-height: 1.65; border-top: 1px solid rgba(0,230,118,0.32); border-bottom: 1px solid rgba(0,230,118,0.32); background: rgba(0,230,118,0.06); }
 .source-resolved-banner a { color: var(--cyan); overflow-wrap: anywhere; }
+.coverage-banner { display: flex; gap: 12px; padding: 13px 16px; border-top: 1px solid rgba(255,167,38,0.4); border-bottom: 1px solid rgba(255,167,38,0.4); background: var(--orange-dim); }
+.coverage-banner-icon { font-size: 20px; line-height: 1; }
+.coverage-banner-title { color: var(--orange); font-family: var(--sans); font-size: 12px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px; }
+.coverage-banner-body { font-size: 11px; color: var(--text-dim); line-height: 1.65; }
+.coverage-banner-note { margin-top: 5px; font-size: 11px; color: var(--orange); line-height: 1.6; }
 .quota-box { padding: 28px 24px; text-align: center; background: var(--orange-dim); border-top: 1px solid var(--border); }
 .quota-title { color: var(--orange); font-family: var(--sans); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
 .quota-msg { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; }
@@ -2150,6 +2155,25 @@ function renderResult(r) {
     html += `<div class="source-resolved-banner">${t('source_resolved_notice')} ${sourceLink} · ${Number(source.files_scanned || 0)} ${t('source_resolved_files')}</div>`;
   }
   if (r._from_cache) html += `<div class="cache-banner">⚡ ${t('cache_notice')}</div>`;
+
+  // Partial deep-scan coverage: the source was too large for complete coverage, so the
+  // highest-risk files were prioritized and a clean result was capped at "needs review"
+  if (r.scan_coverage && r.scan_coverage.complete === false) {
+    const cov = r.scan_coverage;
+    const hasFiles = Number.isFinite(Number(cov.files_scanned)) && Number.isFinite(Number(cov.files_total)) && Number(cov.files_total) > 0;
+    const covBody = hasFiles
+      ? t('coverage_partial_body_files').replace('{scanned}', String(Number(cov.files_scanned))).replace('{total}', String(Number(cov.files_total)))
+      : t('coverage_partial_body_chars');
+    html += `
+    <div class="coverage-banner">
+      <div class="coverage-banner-icon">🔎</div>
+      <div>
+        <div class="coverage-banner-title">${t('coverage_partial_title')}${hasFiles ? ` · ${Number(cov.files_scanned)}/${Number(cov.files_total)}` : ''}</div>
+        <div class="coverage-banner-body">${covBody}</div>
+        ${r.coverage_capped ? `<div class="coverage-banner-note">${t('coverage_partial_capped')}</div>` : ''}
+      </div>
+    </div>`;
+  }
 
   const verificationLevel = r.verification_level || (r.verified_by_cyber_guardian ? 'verified' : '');
   if (verificationLevel === 'verified' && score >= 96) {
