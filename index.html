@@ -793,6 +793,15 @@ footer a:hover { color: var(--cyan); }
       <button class="scan-btn" id="scan-btn" onclick="runScan()">▶ &nbsp;<span data-i18n="btn_scan">SCAN NOW</span></button>
     </div>
 
+    <div class="cg-search" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
+      <label class="lbl" for="cg-search-input">Already scanned? Check the history before you scan</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+        <input id="cg-search-input" type="text" placeholder="Paste code, or type a repo name / GitHub URL" style="flex:1;min-width:220px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.25);color:inherit;font:inherit" onkeydown="if(event.key==='Enter'){event.preventDefault();cgCodeSearch();}" />
+        <button class="scan-btn" id="cg-search-btn" onclick="cgCodeSearch()" style="padding:10px 18px">🔎 Check history</button>
+      </div>
+      <div id="cg-search-results" style="margin-top:10px;font-size:14px"></div>
+    </div>
+
     <div class="ai-row">
       <div class="pulse" style="width:6px;height:6px"></div>
       <div class="ai-badge">
@@ -2289,6 +2298,43 @@ function clearScan() {
 function escHtml(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function cgSha256Hex(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function cgCodeSearch() {
+  const inputEl = document.getElementById('cg-search-input');
+  const out = document.getElementById('cg-search-results');
+  if (!inputEl || !out) return;
+  const raw = (inputEl.value || '').trim();
+  if (raw.length < 3) { out.innerHTML = '<span style="opacity:.7">Enter a code snippet, repo name, or GitHub URL (at least 3 characters).</span>'; return; }
+  out.innerHTML = '<span style="opacity:.7">Searching history…</span>';
+  try {
+    const looksLikeCode = /\n/.test(raw) || raw.length > 200 || /[;{}=()]/.test(raw);
+    let qs;
+    if (looksLikeCode && window.crypto && window.crypto.subtle) {
+      qs = 'hash=' + encodeURIComponent(await cgSha256Hex(raw));
+    } else {
+      qs = 'q=' + encodeURIComponent(raw);
+    }
+    const res = await fetch('/api/site-stats?mode=search&' + qs);
+    const data = await res.json();
+    if (!res.ok) { out.innerHTML = '<span style="opacity:.7">' + escHtml(data.error || 'Search is unavailable right now.') + '</span>'; return; }
+    const matches = Array.isArray(data.matches) ? data.matches : [];
+    if (!matches.length) { out.innerHTML = '<span style="opacity:.8">No previous scan found for this. Scan it now to get a verdict.</span>'; return; }
+    out.innerHTML = matches.slice(0, 5).map(function(m) {
+      const label = escHtml(m.source_name || m.source_url || ('fingerprint ' + String(m.code_fingerprint || '').slice(0, 12)));
+      const badge = m.verified_by_cyber_guardian ? '🥇 Verified' : (m.decision === 'safe' ? '🟢 Clean' : (m.decision === 'blocked' ? '🔴 Do not install' : '🟠 Review'));
+      const when = m.scanned_at ? new Date(m.scanned_at).toLocaleDateString() : '';
+      const link = /^https?:\/\//i.test(String(m.source_url || '')) ? ' · <a href="' + escHtml(m.source_url) + '" target="_blank" rel="noopener noreferrer">source</a>' : '';
+      return '<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><strong>' + badge + '</strong> · ' + label + ' · <span style="opacity:.7">score ' + Number(m.security_score || 0) + '/100 · ' + escHtml(when) + '</span>' + link + '</div>';
+    }).join('');
+  } catch (e) {
+    out.innerHTML = '<span style="opacity:.7">Search failed. Try again.</span>';
+  }
 }
 
 function scrollToScanner() { document.getElementById('scanner').scrollIntoView({ behavior:'smooth' }); }
