@@ -512,6 +512,40 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ status: matches.length ? 'found' : 'not_found', matches });
     }
 
+    // Verified-tools showcase: gold-badge (Verified) scans only, for the homepage banner.
+    if (mode === 'verified') {
+      const verifiedCols = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,code_hash';
+      const { data: verifiedRows, error: verifiedError } = await sb
+        .from('site_scans')
+        .select(verifiedCols)
+        .order('scanned_at', { ascending: false })
+        .limit(300);
+      if (verifiedError) {
+        if (tableMissing(verifiedError)) return res.status(200).json({ status: 'empty', items: [] });
+        throw verifiedError;
+      }
+      const seen = new Set();
+      const items = [];
+      for (const s of (verifiedRows || [])) {
+        const decision = classifyScan(s);
+        if (!isVerifiedInstallResult(s, decision)) continue;
+        const key = String(s.source_url || s.source_name || s.code_hash || '').toLowerCase();
+        if (key && seen.has(key)) continue;
+        if (key) seen.add(key);
+        items.push({
+          source_name: s.source_name || '',
+          source_url: s.source_url || '',
+          scope: s.scope || '',
+          code_purpose: s.code_purpose || '',
+          security_score: securityScoreForResult(s, decision),
+          scanned_at: s.scanned_at,
+          code_fingerprint: s.code_hash || '',
+        });
+        if (items.length >= 12) break;
+      }
+      return res.status(200).json({ status: items.length ? 'ok' : 'empty', items });
+    }
+
     const baseSelect = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags';
     const enrichedSelect = `scan_run_id,${baseSelect}`;
     let { data: scans, error } = await sb

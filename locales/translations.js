@@ -3927,6 +3927,7 @@ async function setLang(code) {
     b.classList.toggle('active', b.getAttribute('data-lang') === code);
   });
   if (window.refreshAccountUi) window.refreshAccountUi();
+  if (window.cgRenderBanner) window.cgRenderBanner();
 }
 
 window.t = (key) => {
@@ -4084,6 +4085,54 @@ const CG_SEARCH_COPY = {
   },
 };
 Object.entries(CG_SEARCH_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
+const CG_BANNER_COPY = {
+  en: {
+    vb_title: "🥇 Recently verified tools",
+    vb_note: "Cleared by Cyber-Guardian's automated review with a top security score. This is our point-in-time assessment — verify the current version before production use.",
+    vb_open: "Open",
+    vb_scanned: "scanned",
+  },
+  he: {
+    vb_title: "🥇 כלים שאומתו לאחרונה",
+    vb_note: "עברו את הבדיקה האוטומטית של Cyber-Guardian עם ציון בטיחות גבוה. זו ההערכה שלנו לרגע הסריקה — ודאו את הגרסה הנוכחית לפני שימוש בפרודקשן.",
+    vb_open: "פתח",
+    vb_scanned: "נסרק",
+  },
+  de: {
+    vb_title: "🥇 Kürzlich verifizierte Tools",
+    vb_note: "Von Cyber-Guardians automatischer Prüfung mit Top-Sicherheitswertung freigegeben. Dies ist unsere Momentaufnahme — prüfe die aktuelle Version vor dem Produktiveinsatz.",
+    vb_open: "Öffnen",
+    vb_scanned: "gescannt",
+  },
+  ja: {
+    vb_title: "🥇 最近認証されたツール",
+    vb_note: "Cyber-Guardian の自動レビューを高いセキュリティスコアで通過しました。これはスキャン時点の評価です。本番利用の前に最新バージョンを確認してください。",
+    vb_open: "開く",
+    vb_scanned: "スキャン日",
+  },
+  ko: {
+    vb_title: "🥇 최근 인증된 도구",
+    vb_note: "Cyber-Guardian의 자동 검토를 높은 보안 점수로 통과했습니다. 이는 검사 시점의 평가입니다. 프로덕션 사용 전에 현재 버전을 확인하세요.",
+    vb_open: "열기",
+    vb_scanned: "검사됨",
+  },
+  fr: {
+    vb_title: "🥇 Outils récemment vérifiés",
+    vb_note: "Validés par l'examen automatique de Cyber-Guardian avec un score de sécurité élevé. Il s'agit de notre évaluation ponctuelle — vérifiez la version actuelle avant toute utilisation en production.",
+    vb_open: "Ouvrir",
+    vb_scanned: "scanné",
+  },
+  pt: {
+    vb_title: "🥇 Ferramentas verificadas recentemente",
+    vb_note: "Aprovadas pela revisão automática do Cyber-Guardian com pontuação de segurança alta. Esta é a nossa avaliação no momento do escaneamento — verifique a versão atual antes do uso em produção.",
+    vb_open: "Abrir",
+    vb_scanned: "escaneado",
+  },
+};
+Object.entries(CG_BANNER_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
