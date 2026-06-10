@@ -4185,6 +4185,75 @@ Object.entries(CG_BANNER_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SHARE_BADGE_COPY = {
+  en: {
+    share_pride_title: "Share your clean scan",
+    share_pride_body: "Your code passed automated security analysis — Score: {score}/100, no threats found.",
+    share_pride_tweet: "I just scanned my code with Cyber Guardian Scan — Security Score: {score}/100. No threats detected. Try it yourself: {url}",
+    share_btn_x: "Share on X",
+    share_btn_linkedin: "Share on LinkedIn",
+    share_btn_copy: "Copy link",
+    share_copied: "Copied!",
+  },
+  he: {
+    share_pride_title: "שתפו את הסריקה הנקייה",
+    share_pride_body: "הקוד עבר ניתוח אבטחה אוטומטי — ציון: {score}/100, לא נמצאו איומים.",
+    share_pride_tweet: "סרקתי את הקוד שלי עם Cyber Guardian Scan — ציון אבטחה: {score}/100. לא נמצאו איומים. נסו גם אתם: {url}",
+    share_btn_x: "שתפו ב-X",
+    share_btn_linkedin: "שתפו ב-LinkedIn",
+    share_btn_copy: "העתיקו קישור",
+    share_copied: "הועתק!",
+  },
+  de: {
+    share_pride_title: "Scan-Ergebnis teilen",
+    share_pride_body: "Ihr Code hat die automatisierte Sicherheitsanalyse bestanden — Score: {score}/100, keine Bedrohungen gefunden.",
+    share_pride_tweet: "Ich habe meinen Code mit Cyber Guardian Scan analysiert — Sicherheitsscore: {score}/100. Keine Bedrohungen gefunden. Jetzt testen: {url}",
+    share_btn_x: "Auf X teilen",
+    share_btn_linkedin: "Auf LinkedIn teilen",
+    share_btn_copy: "Link kopieren",
+    share_copied: "Kopiert!",
+  },
+  ja: {
+    share_pride_title: "クリーンスキャンを共有",
+    share_pride_body: "自動セキュリティ分析に合格しました — スコア: {score}/100、脅威は見つかりませんでした。",
+    share_pride_tweet: "Cyber Guardian Scanでコードをスキャンしました — セキュリティスコア: {score}/100。脅威は検出されませんでした。試してみて: {url}",
+    share_btn_x: "Xでシェア",
+    share_btn_linkedin: "LinkedInでシェア",
+    share_btn_copy: "リンクをコピー",
+    share_copied: "コピーしました!",
+  },
+  ko: {
+    share_pride_title: "클린 스캔 공유",
+    share_pride_body: "코드가 자동 보안 분석을 통과했습니다 — 점수: {score}/100, 위협 없음.",
+    share_pride_tweet: "Cyber Guardian Scan으로 코드를 스캔했습니다 — 보안 점수: {score}/100. 위협이 발견되지 않았습니다. 직접 해보세요: {url}",
+    share_btn_x: "X에서 공유",
+    share_btn_linkedin: "LinkedIn에서 공유",
+    share_btn_copy: "링크 복사",
+    share_copied: "복사됨!",
+  },
+  fr: {
+    share_pride_title: "Partager votre scan propre",
+    share_pride_body: "Votre code a passe l'analyse de securite automatisee — Score: {score}/100, aucune menace trouvee.",
+    share_pride_tweet: "Je viens de scanner mon code avec Cyber Guardian Scan — Score de securite: {score}/100. Aucune menace detectee. Essayez: {url}",
+    share_btn_x: "Partager sur X",
+    share_btn_linkedin: "Partager sur LinkedIn",
+    share_btn_copy: "Copier le lien",
+    share_copied: "Copie!",
+  },
+  pt: {
+    share_pride_title: "Compartilhar scan limpo",
+    share_pride_body: "Seu codigo passou na analise automatica de seguranca — Pontuacao: {score}/100, nenhuma ameaca encontrada.",
+    share_pride_tweet: "Acabei de escanear meu codigo com o Cyber Guardian Scan — Pontuacao de seguranca: {score}/100. Nenhuma ameaca detectada. Experimente: {url}",
+    share_btn_x: "Compartilhar no X",
+    share_btn_linkedin: "Compartilhar no LinkedIn",
+    share_btn_copy: "Copiar link",
+    share_copied: "Copiado!",
+  },
+};
+Object.entries(SHARE_BADGE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 window.TRANSLATIONS = TRANSLATIONS;
 window.LANGS = LANGS;
 window.loadContentOverrides = loadContentOverrides;
