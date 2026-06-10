@@ -2295,7 +2295,7 @@ async function handler(req, res) {
     result = applyOrchestration(result, staticResult, scope);
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, persistContext);
-    saveToCache(cacheKey, result);
+    // Do NOT cache fallback results — next request should get a real AI scan
     return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...scanMetadataResponse, ...accountResponse(accountUser, accountUsage) }));
   }
 
@@ -2352,7 +2352,7 @@ async function handler(req, res) {
       result = applyOrchestration(result, staticResult, scope);
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
-      saveToCache(cacheKey, result);
+      // Do NOT cache timeout results — Anthropic may be back on next request
       return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...scanMetadataResponse, ...accountResponse(accountUser, accountUsage) }));
     }
     console.error("[scan-failed]", err.message);
@@ -2362,7 +2362,7 @@ async function handler(req, res) {
       result = applyOrchestration(result, staticResult, scope);
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
-      saveToCache(cacheKey, result);
+      // Do NOT cache Anthropic API error results — next request should retry the AI scan
       return res.status(200).json(publicScanResponse(result, adminBypass, { ...sourceResponse, ...scanMetadataResponse, ...accountResponse(accountUser, accountUsage) }));
     }
     return res.status(500).json({ error: "Scan failed. Try again." });
