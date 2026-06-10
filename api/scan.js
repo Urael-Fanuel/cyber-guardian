@@ -1538,6 +1538,28 @@ function looksLikeProse(text) {
   return (hasFrontmatter || headerCount >= 2) && codeSignals < 5;
 }
 
+// Resolved multi-file sources mark each file with "// Source file: <path>".
+// Documentation files (README, docs) are prose: behavioral code rules must not
+// run on them (e.g. "Update ... `name` ... user" in a README matching SQL_INJECTION).
+// Text-surface families still scan the full text, so prompt-injection hidden in
+// docs is still caught, and the AI deep scan always sees every file.
+const DOC_FILE_PATTERN = /\.(md|markdown|mdx|txt|rst|adoc|textile)$/i;
+function stripDocumentationFiles(code) {
+  const text = String(code || "");
+  if (!text.includes("// Source file: ")) return text;
+  const parts = text.split(/^\/\/ Source file: /m);
+  const kept = [];
+  if (parts[0] && parts[0].trim()) kept.push(parts[0]);
+  for (let i = 1; i < parts.length; i++) {
+    const section = parts[i];
+    const newlineAt = section.indexOf("\n");
+    const filePath = (newlineAt === -1 ? section : section.slice(0, newlineAt)).trim();
+    if (DOC_FILE_PATTERN.test(filePath)) continue;
+    kept.push("// Source file: " + section);
+  }
+  return kept.join("\n");
+}
+
 // Build the executable-code view used for behavioral rule matching: prefer fenced
 // code blocks; otherwise the whole input — unless it is clearly documentation.
 function extractCodeView(input) {
@@ -1552,7 +1574,7 @@ function extractCodeView(input) {
 
 function runStaticScan(code) {
   const fullText = String(code || "");
-  const codeView = extractCodeView(fullText);
+  const codeView = extractCodeView(stripDocumentationFiles(fullText));
   const threats = [];
   let threatScore = 0;
 
