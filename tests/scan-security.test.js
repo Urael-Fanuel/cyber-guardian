@@ -64,6 +64,7 @@ const {
   normalizeScanScope,
   classifySourceReference,
   securityScoreForResult,
+  needsDeeperReview,
 } = scan._test;
 
 const successfulFetch = async () => ({
@@ -745,6 +746,50 @@ async function testBatchScannerCanSkipApiPersistence() {
   assert.equal(insertedRows.length, 0);
 }
 
+function testNeedsDeeperReviewDetectsUncertainty() {
+  // Uncertain first-pass results trigger a deeper second pass.
+  assert.equal(needsDeeperReview({ status: "STATUS_AMBIGUOUS", threats: [], confidence: 0.9 }), true);
+  assert.equal(needsDeeperReview({ status: "STATUS_MODERATE", threats: [], confidence: 0.8 }), true);
+  assert.equal(needsDeeperReview({ status: "STATUS_SAFE", threats: [], confidence: 0.3 }), true);
+  // Decisive verdicts do not trigger a second pass.
+  assert.equal(needsDeeperReview({ status: "STATUS_SAFE", threats: [], confidence: 0.9 }), false);
+  assert.equal(needsDeeperReview({ status: "STATUS_MODERATE", threats: [{ family: "DYNAMIC_EVAL" }], confidence: 0.7 }), false);
+  assert.equal(needsDeeperReview({ status: "STATUS_CRITICAL", threats: [{ family: "REVERSE_SHELL" }], confidence: 0.9 }), false);
+}
+
+// An inconclusive first pass must trigger a deeper second pass that reaches a verdict.
+async function testInconclusiveTriggersDeeperReview() {
+  insertedRows.length = 0;
+  rpcCalls.length = 0;
+  const originalFetch = global.fetch;
+  let aiCalls = 0;
+  global.fetch = async (url, options) => {
+    if (String(url).includes("api.anthropic.com")) {
+      aiCalls += 1;
+      const report = aiCalls === 1
+        ? { status: "STATUS_MODERATE", threat_score: 20, confidence: 0.4, summary: "Unclear without deeper review.", threats: [], safe_patterns_noted: [], recommendation: "Needs deeper review." }
+        : { status: "STATUS_SAFE", threat_score: 3, confidence: 0.92, summary: "Benign after deeper review.", threats: [], safe_patterns_noted: ["pure computation"], recommendation: "Safe to install." };
+      return { ok: true, json: async () => ({ content: [{ type: "text", text: JSON.stringify(report) }] }) };
+    }
+    return successfulFetch(url, options);
+  };
+
+  try {
+    const res = mockRes();
+    await scan({
+      method: "POST",
+      headers: { origin: "https://cyberguardianscan.com", host: "cyberguardianscan.com", "x-forwarded-for": "203.0.113.82" },
+      body: { code: "def double(x):\n    return x * 2", scope: "skill" },
+      url: "/api/scan",
+    }, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(aiCalls, 2);                      // the deeper second pass ran
+    assert.equal(res.body.status, "STATUS_SAFE");  // and reached a decisive verdict
+  } finally {
+    global.fetch = originalFetch || successfulFetch;
+  }
+}
+
 async function testCleanDocumentationScansAsSafe() {
   insertedRows.length = 0;
   rpcCalls.length = 0;
@@ -842,6 +887,7 @@ testCleanDocumentationNotFlagged();
 testReverseShellInFencedBlockStillCritical();
 testBehavioralKeywordInCommentNotFlagged();
 testPromptInjectionInProseStillCaught();
+testNeedsDeeperReviewDetectsUncertainty();
 testStaticSecretRead();
 testStaticPromptInjection();
 testStaticEicarSignature();
@@ -873,6 +919,7 @@ testManualScanPersistsDashboardMetadata()
   .then(testBatchScannerCanSkipApiPersistence)
   .then(testSupplyChainScopesPersist)
   .then(testCleanDocumentationScansAsSafe)
+  .then(testInconclusiveTriggersDeeperReview)
   .then(() => console.log("scan-security tests: ok"))
   .catch(err => {
     console.error(err);
