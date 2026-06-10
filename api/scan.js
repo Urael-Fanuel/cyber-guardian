@@ -55,8 +55,11 @@ const CONFIG = {
   MAX_REQUESTS_PER_MINUTE: intEnv("SCAN_MAX_REQUESTS_PER_MINUTE", 5),
   MAX_REQUESTS_PER_HOUR:   intEnv("SCAN_MAX_REQUESTS_PER_HOUR", 20),
   MAX_FREE_SCANS_PER_MONTH: minIntEnv("SCAN_MAX_FREE_SCANS_PER_MONTH", 10, 10),
-  MAX_INPUT_SIZE_CHARS: intEnv("SCAN_MAX_INPUT_SIZE_CHARS", 50000),
+  MAX_INPUT_SIZE_CHARS: intEnv("SCAN_MAX_INPUT_SIZE_CHARS", 300000),
   MIN_INPUT_SIZE_CHARS: intEnv("SCAN_MIN_INPUT_SIZE_CHARS", 5),
+  // Largest amount of code sent for AI deep analysis in one scan. Pasted input beyond this
+  // is still fully covered by static rules, but the verdict is capped at "needs review".
+  AI_DEEP_SCAN_BUDGET_CHARS: intEnv("SCAN_AI_BUDGET_CHARS", 150000),
   MAX_API_CALLS_PER_DAY: intEnv("SCAN_MAX_API_CALLS_PER_DAY", 5000),
   CACHE_TTL_SECONDS: intEnv("SCAN_CACHE_TTL_SECONDS", 3600),
   ANTHROPIC_TIMEOUT_MS: Math.min(intEnv("ANTHROPIC_TIMEOUT_MS", 60000), 60000),
@@ -734,6 +737,34 @@ function saveToCache(hash, result) {
     const oldest = [...state.cache.entries()].sort((a,b) => a[1].expiresAt - b[1].expiresAt).slice(0, 500);
     for (const [k] of oldest) state.cache.delete(k);
   }
+}
+
+// When deep analysis could not cover the entire source, a clean result must not be
+// reported as "safe" — the customer still gets a clear verdict, capped at "needs review",
+// with the coverage numbers attached so the basis of the verdict is transparent.
+function applyCoverageVerdictCap(result, coverage) {
+  if (!coverage || coverage.complete) return result;
+  const capped = { ...result };
+  capped.scan_coverage = {
+    complete: false,
+    ...(Number.isFinite(coverage.files_scanned) ? { files_scanned: coverage.files_scanned } : {}),
+    ...(Number.isFinite(coverage.files_total) ? { files_total: coverage.files_total } : {}),
+    ...(Number.isFinite(coverage.chars_scanned) ? { chars_scanned: coverage.chars_scanned } : {}),
+    ...(Number.isFinite(coverage.chars_total) ? { chars_total: coverage.chars_total } : {}),
+    note: "The highest-risk files were prioritized for deep analysis.",
+  };
+  if (capped.status === "STATUS_SAFE") {
+    capped.status = "STATUS_MODERATE";
+    capped.threat_score = Math.max(Number(capped.threat_score) || 0, 20);
+    capped.confidence = Math.min(Number(capped.confidence) || 0.6, 0.6);
+    capped.coverage_capped = true;
+    const scannedNote = Number.isFinite(coverage.files_scanned) && Number.isFinite(coverage.files_total)
+      ? `the ${coverage.files_scanned} highest-risk files out of ${coverage.files_total} relevant files`
+      : "the highest-risk portion of the code";
+    capped.summary = `${String(capped.summary || "").trim()} Deep analysis covered ${scannedNote} and found no threats, but because the source is too large for complete coverage the verdict is capped at "needs review" rather than "safe".`.trim();
+    capped.recommendation = "No threats were found in the scanned high-risk files. For a definitive 'safe' verdict, scan a specific subdirectory, file, or smaller package version that allows complete coverage.";
+  }
+  return capped;
 }
 
 function publicScanResponse(result, adminBypass, extra = {}) {
@@ -1935,7 +1966,7 @@ Legacy grouping reference, informational only. Map any non-canonical terms to th
     • Activating on language IDs or file patterns listed in package.json contributes
 
     GitHub Actions workflows:
-    • Using GITHUB_TOKEN or ${{ secrets.X }} for the workflow's stated automation
+    • Using GITHUB_TOKEN or \${{ secrets.X }} for the workflow's stated automation
     • actions/checkout, cache, upload-artifact, download-artifact, setup-node/python/java/go
     • Publishing packages, deploying to cloud when that is explicitly the workflow's purpose
     • Running linters, test suites, build tools
@@ -1963,7 +1994,7 @@ Legacy grouping reference, informational only. Map any non-canonical terms to th
      are EXPECTED in MCP/extension/CI contexts for documented operations.
    - Flag them ONLY if they move SENSITIVE DATA (tokens, keys, wallet seeds, credentials, PII)
      to an UNEXPECTED DESTINATION (external URL not in docs, unknown IP, hidden temp path).
-   - Running `git commit` in a repo-manager MCP, `curl` to a documented API, `tar` to
+   - Running 'git commit' in a repo-manager MCP, 'curl' to a documented API, 'tar' to
      compress a user-directed archive — these are NOT threats.
 9. Look for input-dependent activation and sandbox evasion:
    - Code that activates risky behavior only when the user asks about crypto, wallets, keys, production, payroll, invoices, backups, tokens, or other rare inputs is suspicious.
@@ -2181,6 +2212,15 @@ async function handler(req, res) {
   if (code.length < CONFIG.MIN_INPUT_SIZE_CHARS)
     return res.status(200).json({ status:"STATUS_AMBIGUOUS", threat_score:0, confidence:0, summary:"Input too short.", threats:[], safe_patterns_noted:[], recommendation:"Paste a longer code sample." });
 
+  // Coverage tracking: resolved sources report their own coverage; oversized pasted code
+  // gets AI deep analysis on the first part while static rules still cover all of it.
+  let sourceCoverage = resolvedSource?.coverage || null;
+  let aiCode = code;
+  if (!resolvedSource && code.length > CONFIG.AI_DEEP_SCAN_BUDGET_CHARS) {
+    aiCode = code.slice(0, CONFIG.AI_DEEP_SCAN_BUDGET_CHARS);
+    sourceCoverage = { complete: false, chars_scanned: aiCode.length, chars_total: code.length };
+  }
+
   const adminBypass = await isAdminBypassRequest(req);
   const skipPersist = String(getHeader(req, "x-cg-skip-persist") || "").trim() === "1";
   const skipCache = adminBypass && String(getHeader(req, "x-cg-skip-cache") || "").trim() === "1";
@@ -2275,6 +2315,8 @@ async function handler(req, res) {
       source_url: resolvedSource.source_url,
       source_ref: resolvedSource.source_ref,
       files_scanned: resolvedSource.files.length,
+      files_total: Number.isFinite(resolvedSource.coverage?.files_total) ? resolvedSource.coverage.files_total : resolvedSource.files.length,
+      coverage_complete: resolvedSource.coverage ? Boolean(resolvedSource.coverage.complete) : true,
     },
   } : {};
   const scanMetadataResponse = {
@@ -2299,6 +2341,7 @@ async function handler(req, res) {
     let result = staticFallbackResult(staticResult, "ANTHROPIC_API_KEY missing");
     result = await attachDynamicSandbox(scope, code, result, codeHash);
     result = applyOrchestration(result, staticResult, scope);
+    result = applyCoverageVerdictCap(result, sourceCoverage);
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, persistContext);
     // Do NOT cache fallback results — next request should get a real AI scan
@@ -2311,7 +2354,7 @@ async function handler(req, res) {
   try {
     state.apiCallsToday++;
 
-    const data = await analyzeWithAnthropic(apiKey, code, scope, controller.signal);
+    const data = await analyzeWithAnthropic(apiKey, aiCode, scope, controller.signal);
 
     let result;
     try {
@@ -2320,7 +2363,7 @@ async function handler(req, res) {
       if (needsDeeperReview(result)) {
         try {
           state.apiCallsToday++;
-          const deepData = await analyzeWithAnthropic(apiKey, code, scope, controller.signal, true);
+          const deepData = await analyzeWithAnthropic(apiKey, aiCode, scope, controller.signal, true);
           result = normalizeResult(extractAnthropicScanReport(deepData));
           result.deep_review_performed = true;
         } catch (deepErr) {
@@ -2344,6 +2387,7 @@ async function handler(req, res) {
     result = mergeStaticThreats(result, staticResult);
     result = await attachDynamicSandbox(scope, code, result, codeHash);
     result = applyOrchestration(result, staticResult, scope);
+    result = applyCoverageVerdictCap(result, sourceCoverage);
 
     if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
     if (!skipPersist) await saveSiteScan(scope, result, persistContext);
@@ -2356,6 +2400,7 @@ async function handler(req, res) {
       let result = staticFallbackResult(staticResult, "deep behavior review timed out");
       result = await attachDynamicSandbox(scope, code, result, codeHash);
       result = applyOrchestration(result, staticResult, scope);
+      result = applyCoverageVerdictCap(result, sourceCoverage);
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       // Do NOT cache timeout results — Anthropic may be back on next request
@@ -2366,6 +2411,7 @@ async function handler(req, res) {
       let result = staticFallbackResult(staticResult, err.message);
       result = await attachDynamicSandbox(scope, code, result, codeHash);
       result = applyOrchestration(result, staticResult, scope);
+      result = applyCoverageVerdictCap(result, sourceCoverage);
       if (!usingSupabaseUsage && !adminBypass) incrementMonthlyQuota(ip);
       if (!skipPersist) await saveSiteScan(scope, result, persistContext);
       // Do NOT cache Anthropic API error results — next request should retry the AI scan
@@ -2396,5 +2442,6 @@ if (process.env.NODE_ENV === "test") {
     buildOrchestrationReport,
     applyOrchestration,
     needsDeeperReview,
+    applyCoverageVerdictCap,
   };
 }
