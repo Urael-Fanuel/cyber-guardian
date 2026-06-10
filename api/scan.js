@@ -483,7 +483,10 @@ async function isAdminBypassRequest(req) {
     hashCode(configuredSecret),
     hashCode(providedSecret),
   ]);
-  return configuredHash === providedHash || isAdminToken(req);
+  const bufA = Buffer.from(configuredHash, "hex");
+  const bufB = Buffer.from(providedHash, "hex");
+  const hashMatch = bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
+  return hashMatch || isAdminToken(req);
 }
 
 function hasAdminBypassHeader(req) {
@@ -752,7 +755,7 @@ function setCors(res, origin) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CG-Admin-Secret, X-CG-Admin-Token, X-CG-Account-Token, X-CG-Skip-Cache");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CG-Admin-Token, X-CG-Account-Token, X-CG-Skip-Cache");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Content-Type", "application/json");
 }

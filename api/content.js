@@ -23,7 +23,7 @@ function setCors(req, res) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
   }
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CG-Admin-Secret, X-CG-Admin-Token");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CG-Admin-Token");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Content-Type", "application/json");
 }
@@ -38,9 +38,17 @@ function isAllowedOrigin(req) {
   return !origin || ALLOWED_ORIGINS.includes(origin);
 }
 
+function timingSafeStringEqual(a, b) {
+  const key = crypto.randomBytes(32);
+  const hmacA = crypto.createHmac("sha256", key).update(String(a)).digest();
+  const hmacB = crypto.createHmac("sha256", key).update(String(b)).digest();
+  return crypto.timingSafeEqual(hmacA, hmacB);
+}
+
 function isAdmin(req) {
   const provided = String(getHeader(req, "x-cg-admin-secret") || "").trim();
-  if (ADMIN_BYPASS_SECRET.trim() && provided && provided === ADMIN_BYPASS_SECRET.trim()) return true;
+  const configured = ADMIN_BYPASS_SECRET.trim();
+  if (configured && provided && timingSafeStringEqual(provided, configured)) return true;
   return isAdminToken(req);
 }
 
