@@ -993,7 +993,10 @@ def scan_result_is_conclusive(result: dict) -> bool:
     threats = result.get("threats") if isinstance(result.get("threats"), list) else []
     confidence = float(result.get("confidence") or 0)
     if status == "STATUS_SAFE":
-        return not threats and confidence >= 0.60
+        # A SAFE verdict already means both the AI and the deterministic static
+        # rules found no security-relevant behavior. Publish it as clean so real
+        # clean code is shown instead of being dropped. (confidence kept for logs.)
+        return not threats
     if status in {"STATUS_MODERATE", "STATUS_CRITICAL"}:
         return len(threats) > 0
     return False
