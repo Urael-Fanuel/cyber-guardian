@@ -738,10 +738,16 @@ function saveToCache(hash, result) {
 
 function publicScanResponse(result, adminBypass, extra = {}) {
   const publicResult = normalizeResult(JSON.parse(JSON.stringify(result || {})));
-  const behaviorReview = normalizeDynamicSandboxEvidence(publicResult.dynamic_sandbox || result?.behavior_review);
+  const rawReview = normalizeDynamicSandboxEvidence(publicResult.dynamic_sandbox || result?.behavior_review);
   delete publicResult.analysis_orchestrator;
   delete publicResult.internal_orchestrator;
   delete publicResult.dynamic_sandbox;
+  // Translate internal sandbox config states into user-facing { ran: false }
+  // so users never see implementation details like "disabled" or "not_configured"
+  const internalOnly = new Set(["disabled", "not_configured"]);
+  const behaviorReview = (!rawReview.status || internalOnly.has(rawReview.status))
+    ? { ran: false }
+    : { ...rawReview, ran: rawReview.status === "completed" };
   publicResult.behavior_review = behaviorReview;
   return {
     ...publicResult,
