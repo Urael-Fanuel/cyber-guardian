@@ -652,7 +652,7 @@ footer a:hover { color: var(--cyan); }
       <p class="hero-question" data-i18n="hero_question">Has your code been scanned by Cyber Guardian Scan?</p>
       <div class="hero-actions">
         <a class="hero-cta primary" href="#scanner" data-i18n="hero_primary_cta">Scan Code Now</a>
-        <a class="hero-cta secondary" href="/dashboard.html" data-i18n="hero_secondary_cta">Search Verified Tools</a>
+        <a class="hero-cta secondary" href="#scanner" data-i18n="hero_secondary_cta">Search Verified Tools</a>
       </div>
       <div class="hero-proof" aria-label="Cyber Guardian Scan audiences">
         <span class="proof-pill" data-i18n="proof_solo">Solo developers</span>
@@ -686,7 +686,7 @@ footer a:hover { color: var(--cyan); }
       <div class="verified-badge">
         <span class="verified-badge-mark" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
         <div>
-          <div class="verified-badge-title">Verified by Cyber Guardian Scan™</div>
+          <div class="verified-badge-title" data-i18n="result_verified_title">Verified by Cyber Guardian Scan™</div>
           <div class="verified-badge-note" data-i18n="verified_badge_note">This exact version was scanned. Rescan is required if the code changes.</div>
         </div>
         <div class="verified-badge-result">
@@ -794,10 +794,10 @@ footer a:hover { color: var(--cyan); }
     </div>
 
     <div class="cg-search" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
-      <label class="lbl" for="cg-search-input">Already scanned? Check the history before you scan</label>
+      <label class="lbl" for="cg-search-input" data-i18n="search_label">Already scanned? Check the history before you scan</label>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
-        <input id="cg-search-input" type="text" placeholder="Paste code, or type a repo name / GitHub URL" style="flex:1;min-width:220px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.25);color:inherit;font:inherit" onkeydown="if(event.key==='Enter'){event.preventDefault();cgCodeSearch();}" />
-        <button class="scan-btn" id="cg-search-btn" onclick="cgCodeSearch()" style="padding:10px 18px">🔎 Check history</button>
+        <input id="cg-search-input" type="text" data-i18n-placeholder="search_placeholder" placeholder="Paste code, or type a repo name / GitHub URL" style="flex:1;min-width:220px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.25);color:inherit;font:inherit" onkeydown="if(event.key==='Enter'){event.preventDefault();cgCodeSearch();}" />
+        <button class="scan-btn" id="cg-search-btn" onclick="cgCodeSearch()" style="padding:10px 18px" data-i18n="search_btn">🔎 Check history</button>
       </div>
       <div id="cg-search-results" style="margin-top:10px;font-size:14px"></div>
     </div>
@@ -2130,13 +2130,13 @@ function renderResult(r) {
     <div class="verified-badge scan-result-verification">
       <span class="verified-badge-mark" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
       <div>
-        <div class="verified-badge-title">Verified by Cyber Guardian Scan&trade;</div>
-        <div class="verified-badge-note">This exact version was scanned. Rescan is required if the code changes.</div>
+        <div class="verified-badge-title">${t('result_verified_title')}</div>
+        <div class="verified-badge-note">${t('verified_badge_note')}</div>
       </div>
       <div class="verified-badge-result">
-        <div class="verified-badge-score-label">Security Score</div>
+        <div class="verified-badge-score-label">${t('verified_badge_score_label')}</div>
         <div class="verified-badge-score">${score}/100</div>
-        <div class="verified-badge-status">Safe for Install</div>
+        <div class="verified-badge-status">${t('hero_status_safe')}</div>
       </div>
     </div>`;
   } else if (verificationLevel === 'no_issues_detected' && score >= 96) {
@@ -2144,13 +2144,13 @@ function renderResult(r) {
     <div class="verified-badge scan-result-verification">
       <span class="verified-badge-mark" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
       <div>
-        <div class="verified-badge-title">Clean — passed automated security review</div>
-        <div class="verified-badge-note">Static and AI analysis found no security issues. A deeper behavior review can add the Verified badge.</div>
+        <div class="verified-badge-title">${t('result_clean_title')}</div>
+        <div class="verified-badge-note">${t('result_clean_note')}</div>
       </div>
       <div class="verified-badge-result">
-        <div class="verified-badge-score-label">Security Score</div>
+        <div class="verified-badge-score-label">${t('verified_badge_score_label')}</div>
         <div class="verified-badge-score">${score}/100</div>
-        <div class="verified-badge-status">Safe to Install</div>
+        <div class="verified-badge-status">${t('result_status_safe_to_install')}</div>
       </div>
     </div>`;
   }
@@ -2310,8 +2310,8 @@ async function cgCodeSearch() {
   const out = document.getElementById('cg-search-results');
   if (!inputEl || !out) return;
   const raw = (inputEl.value || '').trim();
-  if (raw.length < 3) { out.innerHTML = '<span style="opacity:.7">Enter a code snippet, repo name, or GitHub URL (at least 3 characters).</span>'; return; }
-  out.innerHTML = '<span style="opacity:.7">Searching history…</span>';
+  if (raw.length < 3) { out.innerHTML = '<span style="opacity:.7">' + escHtml(t('search_min')) + '</span>'; return; }
+  out.innerHTML = '<span style="opacity:.7">' + escHtml(t('search_loading')) + '</span>';
   try {
     const looksLikeCode = /\n/.test(raw) || raw.length > 200 || /[;{}=()]/.test(raw);
     let qs;
@@ -2322,18 +2322,18 @@ async function cgCodeSearch() {
     }
     const res = await fetch('/api/site-stats?mode=search&' + qs);
     const data = await res.json();
-    if (!res.ok) { out.innerHTML = '<span style="opacity:.7">' + escHtml(data.error || 'Search is unavailable right now.') + '</span>'; return; }
+    if (!res.ok) { out.innerHTML = '<span style="opacity:.7">' + escHtml(data.error || t('search_unavailable')) + '</span>'; return; }
     const matches = Array.isArray(data.matches) ? data.matches : [];
-    if (!matches.length) { out.innerHTML = '<span style="opacity:.8">No previous scan found for this. Scan it now to get a verdict.</span>'; return; }
+    if (!matches.length) { out.innerHTML = '<span style="opacity:.8">' + escHtml(t('search_none')) + '</span>'; return; }
     out.innerHTML = matches.slice(0, 5).map(function(m) {
-      const label = escHtml(m.source_name || m.source_url || ('fingerprint ' + String(m.code_fingerprint || '').slice(0, 12)));
-      const badge = m.verified_by_cyber_guardian ? '🥇 Verified' : (m.decision === 'safe' ? '🟢 Clean' : (m.decision === 'blocked' ? '🔴 Do not install' : '🟠 Review'));
+      const label = escHtml(m.source_name || m.source_url || (t('search_fp') + ' ' + String(m.code_fingerprint || '').slice(0, 12)));
+      const badge = m.verified_by_cyber_guardian ? t('badge_verified') : (m.decision === 'safe' ? t('badge_clean') : (m.decision === 'blocked' ? t('badge_block') : t('badge_review')));
       const when = m.scanned_at ? new Date(m.scanned_at).toLocaleDateString() : '';
-      const link = /^https?:\/\//i.test(String(m.source_url || '')) ? ' · <a href="' + escHtml(m.source_url) + '" target="_blank" rel="noopener noreferrer">source</a>' : '';
-      return '<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><strong>' + badge + '</strong> · ' + label + ' · <span style="opacity:.7">score ' + Number(m.security_score || 0) + '/100 · ' + escHtml(when) + '</span>' + link + '</div>';
+      const link = /^https?:\/\//i.test(String(m.source_url || '')) ? ' · <a href="' + escHtml(m.source_url) + '" target="_blank" rel="noopener noreferrer">' + escHtml(t('search_source')) + '</a>' : '';
+      return '<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><strong>' + escHtml(badge) + '</strong> · ' + label + ' · <span style="opacity:.7">' + escHtml(t('search_score_label')) + ' ' + Number(m.security_score || 0) + '/100 · ' + escHtml(when) + '</span>' + link + '</div>';
     }).join('');
   } catch (e) {
-    out.innerHTML = '<span style="opacity:.7">Search failed. Try again.</span>';
+    out.innerHTML = '<span style="opacity:.7">' + escHtml(t('search_failed')) + '</span>';
   }
 }
 
