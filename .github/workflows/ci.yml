@@ -1,0 +1,39 @@
+# .github/workflows/ci.yml
+# ══════════════════════════════════════════════════════════════
+#  Cyber-Guardian — CI: syntax check + security tests
+#  Runs on every push to master and on every pull request.
+#  No secrets required — tests use stubs for Supabase / Anthropic.
+# ══════════════════════════════════════════════════════════════
+
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    name: Syntax check + security tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Syntax check all API files
+        run: npm run check
+
+      - name: Run security tests
+        run: npm test
