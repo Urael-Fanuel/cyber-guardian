@@ -1512,9 +1512,13 @@ function alternativesHtml(scan) {
     ${items.map(item => {
       const label = item.source_name || item.code_purpose || scopeLabel(scan.scope);
       const sourceUrl = /^https?:\/\//i.test(String(item.source_url || '')) ? item.source_url : '';
+      // Show the security score (100 = good). Older rows carry only threat_score (0 = good).
+      const secScore = Number.isFinite(Number(item.security_score)) && Number(item.security_score) > 0
+        ? Math.round(Number(item.security_score))
+        : Math.max(0, Math.min(100, 100 - Math.round(Number(item.threat_score || 0))));
       const meta = [
         item.decision === 'safe' ? t('safe_lbl') : t('review_lbl'),
-        `${t('score')}: ${item.threat_score}/100`,
+        `${t('score')}: ${secScore}/100`,
         item.code_purpose,
       ].filter(Boolean).join(' · ');
       return `<div class="alt-item">

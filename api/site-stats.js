@@ -435,6 +435,7 @@ function saferAlternatives(scan, scans) {
     capabilities: arrayValue(candidate.capabilities).slice(0, 4),
     decision: classifyScan(candidate),
     threat_score: candidate.threat_score || 0,
+    security_score: securityScoreForResult(candidate, classifyScan(candidate)),
     scanned_at: candidate.scanned_at,
     verification_status: 'historical_match_only',
     requires_fresh_rescan: true,

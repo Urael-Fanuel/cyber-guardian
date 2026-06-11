@@ -1954,6 +1954,15 @@ function alternativeIsInstallOk(result) {
   return result?.status === 'STATUS_SAFE' || decision === 'install_ok' || decision === 'safe';
 }
 
+// Display security score (100 = good). Older API rows may carry only threat_score
+// (0 = good), so fall back to the inverse — never show a raw threat score as "score".
+function displaySecurityScore(obj) {
+  const sec = Number(obj?.security_score);
+  if (Number.isFinite(sec) && sec > 0) return Math.max(0, Math.min(100, Math.round(sec)));
+  const threat = Number(obj?.threat_score || 0);
+  return Math.max(0, Math.min(100, 100 - Math.round(threat)));
+}
+
 function renderAlternativeResult(item) {
   const sourceUrl = /^https?:\/\//i.test(String(item?.source_url || '')) ? item.source_url : '';
   const label = item?.source_name || item?.code_purpose || t('alternative_generic_name');
@@ -1962,7 +1971,7 @@ function renderAlternativeResult(item) {
     <div class="alternative-title">${t('alternative_candidate_title')}</div>
     <div>${escHtml(label)}</div>
     ${item?.code_purpose ? `<div class="alternative-meta">${escHtml(item.code_purpose)}</div>` : ''}
-    <div class="alternative-meta">${t('alternative_score_label')}: ${Number(item?.threat_score || 0)}/100${caps.length ? ` · ${caps.map(escHtml).join(' · ')}` : ''}</div>
+    <div class="alternative-meta">${t('alternative_score_label')}: ${displaySecurityScore(item)}/100${caps.length ? ` · ${caps.map(escHtml).join(' · ')}` : ''}</div>
     <div class="alternative-meta"><strong>${t('alternative_rescan_required_title')}</strong> ${t('alternative_rescan_required_desc')}</div>
     <div class="alternative-actions">
       ${sourceUrl ? `<a class="alternative-link" href="${escHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${t('alternative_open_source')}</a>` : ''}
@@ -1980,7 +1989,7 @@ function renderAlternativeVerification(result, item, source) {
   const files = Array.isArray(source?.files) && source.files.length
     ? `<div class="alternative-meta">${t('alternative_verified_files')}: ${source.files.slice(0, 4).map(escHtml).join(' · ')}</div>`
     : '';
-  const score = Number(result?.threat_score || 0);
+  const score = displaySecurityScore(result);
   return `<div class="alternative-verification ${isOk ? 'safe' : 'risk'}">
     <div class="alternative-title">${escHtml(title)}</div>
     <div>${escHtml(desc)}</div>
