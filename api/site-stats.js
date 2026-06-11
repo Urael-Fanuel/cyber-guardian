@@ -444,6 +444,125 @@ function saferAlternatives(scan, scans) {
   }));
 }
 
+// ── Web-alternative search (mode=web_alternatives) ─────────────────────────
+// Searches GitHub/npm for tools with the same purpose as a flagged scan.
+// Search only — no AI calls. The frontend scans returned candidates via /api/scan.
+const WEB_ALT_TIMEOUT_MS = 8000;
+const webAltState = { cache: new Map() };
+const WEB_ALT_STOP_WORDS = new Set(['this', 'that', 'with', 'from', 'into', 'code', 'tool', 'tools', 'server', 'client', 'simple', 'basic', 'demo', 'example', 'test', 'using', 'based', 'support', 'supports', 'provides', 'allows', 'enables', 'package', 'extension', 'skill', 'various', 'different', 'multiple']);
+
+async function webAltFetchJson(targetUrl, headers = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WEB_ALT_TIMEOUT_MS);
+  try {
+    const response = await fetch(targetUrl, { headers, signal: controller.signal });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function webAltSearchTerms(raw) {
+  return String(raw || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length >= 3 && !WEB_ALT_STOP_WORDS.has(w))
+    .slice(0, 5);
+}
+
+function webAltScopeQualifier(scope) {
+  const value = String(scope || '').toLowerCase();
+  if (value === 'mcp') return 'mcp server';
+  if (value === 'skill') return 'ai skill';
+  if (value === 'extension') return 'vscode extension';
+  if (value === 'github_action') return 'github action';
+  return '';
+}
+
+async function webAltSearchGithub(terms, scope) {
+  const qualifier = webAltScopeQualifier(scope);
+  const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'Cyber-Guardian-Alternative-Search' };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+
+  // GitHub ANDs every search term — start specific, relax until results appear
+  const attempts = [terms.slice(0, 3), terms.slice(0, 2), terms.slice(0, 1)]
+    .map(set => [qualifier, ...set].filter(Boolean).join(' ').trim())
+    .filter((q, i, arr) => q && arr.indexOf(q) === i);
+
+  for (const attempt of attempts) {
+    const data = await webAltFetchJson(`https://api.github.com/search/repositories?q=${encodeURIComponent(attempt)}&sort=stars&order=desc&per_page=8`, headers);
+    const items = data && Array.isArray(data.items) ? data.items : [];
+    const results = items
+      .filter(repo => !repo.archived && !repo.fork)
+      .map(repo => ({
+        source_name: repo.full_name,
+        source_url: repo.html_url,
+        description: String(repo.description || '').slice(0, 160),
+        stars: Number(repo.stargazers_count || 0),
+        provider: 'github',
+      }));
+    if (results.length >= 2) return results;
+  }
+  return [];
+}
+
+async function webAltSearchNpm(terms) {
+  const data = await webAltFetchJson(`https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(terms.join(' '))}&size=8`);
+  if (!data || !Array.isArray(data.objects)) return [];
+  return data.objects.map(obj => ({
+    source_name: obj.package?.name || '',
+    source_url: obj.package?.links?.npm || `https://www.npmjs.com/package/${obj.package?.name || ''}`,
+    description: String(obj.package?.description || '').slice(0, 160),
+    stars: Math.round(Number(obj.score?.detail?.popularity || 0) * 1000),
+    provider: 'npm',
+  })).filter(item => item.source_name);
+}
+
+async function handleWebAlternatives(url, res) {
+  const scope = String(url.searchParams.get('scope') || 'mcp').slice(0, 30);
+  const purpose = String(url.searchParams.get('q') || '').slice(0, 300);
+  const excludeUrl = normalizedUrl(url.searchParams.get('exclude') || '');
+
+  const terms = webAltSearchTerms(purpose);
+  if (!terms.length) return res.status(200).json({ candidates: [], reason: 'no_terms' });
+
+  const cacheKey = `${scope}:${terms.join(' ')}`;
+  const cached = webAltState.cache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    const fresh = cached.candidates.filter(c => normalizedUrl(c.source_url) !== excludeUrl);
+    return res.status(200).json({ candidates: fresh.slice(0, 3), cached: true });
+  }
+
+  const isPackage = ['package', 'dependency'].includes(scope);
+  const [githubResults, npmResults] = await Promise.all([
+    webAltSearchGithub(terms, scope),
+    isPackage ? webAltSearchNpm(terms) : Promise.resolve([]),
+  ]);
+
+  const seen = new Set();
+  const candidates = [...githubResults, ...npmResults]
+    .filter(item => {
+      const key = normalizedUrl(item.source_url);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => b.stars - a.stars);
+
+  webAltState.cache.set(cacheKey, { candidates, expiresAt: Date.now() + 10 * 60 * 1000 });
+  if (webAltState.cache.size > 500) {
+    const oldest = [...webAltState.cache.entries()].sort((a, b) => a[1].expiresAt - b[1].expiresAt).slice(0, 250);
+    for (const [k] of oldest) webAltState.cache.delete(k);
+  }
+
+  const fresh = candidates.filter(c => normalizedUrl(c.source_url) !== excludeUrl);
+  return res.status(200).json({ candidates: fresh.slice(0, 3) });
+}
+
 module.exports = async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') {
@@ -456,6 +575,10 @@ module.exports = async function handler(req, res) {
   try {
     const url = getUrl(req);
     const mode = String(url.searchParams.get('mode') || 'stats').trim().toLowerCase();
+
+    if (mode === 'web_alternatives') {
+      return await handleWebAlternatives(url, res);
+    }
 
     if (mode === 'alternative_source') {
       try {

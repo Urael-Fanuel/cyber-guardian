@@ -2064,7 +2064,7 @@ async function cgWebAlternativeSearch(target) {
   target.innerHTML = altStatusBox('🔍 ' + t('alt_web_searching'));
   let candidates = [];
   try {
-    const res = await fetch(`/api/find-alternative?scope=${encodeURIComponent(currentScope)}&q=${encodeURIComponent(purpose)}&exclude=${encodeURIComponent(excludeUrl)}`);
+    const res = await fetch(`/api/site-stats?mode=web_alternatives&scope=${encodeURIComponent(currentScope)}&q=${encodeURIComponent(purpose)}&exclude=${encodeURIComponent(excludeUrl)}`);
     const data = await res.json().catch(() => ({}));
     candidates = Array.isArray(data.candidates) ? data.candidates : [];
   } catch {}
