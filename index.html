@@ -385,6 +385,7 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .error-box { padding: 24px; text-align: center; }
 .error-title { color: var(--red); font-family: var(--sans); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
 .error-msg { font-size: 11px; color: var(--text-dim); }
+.error-detail { margin-top: 10px; font-size: 9.5px; color: var(--text-dim); opacity: 0.6; font-family: var(--mono); overflow-wrap: anywhere; }
 .source-required-box { padding: 30px 24px; text-align: center; background: rgba(0,212,255,0.045); border-top: 1px solid rgba(0,212,255,0.28); }
 .source-required-icon { width: 48px; height: 48px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; color: var(--cyan); border: 1px solid rgba(0,212,255,0.42); border-radius: 8px; background: rgba(0,212,255,0.08); }
 .source-required-icon svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -1558,12 +1559,27 @@ async function accountSignIn() {
   if (!emailValue || !passwordValue) return setAccountMessage(t('account_missing_fields'), true);
   setAccountMessage(t('account_signing_in'));
   const { data, error } = await accountClient.auth.signInWithPassword({ email: emailValue, password: passwordValue });
-  if (error) return setAccountMessage(error.message || t('account_sign_in_failed'), true);
+  if (error) return setAccountMessage(friendlyAuthError(error, 'account_sign_in_failed'), true);
   accountSession = data?.session || null;
   setAccountRecoveryMode(false);
   password.value = '';
   await loadAccountStatus();
   setAccountMessage(t('account_plan_active'));
+}
+
+// Map raw auth-provider errors (English, technical) to friendly translated messages.
+// Unrecognized errors fall back to a generic translated message with the technical
+// detail in parentheses, so support can still diagnose.
+function friendlyAuthError(error, fallbackKey) {
+  const m = String(error?.message || '');
+  if (/invalid login credentials|invalid email or password/i.test(m)) return t('account_invalid_credentials');
+  if (/email not confirmed/i.test(m)) return t('account_email_not_confirmed');
+  if (/already.*registered|already.*exists|user.*exists|duplicate/i.test(m)) return t('account_already_registered');
+  if (/password.{0,30}(at least|too short|should be)/i.test(m)) return t('account_password_short');
+  if (/rate limit|too many requests/i.test(m)) return t('account_rate_limited');
+  if (/invalid.{0,10}email|unable to validate email/i.test(m)) return t('account_invalid_email');
+  if (/failed to fetch|networkerror|load failed/i.test(m)) return t('account_network_error');
+  return t(fallbackKey) + (m ? ' (' + m + ')' : '');
 }
 
 function accountRedirectUrl() {
@@ -1593,7 +1609,7 @@ async function accountSignUp() {
     options: { emailRedirectTo: accountRedirectUrl() }
   });
   if (accountLooksRegistered(data, error)) return setAccountMessage(t('account_email_exists'), true);
-  if (error) return setAccountMessage(error.message || t('account_create_failed'), true);
+  if (error) return setAccountMessage(friendlyAuthError(error, 'account_create_failed'), true);
   accountSession = data?.session || null;
   password.value = '';
   if (accountSession) {
@@ -1617,7 +1633,7 @@ async function accountResetPassword() {
   const { error } = await accountClient.auth.resetPasswordForEmail(emailValue, {
     redirectTo: accountRedirectUrl()
   });
-  if (error) return setAccountMessage(error.message || t('account_reset_failed'), true);
+  if (error) return setAccountMessage(friendlyAuthError(error, 'account_reset_failed'), true);
   setAccountMessage(t('account_reset_sent'));
 }
 
@@ -1628,7 +1644,7 @@ async function accountUpdatePassword() {
   if (passwordValue.length < 8) return setAccountMessage(t('account_password_short'), true);
   setAccountMessage(t('account_updating_password'));
   const { error } = await accountClient.auth.updateUser({ password: passwordValue });
-  if (error) return setAccountMessage(error.message || t('account_update_password_failed'), true);
+  if (error) return setAccountMessage(friendlyAuthError(error, 'account_update_password_failed'), true);
   password.value = '';
   setAccountRecoveryMode(false);
   await loadAccountStatus();
@@ -1850,7 +1866,8 @@ async function runScan() {
     btn.innerHTML = '▶ &nbsp;<span>' + t('btn_scan_again') + '</span>';
     res.innerHTML = `<div class="error-box">
       <div class="error-title">⚠ ${t('error_title')}</div>
-      <div class="error-msg">${escHtml(err.message)}<br><br>${t('error_msg')}</div>
+      <div class="error-msg">${t('error_msg')}</div>
+      ${err.message ? `<div class="error-detail">${escHtml(err.message)}</div>` : ''}
     </div>`;
     return;
   }

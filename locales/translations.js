@@ -4309,6 +4309,75 @@ Object.entries(INPUT_MODE_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const ACCOUNT_ERROR_COPY = {
+  en: {
+    account_status_failed: "We could not check your account right now. Scanning still works — try again in a moment.",
+    account_invalid_credentials: "Email or password is incorrect. Check the details and try again.",
+    account_email_not_confirmed: "Your email is not confirmed yet. Check your inbox for the confirmation link.",
+    account_already_registered: "This email is already registered. Use Sign in, or reset your password.",
+    account_rate_limited: "Too many attempts. Wait a minute and try again.",
+    account_invalid_email: "This email address does not look valid. Check it and try again.",
+    account_network_error: "Connection problem. Check your internet and try again.",
+  },
+  he: {
+    account_status_failed: "לא הצלחנו לבדוק את מצב החשבון כרגע. הסריקה עדיין עובדת — נסו שוב בעוד רגע.",
+    account_invalid_credentials: "האימייל או הסיסמה שגויים. בדקו את הפרטים ונסו שוב.",
+    account_email_not_confirmed: "האימייל עדיין לא אומת. בדקו את תיבת הדואר וחפשו את קישור האימות.",
+    account_already_registered: "האימייל הזה כבר רשום. עברו ל'כניסה', או אפסו סיסמה.",
+    account_rate_limited: "יותר מדי ניסיונות. המתינו דקה ונסו שוב.",
+    account_invalid_email: "כתובת האימייל לא נראית תקינה. בדקו אותה ונסו שוב.",
+    account_network_error: "בעיית חיבור. בדקו את האינטרנט ונסו שוב.",
+  },
+  de: {
+    account_status_failed: "Kontostatus konnte gerade nicht geprueft werden. Scannen funktioniert weiterhin — versuchen Sie es gleich erneut.",
+    account_invalid_credentials: "E-Mail oder Passwort ist falsch. Pruefen Sie die Angaben und versuchen Sie es erneut.",
+    account_email_not_confirmed: "Ihre E-Mail ist noch nicht bestaetigt. Pruefen Sie Ihren Posteingang auf den Bestaetigungslink.",
+    account_already_registered: "Diese E-Mail ist bereits registriert. Nutzen Sie die Anmeldung oder setzen Sie das Passwort zurueck.",
+    account_rate_limited: "Zu viele Versuche. Warten Sie eine Minute und versuchen Sie es erneut.",
+    account_invalid_email: "Diese E-Mail-Adresse scheint ungueltig. Pruefen Sie sie und versuchen Sie es erneut.",
+    account_network_error: "Verbindungsproblem. Pruefen Sie Ihr Internet und versuchen Sie es erneut.",
+  },
+  ja: {
+    account_status_failed: "アカウント状態を確認できませんでした。スキャンは引き続き利用できます。しばらくしてからもう一度お試しください。",
+    account_invalid_credentials: "メールアドレスまたはパスワードが正しくありません。確認してもう一度お試しください。",
+    account_email_not_confirmed: "メールアドレスがまだ確認されていません。受信トレイで確認リンクをご確認ください。",
+    account_already_registered: "このメールアドレスは既に登録されています。サインインするか、パスワードをリセットしてください。",
+    account_rate_limited: "試行回数が多すぎます。1分待ってからもう一度お試しください。",
+    account_invalid_email: "このメールアドレスは無効のようです。確認してもう一度お試しください。",
+    account_network_error: "接続に問題があります。インターネットを確認してもう一度お試しください。",
+  },
+  ko: {
+    account_status_failed: "지금은 계정 상태를 확인할 수 없습니다. 스캔은 계속 사용할 수 있습니다. 잠시 후 다시 시도하세요.",
+    account_invalid_credentials: "이메일 또는 비밀번호가 올바르지 않습니다. 확인 후 다시 시도하세요.",
+    account_email_not_confirmed: "이메일이 아직 확인되지 않았습니다. 받은편지함에서 확인 링크를 확인하세요.",
+    account_already_registered: "이 이메일은 이미 등록되어 있습니다. 로그인하거나 비밀번호를 재설정하세요.",
+    account_rate_limited: "시도 횟수가 너무 많습니다. 1분 후 다시 시도하세요.",
+    account_invalid_email: "이 이메일 주소가 유효하지 않은 것 같습니다. 확인 후 다시 시도하세요.",
+    account_network_error: "연결 문제가 발생했습니다. 인터넷을 확인하고 다시 시도하세요.",
+  },
+  fr: {
+    account_status_failed: "Impossible de verifier votre compte pour le moment. Le scan fonctionne toujours — reessayez dans un instant.",
+    account_invalid_credentials: "E-mail ou mot de passe incorrect. Verifiez les informations et reessayez.",
+    account_email_not_confirmed: "Votre e-mail n'est pas encore confirme. Verifiez votre boite de reception pour le lien de confirmation.",
+    account_already_registered: "Cet e-mail est deja enregistre. Utilisez la connexion ou reinitialisez votre mot de passe.",
+    account_rate_limited: "Trop de tentatives. Attendez une minute et reessayez.",
+    account_invalid_email: "Cette adresse e-mail ne semble pas valide. Verifiez-la et reessayez.",
+    account_network_error: "Probleme de connexion. Verifiez votre internet et reessayez.",
+  },
+  pt: {
+    account_status_failed: "Nao foi possivel verificar sua conta agora. O scan continua funcionando — tente novamente em instantes.",
+    account_invalid_credentials: "E-mail ou senha incorretos. Verifique os dados e tente novamente.",
+    account_email_not_confirmed: "Seu e-mail ainda nao foi confirmado. Verifique sua caixa de entrada pelo link de confirmacao.",
+    account_already_registered: "Este e-mail ja esta registrado. Use Entrar ou redefina sua senha.",
+    account_rate_limited: "Muitas tentativas. Aguarde um minuto e tente novamente.",
+    account_invalid_email: "Este endereco de e-mail nao parece valido. Verifique e tente novamente.",
+    account_network_error: "Problema de conexao. Verifique sua internet e tente novamente.",
+  },
+};
+Object.entries(ACCOUNT_ERROR_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const SECTION_TOGGLE_COPY = {
   en: { section_show_more: "▾ Show more", section_show_less: "▴ Show less" },
   he: { section_show_more: "▾ הצג עוד", section_show_less: "▴ הצג פחות" },
