@@ -538,6 +538,10 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 @media(max-width:900px){ .seo-grid { grid-template-columns: repeat(2,1fr); } }
 @media(max-width:600px){ .seo-grid { grid-template-columns: 1fr; } .seo-hub { padding: 0 12px; } }
 
+.scanner-live-strip { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); font-size: 10.5px; color: var(--text-dim); font-family: var(--mono); letter-spacing: 0.3px; }
+.scanner-live-strip[hidden] { display: none; }
+.scanner-live-strip strong { font-weight: 800; }
+.sls-sep { opacity: 0.4; }
 .mini-live { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; }
 .mini-live-label { font-size: 10px; letter-spacing: 3px; color: var(--cyan); text-align: center; margin-bottom: 16px; }
 .mini-live-panel { border: 1px solid rgba(49,74,97,0.76); background: rgba(11,17,24,0.84); padding: 28px 24px; border-radius: 8px; box-shadow: var(--shadow); }
@@ -847,6 +851,15 @@ footer a:hover { color: var(--cyan); }
         <strong>Security Engine</strong>
         <span data-i18n="ai_badge_post">· 60 threat families · MCP-aware</span>
       </div>
+    </div>
+
+    <div class="scanner-live-strip" id="scanner-live-strip" hidden>
+      <span class="pulse" style="width:6px;height:6px"></span>
+      <span><strong id="sls-total" style="color:var(--cyan)">-</strong> <span data-i18n="mini_total">Total scans</span></span>
+      <span class="sls-sep">·</span>
+      <span><strong id="sls-safe" style="color:var(--green)">-</strong> <span data-i18n="mini_safe">Clean code</span></span>
+      <span class="sls-sep">·</span>
+      <span><strong id="sls-blocked" style="color:var(--red)">-</strong> <span data-i18n="mini_blocked">Do not install</span></span>
     </div>
 
     <div id="results"></div>
@@ -2659,6 +2672,13 @@ initAccountAuth();
     if (el('ms-threats')) el('ms-threats').textContent = (d.blocked ?? d.critical ?? 0).toLocaleString();
     if (el('ms-rate'))    el('ms-rate').textContent    = (d.review ?? d.moderate ?? 0).toLocaleString();
     if (el('ms-safe'))    el('ms-safe').textContent    = (d.safe || 0).toLocaleString();
+    // Social-proof strip inside the scanner card — same data, near the action
+    if ((d.total || 0) > 0 && el('scanner-live-strip')) {
+      el('sls-total').textContent   = (d.total || 0).toLocaleString();
+      el('sls-safe').textContent    = (d.safe || 0).toLocaleString();
+      el('sls-blocked').textContent = (d.blocked ?? d.critical ?? 0).toLocaleString();
+      el('scanner-live-strip').hidden = false;
+    }
   } catch(e) {}
 })();
 </script>
