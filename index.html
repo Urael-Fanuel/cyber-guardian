@@ -12,10 +12,11 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cyberguardianscan.com/">
 <meta property="og:site_name" content="Cyber Guardian Scan">
-<meta property="og:image" content="https://cyberguardianscan.com/og-image.png">
+<meta property="og:image" content="https://cyberguardianscan.com/assets/cyber-guardian-scan-logo.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="The First MCP Security Scanner">
 <meta name="twitter:description" content="10,000+ MCP servers. Zero audited. Scan before you connect.">
+<meta name="twitter:image" content="https://cyberguardianscan.com/assets/cyber-guardian-scan-logo.png">
 
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+Hebrew:wght@400;700&display=swap" rel="stylesheet">
 <link rel="preload" href="/api/site-stats?mode=verified" as="fetch" crossorigin>
@@ -389,6 +390,11 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .share-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 13px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: var(--text); font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.3px; cursor: pointer; transition: background 0.15s, border-color 0.15s; text-decoration: none; line-height: 1; }
 .share-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.28); }
 .share-btn.copied { color: var(--green); border-color: rgba(0,230,118,0.5); }
+.share-btn-main { border-color: rgba(0,230,118,0.5); color: var(--green); background: rgba(0,230,118,0.08); }
+.share-btn-main:hover { background: rgba(0,230,118,0.16); border-color: var(--green); }
+.share-btn-main svg { display: block; }
+.share-fallback-menu { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.share-fallback-menu[hidden] { display: none; }
 .quota-box { padding: 28px 24px; text-align: center; background: var(--orange-dim); border-top: 1px solid var(--border); }
 .quota-title { color: var(--orange); font-family: var(--sans); font-size: 18px; font-weight: 700; margin-bottom: 8px; }
 .quota-msg { font-size: 12px; color: var(--text-dim); margin-bottom: 14px; }
@@ -2227,13 +2233,19 @@ function renderResult(r) {
     const tweetEncoded = encodeURIComponent(tweetText);
     const sourceUrlEncoded = encodeURIComponent(_shareSourceUrl);
     const bodyText = t('share_pride_body').replace('{score}', score).replace('{source_name}', sourceName);
+    const shareIcon = '<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3" fill="currentColor"/><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="19" r="3" fill="currentColor"/><path d="M8.6 10.5 15.4 6.6M8.6 13.5l6.8 3.9" stroke="currentColor" stroke-width="2.2" fill="none"/></svg>';
     html += `<div class="share-pride-section">
       <div class="share-pride-title">🛡️ ${escHtml(t('share_pride_title'))}</div>
       <div class="share-pride-body">${bodyText}</div>
       <div class="share-pride-buttons">
-        <a class="share-btn" href="https://twitter.com/intent/tweet?text=${tweetEncoded}" target="_blank" rel="noopener noreferrer">𝕏 ${escHtml(t('share_btn_x'))}</a>
-        <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=${sourceUrlEncoded}" target="_blank" rel="noopener noreferrer">in ${escHtml(t('share_btn_linkedin'))}</a>
+        <button class="share-btn share-btn-main" data-share-text="${escHtml(tweetText)}" onclick="cgNativeShare(this)">${shareIcon} ${escHtml(t('share_btn_share'))}</button>
         <button class="share-btn" data-share-text="${escHtml(tweetText)}" onclick="cgCopyShareLink(this)">${escHtml(t('share_btn_copy'))}</button>
+      </div>
+      <div class="share-fallback-menu" hidden>
+        <a class="share-btn" href="https://twitter.com/intent/tweet?text=${tweetEncoded}" target="_blank" rel="noopener noreferrer">𝕏</a>
+        <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=${sourceUrlEncoded}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <a class="share-btn" href="https://www.facebook.com/sharer/sharer.php?u=${sourceUrlEncoded}&quote=${tweetEncoded}" target="_blank" rel="noopener noreferrer">Facebook</a>
+        <a class="share-btn" href="https://wa.me/?text=${tweetEncoded}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
       </div>
     </div>`;
   }
@@ -2368,6 +2380,17 @@ function copyReport(score, status, count) {
     b.textContent = '✓ ' + t('action_copy'); b.style.color = 'var(--green)';
     setTimeout(() => { b.textContent = o; b.style.color = ''; }, 1500);
   });
+}
+
+function cgNativeShare(btn) {
+  const text = btn.dataset.shareText;
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+    return;
+  }
+  const menu = btn.closest('.share-pride-section');
+  const fallback = menu ? menu.querySelector('.share-fallback-menu') : null;
+  if (fallback) fallback.hidden = !fallback.hidden;
 }
 
 function cgCopyShareLink(btn) {
