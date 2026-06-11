@@ -4378,6 +4378,61 @@ Object.entries(ACCOUNT_ERROR_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const WEB_ALTERNATIVE_COPY = {
+  en: {
+    alt_web_searching: "Searching the web for tools with the same purpose...",
+    alt_web_scanning: "Scanning candidate {i}/{n}: {name}...",
+    alt_web_found: "Verified clean alternative found",
+    alt_web_none: "No clean alternative passed the scan right now. Try again later — the database grows with every scan.",
+    alt_web_source_note: "Found via live web search and scanned just now",
+  },
+  he: {
+    alt_web_searching: "מחפש ברשת כלים עם אותה מטרה...",
+    alt_web_scanning: "סורק מועמד {i}/{n}: {name}...",
+    alt_web_found: "נמצא תחליף נקי ומאומת",
+    alt_web_none: "אף תחליף נקי לא עבר את הסריקה כרגע. נסו שוב מאוחר יותר — המאגר גדל עם כל סריקה.",
+    alt_web_source_note: "נמצא בחיפוש רשת חי ונסרק הרגע",
+  },
+  de: {
+    alt_web_searching: "Suche im Web nach Tools mit demselben Zweck...",
+    alt_web_scanning: "Scanne Kandidat {i}/{n}: {name}...",
+    alt_web_found: "Verifizierte saubere Alternative gefunden",
+    alt_web_none: "Derzeit hat keine saubere Alternative den Scan bestanden. Versuchen Sie es spaeter erneut — die Datenbank waechst mit jedem Scan.",
+    alt_web_source_note: "Per Live-Websuche gefunden und soeben gescannt",
+  },
+  ja: {
+    alt_web_searching: "同じ目的のツールをウェブで検索中...",
+    alt_web_scanning: "候補 {i}/{n} をスキャン中: {name}...",
+    alt_web_found: "検証済みのクリーンな代替が見つかりました",
+    alt_web_none: "現在、スキャンに合格したクリーンな代替はありません。データベースはスキャンごとに成長します。後でもう一度お試しください。",
+    alt_web_source_note: "ライブウェブ検索で発見し、たった今スキャンしました",
+  },
+  ko: {
+    alt_web_searching: "같은 목적의 도구를 웹에서 검색 중...",
+    alt_web_scanning: "후보 {i}/{n} 스캔 중: {name}...",
+    alt_web_found: "검증된 클린 대안을 찾았습니다",
+    alt_web_none: "현재 스캔을 통과한 클린 대안이 없습니다. 데이터베이스는 스캔할 때마다 성장합니다. 나중에 다시 시도하세요.",
+    alt_web_source_note: "실시간 웹 검색으로 발견되어 방금 스캔되었습니다",
+  },
+  fr: {
+    alt_web_searching: "Recherche sur le web d'outils ayant le meme objectif...",
+    alt_web_scanning: "Scan du candidat {i}/{n} : {name}...",
+    alt_web_found: "Alternative propre verifiee trouvee",
+    alt_web_none: "Aucune alternative propre n'a passe le scan pour le moment. Reessayez plus tard — la base grandit a chaque scan.",
+    alt_web_source_note: "Trouvee par recherche web en direct et scannee a l'instant",
+  },
+  pt: {
+    alt_web_searching: "Pesquisando na web ferramentas com o mesmo proposito...",
+    alt_web_scanning: "Escaneando candidato {i}/{n}: {name}...",
+    alt_web_found: "Alternativa limpa verificada encontrada",
+    alt_web_none: "Nenhuma alternativa limpa passou no scan agora. Tente novamente mais tarde — o banco cresce a cada scan.",
+    alt_web_source_note: "Encontrada por busca na web ao vivo e escaneada agora mesmo",
+  },
+};
+Object.entries(WEB_ALTERNATIVE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const SECTION_TOGGLE_COPY = {
   en: { section_show_more: "▾ Show more", section_show_less: "▴ Show less" },
   he: { section_show_more: "▾ הצג עוד", section_show_less: "▴ הצג פחות" },

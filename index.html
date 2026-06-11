@@ -2023,10 +2023,86 @@ async function findSaferAlternative() {
     const data = await response.json().catch(() => ({}));
     const item = Array.isArray(data.alternatives) ? data.alternatives[0] : null;
     lastAlternativeCandidate = item || null;
-    target.innerHTML = item ? renderAlternativeResult(item) : renderAlternativePaidCta();
+    if (item) { target.innerHTML = renderAlternativeResult(item); return; }
+    // Nothing relevant in our registry — search the public web and scan candidates live
+    await cgWebAlternativeSearch(target);
   } catch {
     target.innerHTML = renderAlternativePaidCta();
   }
+}
+
+function altStatusBox(text) {
+  return `<div class="alternative-box"><div class="alternative-title">${escHtml(text)}</div></div>`;
+}
+
+function cgApplyAccountFromScan(scanResult) {
+  if (!scanResult || !scanResult._account) return;
+  renderAccountPlan({
+    authenticated: true,
+    email: scanResult._account.email,
+    plan_name: scanResult._account.plan_name,
+    quota_remaining: scanResult._account.quota_remaining,
+    monthly_scan_limit: scanResult._account.quota_limit,
+  });
+  setAccountMessage(t('account_quota_updated'));
+  resetLocalQuota();
+}
+
+// Web-search fallback: understand what the flagged code does (the scan already
+// profiled it), search GitHub/npm for tools with the same purpose, scan the top
+// candidates one by one, and present the first verified-clean one as alternative.
+async function cgWebAlternativeSearch(target) {
+  const r = lastScanResult || {};
+  const profile = r.code_profile || {};
+  const purpose = [
+    profile.code_purpose || profile.purpose || '',
+    ...(Array.isArray(profile.use_case_tags) ? profile.use_case_tags : []),
+    ...(Array.isArray(profile.capabilities) ? profile.capabilities : []),
+  ].filter(Boolean).join(' ');
+  const excludeUrl = r._source_resolution?.source_url || r.scan_metadata?.source_url || '';
+
+  target.innerHTML = altStatusBox('🔍 ' + t('alt_web_searching'));
+  let candidates = [];
+  try {
+    const res = await fetch(`/api/find-alternative?scope=${encodeURIComponent(currentScope)}&q=${encodeURIComponent(purpose)}&exclude=${encodeURIComponent(excludeUrl)}`);
+    const data = await res.json().catch(() => ({}));
+    candidates = Array.isArray(data.candidates) ? data.candidates : [];
+  } catch {}
+  if (!candidates.length) { target.innerHTML = renderAlternativePaidCta(); return; }
+  if (!requireScanAccess()) return;
+
+  for (let i = 0; i < candidates.length; i++) {
+    const cand = candidates[i];
+    target.innerHTML = altStatusBox('🛡️ ' + t('alt_web_scanning').replace('{i}', i + 1).replace('{n}', candidates.length).replace('{name}', cand.source_name));
+    try {
+      const scanResponse = await fetch('/api/scan', {
+        method: 'POST',
+        headers: scanHeaders(),
+        body: JSON.stringify({ code: cand.source_url, scope: currentScope })
+      });
+      const scanResult = await scanResponse.json().catch(() => ({}));
+      if (scanResponse.status === 429) {
+        target.innerHTML = altStatusBox('⚠ ' + t('quota_exceeded_msg'));
+        return;
+      }
+      if (!scanResponse.ok) continue;
+      cgApplyAccountFromScan(scanResult);
+      if (window.cgTrack) cgTrack('web_alternative_candidate_scanned', { scope: currentScope, candidate: cand.source_name, status: scanResult.status || '' });
+      if (alternativeIsInstallOk(scanResult) && displaySecurityScore(scanResult) >= 80) {
+        lastAlternativeCandidate = { ...cand, scope: currentScope };
+        target.innerHTML = `<div class="alternative-box">
+          <div class="alternative-title">✅ ${t('alt_web_found')}</div>
+          <div><strong>${escHtml(cand.source_name)}</strong>${cand.description ? ' — ' + escHtml(cand.description) : ''}</div>
+          <div class="alternative-meta">${t('alternative_score_label')}: ${displaySecurityScore(scanResult)}/100 · ${t('alt_web_source_note')}</div>
+          <div class="alternative-actions">
+            <a class="alternative-link" href="${escHtml(cand.source_url)}" target="_blank" rel="noopener noreferrer">${t('alternative_open_source')}</a>
+          </div>
+        </div>`;
+        return;
+      }
+    } catch {}
+  }
+  target.innerHTML = altStatusBox(t('alt_web_none'));
 }
 
 async function verifyAlternativeCandidate() {

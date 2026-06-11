@@ -412,7 +412,9 @@ function saferAlternatives(scan, scans) {
     })
     .filter(candidate => ['safe', 'review'].includes(classifyScan(candidate)))
     .map(candidate => ({ candidate, score: similarityScore(scan, candidate) }))
-    .filter(item => item.score > 0)
+    // Require a real topical match (3+ shared tags). One shared generic word used to
+    // surface unrelated tools (e.g. a hello-world demo) as an "alternative".
+    .filter(item => item.score >= 3)
     .sort((a, b) => {
       const decisionDelta = (classifyScan(a.candidate) === 'safe' ? 0 : 1) - (classifyScan(b.candidate) === 'safe' ? 0 : 1);
       if (decisionDelta) return decisionDelta;
