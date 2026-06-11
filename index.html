@@ -100,6 +100,7 @@ nav {
   .nav-right { gap: 7px; }
   .lang-switcher:not(.open) .lang-btn:not(.active) { display: none; }
   .lang-switcher:not(.open) .lang-btn.active::after { content: '▾'; font-size: 9px; margin-inline-start: 4px; color: var(--cyan); }
+  .hint-kbd { display: none; }
 }
 .flag-icon { position: relative; display: block; width: 24px; height: 16px; overflow: hidden; border-radius: 2px; background: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28), 0 0 0 1px rgba(0,0,0,0.25); }
 .flag-us { background: repeating-linear-gradient(to bottom,#b22234 0 1.23px,#fff 1.23px 2.46px); }
@@ -386,6 +387,9 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .error-title { color: var(--red); font-family: var(--sans); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
 .error-msg { font-size: 11px; color: var(--text-dim); }
 .error-detail { margin-top: 10px; font-size: 9.5px; color: var(--text-dim); opacity: 0.6; font-family: var(--mono); overflow-wrap: anywhere; }
+.result-overflow { display: contents; }
+.result-overflow[hidden] { display: none; }
+.threats-box .section-toggle, .safe-patterns .section-toggle { margin: 14px auto 4px; }
 .source-required-box { padding: 30px 24px; text-align: center; background: rgba(0,212,255,0.045); border-top: 1px solid rgba(0,212,255,0.28); }
 .source-required-icon { width: 48px; height: 48px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; color: var(--cyan); border: 1px solid rgba(0,212,255,0.42); border-radius: 8px; background: rgba(0,212,255,0.08); }
 .source-required-icon svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -831,7 +835,7 @@ footer a:hover { color: var(--cyan); }
     <div class="bot-row">
       <div class="hint">
         <span data-i18n="hint_langs">MCP · Skill · Extension · Action · Package · Dependencies</span>
-        &nbsp;|&nbsp; <kbd>Ctrl+Enter</kbd> <span data-i18n="hint_shortcut">to scan</span>
+        <span class="hint-kbd">&nbsp;|&nbsp; <kbd>Ctrl+Enter</kbd> <span data-i18n="hint_shortcut">to scan</span></span>
       </div>
       <button class="scan-btn" id="scan-btn" onclick="runScan()">▶ &nbsp;<span data-i18n="btn_scan">SCAN NOW</span></button>
     </div>
@@ -2432,7 +2436,9 @@ function renderResult(r) {
   } else {
     const headTxt = threats.length === 1 ? t('threats_heading_one') : t('threats_heading_many');
     html += `<div class="threats-box"><div class="t-heading">${threats.length} ${headTxt}</div>`;
-    threats.forEach(tt => {
+    const collapseThreats = threats.length > 6;
+    threats.forEach((tt, idx) => {
+      if (collapseThreats && idx === 5) html += `<div class="result-overflow" hidden>`;
       const sev = (tt.severity||'medium').toLowerCase();
       html += `<div class="t-item ${sev}">
         <div class="t-sev ${sev}">${escHtml(severityLabel(tt.severity || 'MEDIUM'))}</div>
@@ -2445,12 +2451,25 @@ function renderResult(r) {
         </div>
       </div>`;
     });
+    if (collapseThreats) {
+      const moreLabel = `${t('section_show_more')} (${threats.length - 5})`;
+      html += `</div><button type="button" class="section-toggle" data-more="${escHtml(moreLabel)}" onclick="cgToggleOverflow(this)">${escHtml(moreLabel)}</button>`;
+    }
     html += `</div>`;
   }
 
   if (r.safe_patterns_noted && r.safe_patterns_noted.length > 0) {
+    const patterns = r.safe_patterns_noted;
+    const collapsePatterns = patterns.length > 8;
     html += `<div class="safe-patterns"><div class="t-heading">${t('good_practices')}</div>`;
-    r.safe_patterns_noted.forEach(p => { html += `<span class="sp-item">✓ ${escHtml(p)}</span>`; });
+    patterns.forEach((p, idx) => {
+      if (collapsePatterns && idx === 8) html += `<span class="result-overflow" hidden>`;
+      html += `<span class="sp-item">✓ ${escHtml(p)}</span>`;
+    });
+    if (collapsePatterns) {
+      const moreLabel = `${t('section_show_more')} (${patterns.length - 8})`;
+      html += `</span><button type="button" class="section-toggle" data-more="${escHtml(moreLabel)}" onclick="cgToggleOverflow(this)">${escHtml(moreLabel)}</button>`;
+    }
     html += `</div>`;
   }
 
@@ -2477,6 +2496,13 @@ function copyReport(score, status, count) {
     b.textContent = '✓ ' + t('action_copy'); b.style.color = 'var(--green)';
     setTimeout(() => { b.textContent = o; b.style.color = ''; }, 1500);
   });
+}
+
+function cgToggleOverflow(btn) {
+  const box = btn.previousElementSibling;
+  if (!box || !box.classList.contains('result-overflow')) return;
+  box.hidden = !box.hidden;
+  btn.textContent = box.hidden ? (btn.dataset.more || t('section_show_more')) : t('section_show_less');
 }
 
 let cgInputMode = 'code';
