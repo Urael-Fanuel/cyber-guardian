@@ -224,6 +224,11 @@ textarea {
 }
 textarea:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,212,255,0.08); }
 textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
+.input-mode-tabs { display: flex; gap: 6px; margin: 10px 0 8px; }
+.input-mode-tab { padding: 8px 16px; border-radius: 7px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text-dim); font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.3px; cursor: pointer; transition: all 0.15s; }
+.input-mode-tab:hover { border-color: rgba(0,212,255,0.4); color: var(--text); }
+.input-mode-tab.active { color: var(--cyan); border-color: rgba(0,212,255,0.55); background: rgba(0,212,255,0.09); }
+.link-mode-hint { margin-top: 7px; font-size: 11px; color: var(--cyan); opacity: 0.85; line-height: 1.6; }
 
 .bot-row { display: flex; align-items: center; justify-content: space-between; padding: 0 20px 20px; gap: 12px; flex-wrap: wrap; }
 .hint { font-size: 10px; color: var(--text-dim); flex: 1; }
@@ -826,7 +831,12 @@ footer a:hover { color: var(--cyan); }
 
     <div class="input-area">
       <label class="lbl" for="code-input" data-i18n="input_label">Paste MCP, skill, extension, workflow, package or dependency code here</label>
+      <div class="input-mode-tabs">
+        <button type="button" class="input-mode-tab active" id="mode-tab-code" onclick="cgSetInputMode('code')" data-i18n="input_tab_code">📋 Paste code</button>
+        <button type="button" class="input-mode-tab" id="mode-tab-link" onclick="cgSetInputMode('link')" data-i18n="input_tab_link">🔗 Scan from a link</button>
+      </div>
       <textarea id="code-input" data-i18n-placeholder="placeholder"></textarea>
+      <div class="link-mode-hint" id="link-mode-hint" hidden data-i18n="input_link_hint">One link per scan. Clean results from a public link earn a shareable verified badge.</div>
     </div>
 
     <div class="bot-row">
@@ -2380,6 +2390,20 @@ function copyReport(score, status, count) {
     b.textContent = '✓ ' + t('action_copy'); b.style.color = 'var(--green)';
     setTimeout(() => { b.textContent = o; b.style.color = ''; }, 1500);
   });
+}
+
+let cgInputMode = 'code';
+function cgSetInputMode(mode) {
+  cgInputMode = mode;
+  const ta = document.getElementById('code-input');
+  document.getElementById('mode-tab-code').classList.toggle('active', mode === 'code');
+  document.getElementById('mode-tab-link').classList.toggle('active', mode === 'link');
+  const placeholderKey = mode === 'link' ? 'placeholder_link' : 'placeholder';
+  ta.setAttribute('data-i18n-placeholder', placeholderKey);
+  ta.placeholder = t(placeholderKey);
+  const hint = document.getElementById('link-mode-hint');
+  if (hint) hint.hidden = mode !== 'link';
+  ta.focus({ preventScroll: true });
 }
 
 function cgNativeShare(btn) {

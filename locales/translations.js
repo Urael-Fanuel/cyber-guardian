@@ -4261,6 +4261,54 @@ Object.entries(SHARE_BADGE_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const INPUT_MODE_COPY = {
+  en: {
+    input_tab_code: "📋 Paste code",
+    input_tab_link: "🔗 Scan from a link",
+    input_link_hint: "One link per scan. Clean results from a public link earn a shareable verified badge.",
+    placeholder_link: "Paste ONE link here — we fetch the code securely and scan it:\n\nhttps://github.com/owner/repo\nhttps://www.npmjs.com/package/package-name\nhttps://pypi.org/project/project-name/\n\nAlso supported: install commands (npx / pip install) and VS Code / Open VSX extension links.\n\nClean scans of a public link earn a shareable verified badge.",
+  },
+  he: {
+    input_tab_code: "📋 הדבקת קוד",
+    input_tab_link: "🔗 סריקה מקישור",
+    input_link_hint: "קישור אחד בכל סריקה. תוצאה נקייה מקישור ציבורי מזכה בתג מאומת לשיתוף.",
+    placeholder_link: "הדביקו כאן קישור אחד — אנחנו מורידים את הקוד בצורה מאובטחת וסורקים אותו:\n\nhttps://github.com/owner/repo\nhttps://www.npmjs.com/package/package-name\nhttps://pypi.org/project/project-name/\n\nנתמכים גם: פקודות התקנה (npx / pip install) וקישורי הרחבות VS Code / Open VSX.\n\nסריקה נקייה של קישור ציבורי מזכה בתג מאומת שאפשר לשתף.",
+  },
+  de: {
+    input_tab_code: "📋 Code einfuegen",
+    input_tab_link: "🔗 Per Link scannen",
+    input_link_hint: "Ein Link pro Scan. Saubere Ergebnisse von einem oeffentlichen Link erhalten ein teilbares Abzeichen.",
+    placeholder_link: "Fuegen Sie hier EINEN Link ein — wir laden den Code sicher und scannen ihn:\n\nhttps://github.com/owner/repo\nhttps://www.npmjs.com/package/package-name\nhttps://pypi.org/project/project-name/\n\nAuch unterstuetzt: Install-Befehle (npx / pip install) und VS Code / Open VSX Erweiterungslinks.\n\nSaubere Scans eines oeffentlichen Links erhalten ein teilbares Verifizierungsabzeichen.",
+  },
+  ja: {
+    input_tab_code: "📋 コードを貼り付け",
+    input_tab_link: "🔗 リンクからスキャン",
+    input_link_hint: "1回のスキャンにつきリンク1つ。公開リンクのクリーンな結果は共有可能な認証バッジを獲得します。",
+    placeholder_link: "ここにリンクを1つ貼り付けてください — コードを安全に取得してスキャンします:\n\nhttps://github.com/owner/repo\nhttps://www.npmjs.com/package/package-name\nhttps://pypi.org/project/project-name/\n\nインストールコマンド(npx / pip install)やVS Code / Open VSX拡張リンクにも対応。\n\n公開リンクのクリーンなスキャンは共有可能な認証バッジを獲得できます。",
+  },
+  ko: {
+    input_tab_code: "📋 코드 붙여넣기",
+    input_tab_link: "🔗 링크로 스캔",
+    input_link_hint: "스캔당 링크 1개. 공개 링크의 클린 결과는 공유 가능한 인증 배지를 받습니다.",
+    placeholder_link: "여기에 링크 하나만 붙여넣으세요 — 코드를 안전하게 가져와 스캔합니다:\n\nhttps://github.com/owner/repo\nhttps://www.npmjs.com/package/package-name\nhttps://pypi.org/project/project-name/\n\n설치 명령어(npx / pip install)와 VS Code / Open VSX 확장 링크도 지원됩니다.\n\n공개 링크의 클린 스캔은 공유 가능한 인증 배지를 받습니다.",
+  },
+  fr: {
+    input_tab_code: "📋 Coller du code",
+    input_tab_link: "🔗 Scanner depuis un lien",
+    input_link_hint: "Un lien par scan. Les resultats propres d'un lien public obtiennent un badge partageable.",
+    placeholder_link: "Collez UN lien ici — nous recuperons le code en toute securite et le scannons :\n\nhttps://github.com/owner/repo\nhttps://www.npmjs.com/package/package-name\nhttps://pypi.org/project/project-name/\n\nAussi pris en charge : commandes d'installation (npx / pip install) et liens d'extensions VS Code / Open VSX.\n\nLes scans propres d'un lien public obtiennent un badge verifie partageable.",
+  },
+  pt: {
+    input_tab_code: "📋 Colar codigo",
+    input_tab_link: "🔗 Escanear por link",
+    input_link_hint: "Um link por scan. Resultados limpos de um link publico ganham um selo compartilhavel.",
+    placeholder_link: "Cole UM link aqui — buscamos o codigo com seguranca e o escaneamos:\n\nhttps://github.com/owner/repo\nhttps://www.npmjs.com/package/package-name\nhttps://pypi.org/project/project-name/\n\nTambem suportado: comandos de instalacao (npx / pip install) e links de extensoes VS Code / Open VSX.\n\nScans limpos de um link publico ganham um selo verificado compartilhavel.",
+  },
+};
+Object.entries(INPUT_MODE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 window.TRANSLATIONS = TRANSLATIONS;
 window.LANGS = LANGS;
 window.loadContentOverrides = loadContentOverrides;
