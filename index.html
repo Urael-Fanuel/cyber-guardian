@@ -422,6 +422,10 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .section-lbl { font-size: 10px; letter-spacing: 3px; color: var(--cyan); text-transform: uppercase; text-align: center; margin-bottom: 16px; }
 .section-title { font-family: var(--sans); font-size: 28px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 10px; }
 .section-sub { font-size: 13px; color: var(--text-dim); text-align: center; max-width: 700px; margin: 0 auto 32px; line-height: 1.7; }
+.section-toggle { display: block; margin: 4px auto 0; padding: 9px 24px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.4); background: rgba(0,212,255,0.07); color: var(--cyan); font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: all 0.15s; }
+.section-toggle:hover { background: rgba(0,212,255,0.15); border-color: var(--cyan); }
+.section-collapse[hidden] { display: none; }
+.section-collapse { margin-top: 26px; }
 .why-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
 .why-card { background: var(--bg2); padding: 26px 22px; border-top: 3px solid var(--red); }
 .why-card:nth-child(2) { border-top-color: var(--orange); }
@@ -1338,6 +1342,36 @@ footer a:hover { color: var(--cyan); }
     if (container.classList.contains('open') && !container.contains(e.target)) container.classList.remove('open');
   });
 })();
+// Collapse the three heaviest educational sections into accordions: only the
+// title + intro stay visible; full content opens on demand. No content removed.
+(function makeCollapsibleSections() {
+  ['security-score-section', 'freshness-section', 'trust'].forEach(cls => {
+    const sec = document.querySelector('section.' + cls);
+    if (!sec) return;
+    const intro = sec.querySelector('.section-sub');
+    if (!intro) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'section-collapse';
+    wrap.hidden = true;
+    const toMove = [];
+    let node = intro.nextSibling;
+    while (node) { toMove.push(node); node = node.nextSibling; }
+    toMove.forEach(n => wrap.appendChild(n));
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'section-toggle';
+    btn.setAttribute('data-i18n', 'section_show_more');
+    btn.onclick = () => {
+      wrap.hidden = !wrap.hidden;
+      const key = wrap.hidden ? 'section_show_more' : 'section_show_less';
+      btn.setAttribute('data-i18n', key);
+      btn.textContent = t(key);
+    };
+    sec.appendChild(btn);
+    sec.appendChild(wrap);
+  });
+})();
+
 setLang(detectLang());
 cgLoadVerifiedBanner();
 

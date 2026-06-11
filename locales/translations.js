@@ -4309,6 +4309,19 @@ Object.entries(INPUT_MODE_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SECTION_TOGGLE_COPY = {
+  en: { section_show_more: "▾ Show more", section_show_less: "▴ Show less" },
+  he: { section_show_more: "▾ הצג עוד", section_show_less: "▴ הצג פחות" },
+  de: { section_show_more: "▾ Mehr anzeigen", section_show_less: "▴ Weniger anzeigen" },
+  ja: { section_show_more: "▾ もっと見る", section_show_less: "▴ 閉じる" },
+  ko: { section_show_more: "▾ 더 보기", section_show_less: "▴ 접기" },
+  fr: { section_show_more: "▾ Voir plus", section_show_less: "▴ Voir moins" },
+  pt: { section_show_more: "▾ Ver mais", section_show_less: "▴ Ver menos" },
+};
+Object.entries(SECTION_TOGGLE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 window.TRANSLATIONS = TRANSLATIONS;
 window.LANGS = LANGS;
 window.loadContentOverrides = loadContentOverrides;
