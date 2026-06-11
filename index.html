@@ -773,38 +773,6 @@ footer a:hover { color: var(--cyan); }
   <div class="stat"><span class="stat-n">10</span><div class="stat-l" data-i18n="stat_free">FREE / MONTH</div></div>
 </div>
 
-<section class="account-panel" id="account-panel">
-  <div class="account-box">
-    <div>
-      <div class="account-kicker" data-i18n="account_kicker">Free account</div>
-      <div class="account-title" data-i18n="account_title">Account access</div>
-      <div class="account-text" data-i18n="account_text">Create a free account to scan real code. Free accounts include 10 scans/month. No credit card required.</div>
-      <div class="account-plan" id="account-plan"></div>
-    </div>
-    <div class="account-form" id="account-form">
-      <div class="account-tabs" role="tablist" aria-label="Account mode">
-        <button type="button" class="account-tab active" id="account-tab-signin" onclick="setAccountMode('signin')" data-i18n="account_tab_signin">Sign in</button>
-        <button type="button" class="account-tab" id="account-tab-signup" onclick="setAccountMode('signup')" data-i18n="account_tab_signup">Create account</button>
-      </div>
-      <div class="account-field">
-        <label class="account-label" for="account-email" data-i18n="account_email_label">Email</label>
-        <input class="account-input" id="account-email" type="email" autocomplete="email" data-i18n-placeholder="account_email_placeholder" placeholder="email@example.com">
-      </div>
-      <div class="account-field">
-        <label class="account-label" for="account-password" data-i18n="account_password_label">Password</label>
-        <input class="account-input" id="account-password" type="password" autocomplete="current-password" data-i18n-placeholder="account_password_placeholder" placeholder="Password">
-      </div>
-      <div class="account-actions">
-        <button type="button" class="account-btn primary" id="account-submit" onclick="accountSubmit()" data-i18n="account_sign_in">Sign in</button>
-        <button type="button" class="account-btn ghost" onclick="accountResetPassword()" data-i18n="account_reset_password">Forgot password?</button>
-        <button type="button" class="account-btn primary" onclick="accountUpdatePassword()" id="account-update-password" style="display:none" data-i18n="account_update_password">Update password</button>
-        <button type="button" class="account-btn" onclick="accountSignOut()" id="account-signout" style="display:none" data-i18n="account_sign_out">Sign out</button>
-      </div>
-      <div class="account-status" id="account-status"></div>
-    </div>
-  </div>
-</section>
-
 <section class="account-ready" id="account-ready-banner" aria-live="polite">
   <div class="account-ready-box">
     <div>
@@ -880,6 +848,38 @@ footer a:hover { color: var(--cyan); }
     <div id="results"></div>
   </div>
 </div>
+
+<section class="account-panel" id="account-panel">
+  <div class="account-box">
+    <div>
+      <div class="account-kicker" data-i18n="account_kicker">Free account</div>
+      <div class="account-title" data-i18n="account_title">Account access</div>
+      <div class="account-text" data-i18n="account_text">Create a free account to scan real code. Free accounts include 10 scans/month. No credit card required.</div>
+      <div class="account-plan" id="account-plan"></div>
+    </div>
+    <div class="account-form" id="account-form">
+      <div class="account-tabs" role="tablist" aria-label="Account mode">
+        <button type="button" class="account-tab active" id="account-tab-signin" onclick="setAccountMode('signin')" data-i18n="account_tab_signin">Sign in</button>
+        <button type="button" class="account-tab" id="account-tab-signup" onclick="setAccountMode('signup')" data-i18n="account_tab_signup">Create account</button>
+      </div>
+      <div class="account-field">
+        <label class="account-label" for="account-email" data-i18n="account_email_label">Email</label>
+        <input class="account-input" id="account-email" type="email" autocomplete="email" data-i18n-placeholder="account_email_placeholder" placeholder="email@example.com">
+      </div>
+      <div class="account-field">
+        <label class="account-label" for="account-password" data-i18n="account_password_label">Password</label>
+        <input class="account-input" id="account-password" type="password" autocomplete="current-password" data-i18n-placeholder="account_password_placeholder" placeholder="Password">
+      </div>
+      <div class="account-actions">
+        <button type="button" class="account-btn primary" id="account-submit" onclick="accountSubmit()" data-i18n="account_sign_in">Sign in</button>
+        <button type="button" class="account-btn ghost" onclick="accountResetPassword()" data-i18n="account_reset_password">Forgot password?</button>
+        <button type="button" class="account-btn primary" onclick="accountUpdatePassword()" id="account-update-password" style="display:none" data-i18n="account_update_password">Update password</button>
+        <button type="button" class="account-btn" onclick="accountSignOut()" id="account-signout" style="display:none" data-i18n="account_sign_out">Sign out</button>
+      </div>
+      <div class="account-status" id="account-status"></div>
+    </div>
+  </div>
+</section>
 
 <section class="why">
   <div class="section-lbl" data-i18n="why_label">Why MCP security matters</div>
