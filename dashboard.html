@@ -173,6 +173,13 @@ canvas { max-height: 200px; }
 .verified-trust-score-label { color: var(--text-dim); font-size: 8.5px; font-weight: 700; text-transform: uppercase; }
 .verified-trust-score { margin-top: 4px; color: var(--green); font-family: var(--sans); font-size: 22px; font-weight: 800; line-height: 1; }
 .verified-trust-status { margin-top: 6px; color: var(--green); font-size: 8.5px; font-weight: 800; text-transform: uppercase; }
+.verified-trust-share { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.share-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: var(--text); font-size: 10px; font-weight: 700; letter-spacing: 0.3px; cursor: pointer; transition: background 0.15s, border-color 0.15s; text-decoration: none; line-height: 1; }
+.share-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.28); }
+.share-btn.copied { color: var(--green); border-color: rgba(0,230,118,0.5); }
+.feed-source { margin: 3px 0 5px; font-size: 10.5px; }
+.feed-source a { color: var(--cyan); text-decoration: none; overflow-wrap: anywhere; }
+.feed-source a:hover { text-decoration: underline; }
 @media (max-width: 680px) {
   .verified-trust-card { grid-template-columns: 46px minmax(0,1fr); }
   .verified-trust-logo { width: 46px; height: 46px; }
@@ -821,6 +828,28 @@ const DASH_EXTRA_COPY = {
   fr: { load_failed: 'Impossible de charger les donnees du tableau de bord.', back_to_scanner: 'Retour au scanner' },
   pt: { load_failed: 'Nao foi possivel carregar os dados do painel.', back_to_scanner: 'Voltar ao scanner' }
 };
+
+const DASH_SHARE_COPY = {
+  en: { share_btn_x: "Share on X", share_btn_linkedin: "Share on LinkedIn", share_btn_copy: "Copy link", share_copied: "Copied!", share_tweet: "I verified {source_name} with Cyber Guardian Scan — Security Score: {score}/100, zero threats detected. Install safely: {source_url} | Verified by: {site_url}" },
+  he: { share_btn_x: "שתפו ב-X", share_btn_linkedin: "שתפו ב-LinkedIn", share_btn_copy: "העתיקו קישור", share_copied: "הועתק!", share_tweet: "אימתתי את {source_name} עם Cyber Guardian Scan — ציון אבטחה: {score}/100, אפס איומים. התקינו בבטחה: {source_url} | אומת על ידי: {site_url}" },
+  de: { share_btn_x: "Auf X teilen", share_btn_linkedin: "Auf LinkedIn teilen", share_btn_copy: "Link kopieren", share_copied: "Kopiert!", share_tweet: "Ich habe {source_name} mit Cyber Guardian Scan verifiziert — Sicherheitsscore: {score}/100, null Bedrohungen. Sicher installieren: {source_url} | Verifiziert von: {site_url}" },
+  ja: { share_btn_x: "Xでシェア", share_btn_linkedin: "LinkedInでシェア", share_btn_copy: "リンクをコピー", share_copied: "コピーしました!", share_tweet: "Cyber Guardian Scanで{source_name}を認証しました — セキュリティスコア: {score}/100、脅威ゼロ。安全にインストール: {source_url} | 認証: {site_url}" },
+  ko: { share_btn_x: "X에서 공유", share_btn_linkedin: "LinkedIn에서 공유", share_btn_copy: "링크 복사", share_copied: "복사됨!", share_tweet: "Cyber Guardian Scan으로 {source_name}을 인증했습니다 — 보안 점수: {score}/100, 위협 제로. 안전하게 설치: {source_url} | 인증: {site_url}" },
+  fr: { share_btn_x: "Partager sur X", share_btn_linkedin: "Partager sur LinkedIn", share_btn_copy: "Copier le lien", share_copied: "Copie!", share_tweet: "J'ai verifie {source_name} avec Cyber Guardian Scan — Score de securite: {score}/100, zero menace. Installez en securite: {source_url} | Verifie par: {site_url}" },
+  pt: { share_btn_x: "Compartilhar no X", share_btn_linkedin: "Compartilhar no LinkedIn", share_btn_copy: "Copiar link", share_copied: "Copiado!", share_tweet: "Verifiquei {source_name} com o Cyber Guardian Scan — Pontuacao de seguranca: {score}/100, zero ameacas. Instale com seguranca: {source_url} | Verificado por: {site_url}" },
+};
+Object.entries(DASH_SHARE_COPY).forEach(([lang, labels]) => {
+  DASH_T[lang] = { ...(DASH_T[lang] || {}), ...labels };
+});
+
+function dashCopyShare(btn) {
+  navigator.clipboard.writeText(btn.dataset.shareText).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = t('share_copied');
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+  });
+}
 
 function t(key) {
   if (DASH_EXTRA_COPY[currentLang]?.[key]) return DASH_EXTRA_COPY[currentLang][key];
@@ -1621,6 +1650,25 @@ function scopeLabel(scope) {
 function renderRecentScan(s) {
   const decision = scanDecision(s);
   const securityScore = Number.isFinite(Number(s.security_score)) ? Number(s.security_score) : 0;
+  const safeSourceUrl = /^https:\/\/(github\.com|www\.npmjs\.com|pypi\.org|open-vsx\.org|marketplace\.visualstudio\.com)\//i.test(String(s.source_url || '')) ? s.source_url : '';
+  const sourceLine = (s.source_name || safeSourceUrl)
+    ? `<div class="feed-source">${safeSourceUrl
+        ? `<a href="${escapeHtml(safeSourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.source_name || safeSourceUrl)}</a>`
+        : escapeHtml(s.source_name)}</div>`
+    : '';
+  let shareRow = '';
+  if (decision.value === 'safe' && securityScore >= 96 && safeSourceUrl) {
+    const tweetText = t('share_tweet')
+      .replace('{score}', securityScore)
+      .replace('{source_name}', s.source_name || safeSourceUrl)
+      .replace('{source_url}', safeSourceUrl)
+      .replace('{site_url}', 'https://cyberguardianscan.com');
+    shareRow = `<div class="verified-trust-share">
+        <a class="share-btn" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}" target="_blank" rel="noopener noreferrer">𝕏 ${escapeHtml(t('share_btn_x'))}</a>
+        <a class="share-btn" href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(safeSourceUrl)}" target="_blank" rel="noopener noreferrer">in ${escapeHtml(t('share_btn_linkedin'))}</a>
+        <button class="share-btn" data-share-text="${escapeHtml(tweetText)}" onclick="dashCopyShare(this)">${escapeHtml(t('share_btn_copy'))}</button>
+      </div>`;
+  }
   const verifiedMark = decision.value === 'safe' && securityScore >= 96
     ? `<div class="verified-trust-card">
         <span class="verified-trust-logo" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
@@ -1633,6 +1681,7 @@ function renderRecentScan(s) {
           <div class="verified-trust-score">${securityScore}/100</div>
           <div class="verified-trust-status">Safe for Install</div>
         </div>
+        ${shareRow}
       </div>`
     : '';
   return `
@@ -1646,6 +1695,7 @@ function renderRecentScan(s) {
           <span class="feed-meta">${s.threat_count} ${s.threat_count !== 1 ? t('threats') : t('threat')}</span>
           <span class="feed-meta">${timeAgo(s.scanned_at)}</span>
         </div>
+        ${sourceLine}
         ${verifiedMark}
         ${purposeHtml(s)}
         ${sandboxEvidenceHtml(s)}
