@@ -2088,7 +2088,7 @@ async function cgWebAlternativeSearch(target) {
       if (!scanResponse.ok) continue;
       cgApplyAccountFromScan(scanResult);
       if (window.cgTrack) cgTrack('web_alternative_candidate_scanned', { scope: currentScope, candidate: cand.source_name, status: scanResult.status || '' });
-      if (alternativeIsInstallOk(scanResult) && displaySecurityScore(scanResult) >= 80) {
+      if (alternativeIsInstallOk(scanResult) && displaySecurityScore(scanResult) >= 96) {
         lastAlternativeCandidate = { ...cand, scope: currentScope };
         target.innerHTML = `<div class="alternative-box">
           <div class="alternative-title">✅ ${t('alt_web_found')}</div>
