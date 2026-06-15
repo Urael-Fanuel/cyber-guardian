@@ -124,7 +124,7 @@ function sharedAuthToken(env) {
 
 function isAuthorized(request, env) {
   const required = sharedAuthToken(env);
-  if (!required) return true;
+  if (!required) return false;
   const auth = request.headers.get("Authorization") || "";
   return auth === `Bearer ${required}`;
 }

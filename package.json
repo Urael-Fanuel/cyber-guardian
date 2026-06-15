@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "node tests/scan-security.test.js",
+    "test": "node tests/scan-security.test.js && node tests/remote-mcp-security.test.mjs",
     "check": "node --check api/scan.js && node --check api/mcp-scan.js && node --check api/site-stats.js && node --check api/subscribe.js && node --check api/content.js && node --check api/contact.js && node --check api/track-event.js && node --check api/product-analytics.js && node --check api/admin-auth.js && node --check api/admin-data.js && node --check api/account.js && node --check api/create-checkout-session.js && node --check mcp/cyberguardian-mcp-server.mjs && node --check remote-mcp/worker.js",
     "mcp:stdio": "node mcp/cyberguardian-mcp-server.mjs",
     "mcp:check": "node --check mcp/cyberguardian-mcp-server.mjs && node --check remote-mcp/worker.js"
