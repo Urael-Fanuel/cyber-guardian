@@ -78,6 +78,10 @@ function uniqueCount(rows, key) {
   return new Set(rows.map(row => row[key]).filter(Boolean)).size;
 }
 
+function uniqueVisitors(rows) {
+  return uniqueCount(rows, "visitor_id");
+}
+
 function pct(part, total) {
   if (!total) return 0;
   return Math.round((part / total) * 100);
@@ -187,6 +191,128 @@ function contactIntentRows(rows) {
   );
 }
 
+function isAccountEvent(row) {
+  return String(row.event_name || "").startsWith("account_");
+}
+
+function isContactEvent(row) {
+  return /^contact_.*_clicked$/.test(row.event_name) ||
+    row.event_name === "contact_clicked" ||
+    row.event_name === "contact_form_submitted";
+}
+
+function visitorCountsBy(rows, keyFn, limit = 12) {
+  const map = new Map();
+  for (const row of rows) {
+    const key = keyFn(row) || "unknown";
+    if (!map.has(key)) map.set(key, new Set());
+    if (row.visitor_id) map.get(key).add(row.visitor_id);
+  }
+  return Array.from(map.entries())
+    .map(([key, set]) => ({ key, count: set.size }))
+    .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key))
+    .slice(0, limit);
+}
+
+function countryJourney(rows, limit = 16) {
+  const map = new Map();
+  function entry(country) {
+    const key = country || "unknown";
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        events: 0,
+        visitors_set: new Set(),
+        page_views: 0,
+        scan_starts: 0,
+        scan_completed: 0,
+        scan_failed: 0,
+        contact_actions: 0,
+        email_signups: 0,
+        account_signups: 0,
+      });
+    }
+    return map.get(key);
+  }
+
+  for (const row of rows) {
+    const item = entry(row.country || "unknown");
+    item.events++;
+    if (row.visitor_id) item.visitors_set.add(row.visitor_id);
+    if (row.event_name === "page_view") item.page_views++;
+    if (row.event_name === "scan_started") item.scan_starts++;
+    if (row.event_name === "scan_completed") item.scan_completed++;
+    if (row.event_name === "scan_failed") item.scan_failed++;
+    if (row.event_name === "email_submitted") item.email_signups++;
+    if (row.event_name === "account_signup_created") item.account_signups++;
+    if (isContactEvent(row)) item.contact_actions++;
+  }
+
+  return Array.from(map.values())
+    .map(item => {
+      const visitors = item.visitors_set.size;
+      return {
+        key: item.key,
+        events: item.events,
+        visitors,
+        page_views: item.page_views,
+        scan_starts: item.scan_starts,
+        scan_completed: item.scan_completed,
+        scan_failed: item.scan_failed,
+        contact_actions: item.contact_actions,
+        email_signups: item.email_signups,
+        account_signups: item.account_signups,
+        visitor_to_scan_rate: pct(item.scan_starts, visitors),
+        scan_completion_rate: pct(item.scan_completed, item.scan_starts),
+      };
+    })
+    .sort((a, b) => b.visitors - a.visitors || b.events - a.events || a.key.localeCompare(b.key))
+    .slice(0, limit);
+}
+
+function scopeJourney(rows, limit = 10) {
+  const map = new Map();
+  function entry(scope) {
+    const key = scope || "unknown";
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        visitors_set: new Set(),
+        selected: 0,
+        started: 0,
+        completed: 0,
+        failed: 0,
+        source_required: 0,
+      });
+    }
+    return map.get(key);
+  }
+
+  for (const row of rows) {
+    const item = entry(scanScope(row));
+    if (row.visitor_id) item.visitors_set.add(row.visitor_id);
+    if (row.event_name === "scan_scope_selected") item.selected++;
+    if (row.event_name === "scan_started") item.started++;
+    if (row.event_name === "scan_completed") item.completed++;
+    if (row.event_name === "scan_failed") item.failed++;
+    if (row.event_name === "scan_source_required") item.source_required++;
+  }
+
+  return Array.from(map.values())
+    .map(item => ({
+      key: item.key,
+      visitors: item.visitors_set.size,
+      selected: item.selected,
+      started: item.started,
+      completed: item.completed,
+      failed: item.failed,
+      source_required: item.source_required,
+      start_to_complete_rate: pct(item.completed, item.started),
+    }))
+    .sort((a, b) => b.started - a.started || b.selected - a.selected || a.key.localeCompare(b.key))
+    .slice(0, limit);
+}
+
 module.exports = async function handler(req, res) {
   setCors(req, res);
   if (req.method === "OPTIONS") {
@@ -246,9 +372,21 @@ module.exports = async function handler(req, res) {
     const contactFailures = publicRows.filter(row => row.event_name === "contact_form_failed");
     const emailSubmits = publicRows.filter(row => row.event_name === "email_submitted");
     const emailFailures = publicRows.filter(row => row.event_name === "email_submit_failed");
+    const accountEvents = publicRows.filter(isAccountEvent);
+    const accountSignupStarted = publicRows.filter(row => row.event_name === "account_signup_started");
+    const accountSignupCreated = publicRows.filter(row => row.event_name === "account_signup_created");
+    const accountSignupExisting = publicRows.filter(row => row.event_name === "account_signup_existing_email");
+    const accountSigninSuccess = publicRows.filter(row => row.event_name === "account_signin_success");
+    const blockedLogin = publicRows.filter(row => row.event_name === "scan_blocked_login_required");
+    const sourceRequired = publicRows.filter(row => row.event_name === "scan_source_required");
+    const alternativeConsent = publicRows.filter(row => row.event_name === "safer_alternative_consent_opened");
+    const alternativeConfirmed = publicRows.filter(row => row.event_name === "safer_alternative_confirmed");
     const contactIntent = contactIntentRows(publicRows);
-    const publicVisitors = uniqueCount(publicRows, "visitor_id");
-    const publicScanVisitors = uniqueCount(scanStarted, "visitor_id");
+    const publicVisitors = uniqueVisitors(publicRows);
+    const publicScanVisitors = uniqueVisitors(scanStarted);
+    const signupVisitors = uniqueVisitors(accountSignupStarted);
+    const createdAccountVisitors = uniqueVisitors(accountSignupCreated);
+    const contactIntentVisitors = uniqueVisitors(contactIntent);
 
     return res.status(200).json({
       configured: true,
@@ -273,8 +411,22 @@ module.exports = async function handler(req, res) {
       contact_failures_30d: contactFailures.length,
       email_submits_30d: emailSubmits.length,
       email_failures_30d: emailFailures.length,
+      account_events_30d: accountEvents.length,
+      account_signup_started_30d: accountSignupStarted.length,
+      account_signup_created_30d: accountSignupCreated.length,
+      account_signup_existing_30d: accountSignupExisting.length,
+      account_signin_success_30d: accountSigninSuccess.length,
+      scan_blocked_login_30d: blockedLogin.length,
+      scan_source_required_30d: sourceRequired.length,
+      safer_alternative_opened_30d: alternativeConsent.length,
+      safer_alternative_confirmed_30d: alternativeConfirmed.length,
       business_intent_30d: contactIntent.length,
-      visitor_to_business_intent_rate: pct(uniqueCount(contactIntent, "visitor_id"), publicVisitors),
+      visitor_to_business_intent_rate: pct(contactIntentVisitors, publicVisitors),
+      visitor_to_signup_rate: pct(signupVisitors, publicVisitors),
+      signup_to_account_rate: pct(createdAccountVisitors, signupVisitors),
+      visitor_to_completed_scan_rate: pct(uniqueVisitors(scanCompleted), publicVisitors),
+      scan_start_to_complete_rate: pct(uniqueVisitors(scanCompleted), publicScanVisitors),
+      alternative_confirm_rate: pct(alternativeConfirmed.length, alternativeConsent.length),
       owner_events_30d: ownerRows.length,
       owner_scans_30d: ownerRows.filter(row => row.event_name === "scan_completed").length,
       owner_visitors_30d: uniqueCount(ownerRows, "visitor_id"),
@@ -282,8 +434,11 @@ module.exports = async function handler(req, res) {
       all_visitors_30d: uniqueCount(all, "visitor_id"),
       all_scans_30d: all.filter(row => row.event_name === "scan_completed").length,
       by_country: topCounts(countBy(publicRows, row => row.country || "unknown"), 12),
+      visitors_by_country: visitorCountsBy(publicRows, row => row.country || "unknown", 12),
+      country_journey: countryJourney(publicRows, 16),
       by_event: topCounts(countBy(publicRows, row => row.event_name), 12),
       by_scan_scope: topCounts(countBy(scanEvents, scanScope), 10),
+      scan_scope_journey: scopeJourney(publicRows, 10),
       completed_by_scope: topCounts(countBy(scanCompleted, scanScope), 10),
       started_by_scope: topCounts(countBy(scanStarted, scanScope), 10),
       failed_by_scope: topCounts(countBy(scanFailed, scanScope), 10),
@@ -294,6 +449,23 @@ module.exports = async function handler(req, res) {
       contact_by_type: topCounts(countBy([...contactClicks, ...contactForms], contactType), 10),
       contact_by_country: topCounts(countBy([...contactClicks, ...contactForms], row => row.country || "unknown"), 12),
       email_by_country: topCounts(countBy(emailSubmits, row => row.country || "unknown"), 12),
+      account_by_country: topCounts(countBy(accountSignupCreated, row => row.country || "unknown"), 12),
+      account_events: topCounts(countBy(accountEvents, row => row.event_name), 12),
+      blockers: [
+        { key: "scan_blocked_login_required", count: blockedLogin.length },
+        { key: "scan_source_required", count: sourceRequired.length },
+        { key: "scan_failed", count: scanFailed.length },
+        { key: "account_signup_existing_email", count: accountSignupExisting.length },
+        { key: "email_submit_failed", count: emailFailures.length },
+        { key: "contact_form_failed", count: contactFailures.length },
+      ],
+      conversion_rates: [
+        { key: "visitor_to_signup", count: pct(signupVisitors, publicVisitors), value_type: "percent" },
+        { key: "signup_to_account", count: pct(createdAccountVisitors, signupVisitors), value_type: "percent" },
+        { key: "visitor_to_scan", count: pct(publicScanVisitors, publicVisitors), value_type: "percent" },
+        { key: "scan_start_to_complete", count: pct(uniqueVisitors(scanCompleted), publicScanVisitors), value_type: "percent" },
+        { key: "visitor_to_business_intent", count: pct(contactIntentVisitors, publicVisitors), value_type: "percent" },
+      ],
       top_pages: topCounts(countBy(pageViews, row => compactPath(row.page_path)), 12),
       top_referrers: topCounts(countBy(pageViews, referrerDomain), 12),
       by_language: topCounts(countBy(publicRows, row => metadata(row, "lang") || "unknown"), 10),
@@ -301,9 +473,11 @@ module.exports = async function handler(req, res) {
       by_browser: topCounts(countBy(publicRows, browserFromRow), 8),
       funnel: [
         { key: "public_visitors", count: publicVisitors },
-        { key: "scan_started", count: scanStarted.length },
-        { key: "scan_completed", count: scanCompleted.length },
-        { key: "contact_or_signup", count: contactIntent.length },
+        { key: "account_signup_started", count: signupVisitors },
+        { key: "account_signup_created", count: createdAccountVisitors },
+        { key: "scan_started", count: publicScanVisitors },
+        { key: "scan_completed", count: uniqueVisitors(scanCompleted) },
+        { key: "contact_or_signup", count: contactIntentVisitors },
       ],
       owner_by_event: topCounts(countBy(ownerRows, row => row.event_name), 8),
       owner_by_scan_scope: topCounts(countBy(ownerScanEvents, scanScope), 8),

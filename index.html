@@ -1564,9 +1564,14 @@ async function accountSignIn() {
   const passwordValue = password.value;
   if (!emailValue || !passwordValue) return setAccountMessage(t('account_missing_fields'), true);
   setAccountMessage(t('account_signing_in'));
+  if (window.cgTrack) window.cgTrack('account_signin_started', { mode: 'signin' });
   const { data, error } = await accountClient.auth.signInWithPassword({ email: emailValue, password: passwordValue });
-  if (error) return setAccountMessage(friendlyAuthError(error, 'account_sign_in_failed'), true);
+  if (error) {
+    if (window.cgTrack) window.cgTrack('account_signin_failed', { reason: String(error.message || 'unknown').slice(0, 120) });
+    return setAccountMessage(friendlyAuthError(error, 'account_sign_in_failed'), true);
+  }
   accountSession = data?.session || null;
+  if (window.cgTrack) window.cgTrack('account_signin_success', { mode: 'signin' });
   setAccountRecoveryMode(false);
   password.value = '';
   await loadAccountStatus();
@@ -1609,14 +1614,22 @@ async function accountSignUp() {
   if (!emailValue || !passwordValue) return setAccountMessage(t('account_missing_fields'), true);
   if (passwordValue.length < 8) return setAccountMessage(t('account_password_short'), true);
   setAccountMessage(t('account_creating'));
+  if (window.cgTrack) window.cgTrack('account_signup_started', { mode: 'email' });
   const { data, error } = await accountClient.auth.signUp({
     email: emailValue,
     password: passwordValue,
     options: { emailRedirectTo: accountRedirectUrl() }
   });
-  if (accountLooksRegistered(data, error)) return setAccountMessage(t('account_email_exists'), true);
-  if (error) return setAccountMessage(friendlyAuthError(error, 'account_create_failed'), true);
+  if (accountLooksRegistered(data, error)) {
+    if (window.cgTrack) window.cgTrack('account_signup_existing_email', { mode: 'email' });
+    return setAccountMessage(t('account_email_exists'), true);
+  }
+  if (error) {
+    if (window.cgTrack) window.cgTrack('account_signup_failed', { reason: String(error.message || 'unknown').slice(0, 120) });
+    return setAccountMessage(friendlyAuthError(error, 'account_create_failed'), true);
+  }
   accountSession = data?.session || null;
+  if (window.cgTrack) window.cgTrack('account_signup_created', { mode: 'email', email_confirmation_required: !accountSession });
   password.value = '';
   if (accountSession) {
     await loadAccountStatus();

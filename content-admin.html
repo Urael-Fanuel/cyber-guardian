@@ -33,9 +33,17 @@ button.danger { background:#3b1820; color:#fecaca; border:1px solid #7f1d1d; }
 .analytics-list h3 { margin:0 0 8px; font-size:14px; color:#dbeafe; }
 .analytics-section-title { margin:20px 0 10px; color:#dbeafe; font-size:16px; font-weight:800; }
 .analytics-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid rgba(255,255,255,.06); padding:7px 0; color:#dbeafe; font-size:13px; }
-.analytics-row:last-child { border-bottom:0; }
-.analytics-row span:first-child { color:#8fa8bd; overflow-wrap:anywhere; }
-.analytics-row span:last-child { color:#fff; font-weight:800; }
+  .analytics-row:last-child { border-bottom:0; }
+  .analytics-row span:first-child { color:#8fa8bd; overflow-wrap:anywhere; }
+  .analytics-row span:last-child { color:#fff; font-weight:800; }
+  .analytics-table-wrap { margin-top:12px; overflow-x:auto; border:1px solid #203449; border-radius:8px; background:#08111b; }
+  .analytics-table { width:100%; min-width:760px; border-collapse:collapse; font-size:12px; }
+  .analytics-table caption { text-align:start; padding:14px; color:#dbeafe; font-weight:800; font-size:14px; }
+  .analytics-table th, .analytics-table td { padding:9px 10px; border-top:1px solid rgba(255,255,255,.06); text-align:start; white-space:nowrap; }
+  .analytics-table th { color:#8fa8bd; font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+  .analytics-table td { color:#dbeafe; }
+  .analytics-table td.num { color:#fff; font-weight:800; }
+  .analytics-note { margin-top:10px; color:#8fa8bd; font-size:12px; line-height:1.55; }
 .lead-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:14px; }
 .lead-list { display:flex; flex-direction:column; gap:10px; }
 .lead-card { border:1px solid #203449; background:#08111b; border-radius:8px; padding:14px; }
@@ -288,7 +296,13 @@ const ADMIN_COPY = {
     email_signup_countries: "Email signup countries", owner_events_title: "Owner events", product_not_configured: "Product analytics are not configured yet.",
     owner_sep_pending: "Owner/public separation will become accurate after migration 008 is active.", loaded_private_analytics: "Loaded private product analytics.",
     loading_analytics: "Loading analytics...", analytics_unavailable: "Analytics unavailable.", session_expired: "Session expired. Sign in again.",
-    contact_table_missing: "The contact_messages table is not configured yet.", no_contact_messages: "No contact messages yet.", subscribers_table_missing: "The email_subscribers table is not configured yet.",
+    analytics_note: "Country event counts are actions, not people. Unique visitors are counted by anonymous browser ID.",
+    country_journey: "Country journey", country: "Country", events: "Events", unique_visitors: "Unique visitors", page_views: "Page views",
+    scan_starts: "Scan starts", completed: "Completed", failed: "Failed", contacts: "Contacts", email_signup_short: "Emails", account_signup_short: "Accounts",
+    visitor_to_scan_rate: "Visitor to scan", completion_rate: "Completion", scan_type_journey: "Scan type journey", selected: "Selected",
+    source_required: "Source needed", start_to_complete: "Start to complete", visitors_by_country: "Unique visitors by country",
+    account_funnel: "Account funnel", blockers: "Friction and blockers", conversion_rates: "Conversion rates", account_signups: "Account signups by country", safer_alternatives: "Safer alternatives",
+      contact_table_missing: "The contact_messages table is not configured yet.", no_contact_messages: "No contact messages yet.", subscribers_table_missing: "The email_subscribers table is not configured yet.",
     no_email_subscribers: "No email subscribers yet.", no_name: "No name", origin: "Origin", created: "Created", recent_contact_messages: "Recent contact messages",
     latest50: "Latest 50 saved in Supabase", latest100: "Latest 100 saved in Supabase", contact_messages: "Contact messages", email_subscribers: "Email subscribers",
     loaded_messages: "Loaded messages and subscribers at {time}.", loading_messages: "Loading messages and subscribers...", messages_unavailable: "Messages unavailable.",
@@ -332,6 +346,12 @@ const ADMIN_COPY = {
     email_signup_countries: "מדינות נרשמים באימייל", owner_events_title: "אירועי בעלים", product_not_configured: "אנליטיקת מוצר עדיין לא מוגדרת.",
     owner_sep_pending: "הפרדת בעלים/ציבור תהיה מדויקת אחרי שמיגרציה 008 פעילה.", loaded_private_analytics: "אנליטיקת מוצר פרטית נטענה.",
     loading_analytics: "טוען אנליטיקה...", analytics_unavailable: "האנליטיקה לא זמינה.", session_expired: "החיבור פג. התחבר שוב.",
+    analytics_note: "ספירת אירועים לפי מדינה היא ספירת פעולות, לא אנשים. מבקרים ייחודיים נספרים לפי מזהה דפדפן אנונימי.",
+    country_journey: "מסע לפי מדינה", country: "מדינה", events: "אירועים", unique_visitors: "מבקרים ייחודיים", page_views: "צפיות",
+    scan_starts: "התחלות סריקה", completed: "הושלמו", failed: "נכשלו", contacts: "יצירת קשר", email_signup_short: "אימיילים", account_signup_short: "חשבונות",
+    visitor_to_scan_rate: "מבקר לסריקה", completion_rate: "השלמה", scan_type_journey: "מסע לפי סוג סריקה", selected: "נבחר",
+    source_required: "נדרש מקור", start_to_complete: "התחלה להשלמה", visitors_by_country: "מבקרים ייחודיים לפי מדינה",
+    account_funnel: "משפך חשבונות", blockers: "חיכוך וחסמים", conversion_rates: "יחסי המרה", account_signups: "הרשמות חשבון לפי מדינה", safer_alternatives: "חלופות בטוחות יותר",
     contact_table_missing: "הטבלה contact_messages עדיין לא מוגדרת.", no_contact_messages: "אין עדיין הודעות יצירת קשר.", subscribers_table_missing: "הטבלה email_subscribers עדיין לא מוגדרת.",
     no_email_subscribers: "אין עדיין נרשמים באימייל.", no_name: "ללא שם", origin: "מקור", created: "נוצר", recent_contact_messages: "הודעות יצירת קשר אחרונות",
     latest50: "50 האחרונות שנשמרו ב-Supabase", latest100: "100 האחרונים שנשמרו ב-Supabase", contact_messages: "הודעות יצירת קשר", email_subscribers: "נרשמים באימייל",
@@ -430,6 +450,10 @@ const ADMIN_KEY_LABELS = {
     contact_form_submitted: "Contact form sent", contact_form_failed: "Contact form failed", email_submitted: "Email signup", email_submit_failed: "Email signup failed",
     page_view: "Page view", scan_scope_selected: "Scan type selected", scan_failed: "Scan failed", under_500: "Under 500 chars", "500_1999": "500-1,999 chars",
     "2000_9999": "2,000-9,999 chars", "10000_plus": "10,000+ chars", "0_19_low_risk": "0-19 low risk", "20_69_review": "20-69 review", "70_100_high_risk": "70-100 high risk",
+    account_signup_started: "Account signup started", account_signup_created: "Account created", account_signup_existing_email: "Existing email", account_signup_failed: "Signup failed",
+    account_signin_started: "Sign in started", account_signin_success: "Sign in success", account_signin_failed: "Sign in failed", scan_blocked_login_required: "Login required",
+    scan_source_required: "Full source required", visitor_to_signup: "Visitor to signup", signup_to_account: "Signup to account", visitor_to_scan: "Visitor to scan",
+    scan_start_to_complete: "Scan start to complete", visitor_to_business_intent: "Visitor to business intent",
     contact: "Contact", subscriber: "Subscriber", free: "Free", manual: "Manual active", active: "Active", trialing: "Trialing", canceled: "Canceled"
   },
   he: {
@@ -440,6 +464,10 @@ const ADMIN_KEY_LABELS = {
     contact_form_submitted: "טופס יצירת קשר נשלח", contact_form_failed: "טופס יצירת קשר נכשל", email_submitted: "הרשמה באימייל", email_submit_failed: "הרשמה באימייל נכשלה",
     page_view: "צפייה בעמוד", scan_scope_selected: "נבחר סוג סריקה", scan_failed: "סריקה נכשלה", under_500: "עד 500 תווים", "500_1999": "500-1,999 תווים",
     "2000_9999": "2,000-9,999 תווים", "10000_plus": "10,000+ תווים", "0_19_low_risk": "0-19 סיכון נמוך", "20_69_review": "20-69 לבדיקה", "70_100_high_risk": "70-100 סיכון גבוה",
+    account_signup_started: "התחלת הרשמה", account_signup_created: "חשבון נוצר", account_signup_existing_email: "אימייל קיים", account_signup_failed: "הרשמה נכשלה",
+    account_signin_started: "התחלת התחברות", account_signin_success: "התחברות הצליחה", account_signin_failed: "התחברות נכשלה", scan_blocked_login_required: "נדרשה התחברות",
+    scan_source_required: "נדרש קוד מלא", visitor_to_signup: "מבקר להרשמה", signup_to_account: "הרשמה לחשבון", visitor_to_scan: "מבקר לסריקה",
+    scan_start_to_complete: "התחלה להשלמה", visitor_to_business_intent: "מבקר לכוונה עסקית",
     contact: "יצירת קשר", subscriber: "נרשם", free: "חינם", manual: "פעיל ידנית", active: "פעיל", trialing: "ניסיון", canceled: "מבוטל"
   }
 };
@@ -604,7 +632,7 @@ function analyticsRows(items) {
   return items.slice(0, 8).map(item => `
     <div class="analytics-row">
       <span>${escapeHtml(formatAnalyticsKey(item.key))}</span>
-      <span>${formatNumber(item.count)}</span>
+      <span>${item.value_type === 'percent' ? percent(item.count) : formatNumber(item.count)}</span>
     </div>`).join('');
 }
 
@@ -613,6 +641,29 @@ function analyticsList(title, items) {
     <div class="analytics-list">
       <h3>${escapeHtml(tr(title))}</h3>
       ${analyticsRows(items)}
+    </div>`;
+}
+
+function formatAnalyticsValue(value, type = 'number') {
+  if (type === 'percent') return percent(value);
+  if (type === 'label') return escapeHtml(formatAnalyticsKey(value));
+  return formatNumber(value);
+}
+
+function analyticsTable(title, columns, rows) {
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const body = safeRows.length ? safeRows.slice(0, 16).map(row => `
+    <tr>
+      ${columns.map(col => `<td class="${col.type === 'label' ? '' : 'num'}">${formatAnalyticsValue(row[col.key], col.type)}</td>`).join('')}
+    </tr>`).join('') : `
+    <tr><td colspan="${columns.length}" class="num">0</td></tr>`;
+  return `
+    <div class="analytics-table-wrap">
+      <table class="analytics-table">
+        <caption>${escapeHtml(tr(title))}</caption>
+        <thead><tr>${columns.map(col => `<th>${escapeHtml(tr(col.label))}</th>`).join('')}</tr></thead>
+        <tbody>${body}</tbody>
+      </table>
     </div>`;
 }
 
@@ -755,6 +806,26 @@ function renderAnalytics(data) {
         <div class="stat-sub">${escapeHtml(textWithParams('failures', { a: formatNumber(data.email_failures_30d) }))}</div>
       </div>
       <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('account_funnel'))}</div>
+        <div class="stat-num">${formatNumber(data.account_signup_created_30d)}</div>
+        <div class="stat-sub">${escapeHtml(textWithParams('scans_started_completion', { a: formatNumber(data.account_signup_started_30d), b: percent(data.signup_to_account_rate) }))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('blockers'))}</div>
+        <div class="stat-num">${formatNumber(data.scan_blocked_login_30d)}</div>
+        <div class="stat-sub">${escapeHtml(formatAnalyticsKey('scan_blocked_login_required'))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('conversion_rates'))}</div>
+        <div class="stat-num">${percent(data.visitor_to_completed_scan_rate)}</div>
+        <div class="stat-sub">${escapeHtml(tr('scan_start_to_complete'))}: ${percent(data.scan_start_to_complete_rate)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">${escapeHtml(tr('safer_alternatives'))}</div>
+        <div class="stat-num">${formatNumber(data.safer_alternative_confirmed_30d)}</div>
+        <div class="stat-sub">${percent(data.alternative_confirm_rate)}</div>
+      </div>
+      <div class="stat-card">
         <div class="stat-label">${escapeHtml(tr('owner_completed_scans'))}</div>
         <div class="stat-num">${formatNumber(data.owner_scans_30d)}</div>
         <div class="stat-sub">${escapeHtml(textWithParams('owner_events', { a: formatNumber(data.owner_events_30d) }))}</div>
@@ -765,9 +836,13 @@ function renderAnalytics(data) {
         <div class="stat-sub">${escapeHtml(textWithParams('public_events_count', { a: formatNumber(data.events_30d) }))}</div>
       </div>
     </div>
+    <p class="analytics-note">${escapeHtml(tr('analytics_note'))}</p>
     <div class="analytics-section-title">${escapeHtml(tr('business_funnel'))}</div>
     <div class="analytics-lists">
       ${analyticsList('visitor_funnel', data.funnel)}
+      ${analyticsList('account_funnel', data.account_events)}
+      ${analyticsList('conversion_rates', data.conversion_rates)}
+      ${analyticsList('blockers', data.blockers)}
       ${analyticsList('contact_by_type', data.contact_by_type)}
       ${analyticsList('public_events', data.by_event)}
     </div>
@@ -783,8 +858,19 @@ function renderAnalytics(data) {
       ${analyticsList('public_scan_interest', data.by_scan_scope)}
       ${analyticsList('owner_scan_types', data.owner_by_scan_scope)}
     </div>
+    ${analyticsTable('scan_type_journey', [
+      { key: 'key', label: 'scans', type: 'label' },
+      { key: 'visitors', label: 'unique_visitors' },
+      { key: 'selected', label: 'selected' },
+      { key: 'started', label: 'scan_starts' },
+      { key: 'completed', label: 'completed' },
+      { key: 'failed', label: 'failed' },
+      { key: 'source_required', label: 'source_required' },
+      { key: 'start_to_complete_rate', label: 'start_to_complete', type: 'percent' },
+    ], data.scan_scope_journey)}
     <div class="analytics-section-title">${escapeHtml(tr('audience'))}</div>
     <div class="analytics-lists">
+      ${analyticsList('visitors_by_country', data.visitors_by_country)}
       ${analyticsList('top_public_countries', data.by_country)}
       ${analyticsList('languages', data.by_language)}
       ${analyticsList('devices', data.by_device)}
@@ -793,8 +879,23 @@ function renderAnalytics(data) {
       ${analyticsList('top_referrers', data.top_referrers)}
       ${analyticsList('contact_countries', data.contact_by_country)}
       ${analyticsList('email_signup_countries', data.email_by_country)}
+      ${analyticsList('account_signups', data.account_by_country)}
       ${analyticsList('owner_events_title', data.owner_by_event)}
-    </div>`;
+    </div>
+    ${analyticsTable('country_journey', [
+      { key: 'key', label: 'country', type: 'label' },
+      { key: 'visitors', label: 'unique_visitors' },
+      { key: 'events', label: 'events' },
+      { key: 'page_views', label: 'page_views' },
+      { key: 'scan_starts', label: 'scan_starts' },
+      { key: 'scan_completed', label: 'completed' },
+      { key: 'scan_failed', label: 'failed' },
+      { key: 'account_signups', label: 'account_signup_short' },
+      { key: 'email_signups', label: 'email_signup_short' },
+      { key: 'contact_actions', label: 'contacts' },
+      { key: 'visitor_to_scan_rate', label: 'visitor_to_scan_rate', type: 'percent' },
+      { key: 'scan_completion_rate', label: 'completion_rate', type: 'percent' },
+    ], data.country_journey)}`;
   analyticsStatusEl.textContent = data.actor_filter_active === false
     ? tr('owner_sep_pending')
     : tr('loaded_private_analytics');
