@@ -222,10 +222,21 @@ async function insertSiteScanWithFallback(sb, row) {
     return false;
   }
 
-  if (Object.prototype.hasOwnProperty.call(row, "dynamic_sandbox") || Object.prototype.hasOwnProperty.call(row, "scan_run_id")) {
+  if (
+    Object.prototype.hasOwnProperty.call(row, "dynamic_sandbox") ||
+    Object.prototype.hasOwnProperty.call(row, "scan_run_id") ||
+    Object.prototype.hasOwnProperty.call(row, "scan_coverage") ||
+    Object.prototype.hasOwnProperty.call(row, "coverage_capped") ||
+    Object.prototype.hasOwnProperty.call(row, "decision") ||
+    Object.prototype.hasOwnProperty.call(row, "risk_type")
+  ) {
     const enrichedRow = { ...row };
     delete enrichedRow.dynamic_sandbox;
     delete enrichedRow.scan_run_id;
+    delete enrichedRow.scan_coverage;
+    delete enrichedRow.coverage_capped;
+    delete enrichedRow.decision;
+    delete enrichedRow.risk_type;
     const enrichedRetry = await sb.from("site_scans").insert(enrichedRow);
     if (!enrichedRetry.error) {
       console.warn("[site-scan-save] saved enriched row without newest metadata; run latest Supabase migrations");
@@ -415,6 +426,10 @@ async function saveSiteScan(scope, result, context = {}) {
     source_owner: cleanText(context.source_owner || "", 120),
     code_hash: cleanText(context.code_hash || "", 80),
     dynamic_sandbox: normalizeDynamicSandboxEvidence(result.dynamic_sandbox),
+    scan_coverage: result.scan_coverage && typeof result.scan_coverage === "object" ? result.scan_coverage : {},
+    coverage_capped: Boolean(result.coverage_capped || result?.scan_coverage?.complete === false),
+    decision: cleanText(result?.decision || result?.decision_details?.decision || "", 64),
+    risk_type: cleanText(result?.decision_details?.risk_type || "", 64),
     ...profile,
   };
 
@@ -758,6 +773,14 @@ function applyCoverageVerdictCap(result, coverage) {
     capped.threat_score = Math.max(Number(capped.threat_score) || 0, 20);
     capped.confidence = Math.min(Number(capped.confidence) || 0.6, 0.6);
     capped.coverage_capped = true;
+    capped.decision = "review";
+    capped.decision_details = {
+      decision: "security_review",
+      risk_type: "insufficient_context",
+      action: "scan_complete_source",
+      user_message_key: "decision_security_review",
+      rationale: "The scanned source was too large for complete coverage, so a safe verdict would be misleading.",
+    };
     const scannedNote = Number.isFinite(coverage.files_scanned) && Number.isFinite(coverage.files_total)
       ? `the ${coverage.files_scanned} highest-risk files out of ${coverage.files_total} relevant files`
       : "the highest-risk portion of the code";
