@@ -2640,6 +2640,69 @@ Object.entries(SAFER_ALTERNATIVE_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const ALTERNATIVE_CONSENT_COPY = {
+  en: {
+    alternative_consent_title: "Confirm safer alternative search",
+    alternative_consent_desc: "Cyber Guardian Scan will search for a similar lower-risk source and rescan candidates before recommending one.",
+    alternative_consent_placeholder: "Describe what the replacement should do. This helps us avoid suggesting an unrelated tool.",
+    alternative_consent_quota: "This action may use up to 3 regular scans from your monthly quota.",
+    alternative_consent_button: "Confirm and search",
+    alternative_description_required: "Please describe what the replacement should do before searching."
+  },
+  he: {
+    alternative_consent_title: "אשר חיפוש חלופה בטוחה יותר",
+    alternative_consent_desc: "Cyber Guardian Scan יחפש מקור דומה בסיכון נמוך יותר ויסרוק מועמדים מחדש לפני המלצה.",
+    alternative_consent_placeholder: "תאר מה החלופה צריכה לעשות. זה עוזר לנו לא להציע כלי לא קשור.",
+    alternative_consent_quota: "הפעולה עשויה להשתמש בעד 3 סריקות רגילות מהמכסה החודשית שלך.",
+    alternative_consent_button: "אשר וחפש",
+    alternative_description_required: "נא לתאר מה החלופה צריכה לעשות לפני החיפוש."
+  },
+  de: {
+    alternative_consent_title: "Suche nach sichererer Alternative bestaetigen",
+    alternative_consent_desc: "Cyber Guardian Scan sucht eine aehnliche risikoaermere Quelle und scannt Kandidaten erneut, bevor eine Empfehlung erscheint.",
+    alternative_consent_placeholder: "Beschreiben Sie, was der Ersatz tun soll. So vermeiden wir unpassende Vorschlaege.",
+    alternative_consent_quota: "Diese Aktion kann bis zu 3 regulaere Scans aus Ihrem Monatskontingent nutzen.",
+    alternative_consent_button: "Bestaetigen und suchen",
+    alternative_description_required: "Bitte beschreiben Sie vor der Suche, was der Ersatz tun soll."
+  },
+  ja: {
+    alternative_consent_title: "より安全な代替検索を確認",
+    alternative_consent_desc: "Cyber Guardian Scan は同じ目的の低リスクな候補を探し、推薦前に再スキャンします。",
+    alternative_consent_placeholder: "代替に何をさせたいか説明してください。無関係な候補を避けるためです。",
+    alternative_consent_quota: "この操作は月間枠から最大3回の通常スキャンを使用する場合があります。",
+    alternative_consent_button: "確認して検索",
+    alternative_description_required: "検索前に、代替が何をすべきか説明してください。"
+  },
+  ko: {
+    alternative_consent_title: "더 안전한 대안 검색 확인",
+    alternative_consent_desc: "Cyber Guardian Scan은 유사한 저위험 소스를 찾고 추천 전에 후보를 다시 스캔합니다.",
+    alternative_consent_placeholder: "대체 도구가 무엇을 해야 하는지 설명하세요. 관련 없는 도구 추천을 피하기 위해서입니다.",
+    alternative_consent_quota: "이 작업은 월간 한도에서 일반 스캔을 최대 3회 사용할 수 있습니다.",
+    alternative_consent_button: "확인하고 검색",
+    alternative_description_required: "검색 전에 대체 도구가 무엇을 해야 하는지 설명하세요."
+  },
+  fr: {
+    alternative_consent_title: "Confirmer la recherche d'alternative plus sure",
+    alternative_consent_desc: "Cyber Guardian Scan cherchera une source similaire moins risquee et rescannera les candidats avant recommandation.",
+    alternative_consent_placeholder: "Decrivez ce que le remplacement doit faire. Cela evite de proposer un outil sans rapport.",
+    alternative_consent_quota: "Cette action peut utiliser jusqu'a 3 scans reguliers de votre quota mensuel.",
+    alternative_consent_button: "Confirmer et chercher",
+    alternative_description_required: "Veuillez decrire ce que le remplacement doit faire avant la recherche."
+  },
+  pt: {
+    alternative_consent_title: "Confirmar busca de alternativa mais segura",
+    alternative_consent_desc: "O Cyber Guardian Scan buscara uma fonte semelhante de menor risco e reescaneara candidatos antes de recomendar.",
+    alternative_consent_placeholder: "Descreva o que a substituicao deve fazer. Isso evita sugerir uma ferramenta sem relacao.",
+    alternative_consent_quota: "Esta acao pode usar ate 3 scans regulares da sua cota mensal.",
+    alternative_consent_button: "Confirmar e buscar",
+    alternative_description_required: "Descreva o que a substituicao deve fazer antes de buscar."
+  }
+};
+
+Object.entries(ALTERNATIVE_CONSENT_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const MOAT_COPY = {
   en: {
     integrity_label: "Product integrity",

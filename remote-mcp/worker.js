@@ -1,10 +1,12 @@
 const SERVER_NAME = "cyber-guardian-remote-mcp";
-const SERVER_VERSION = "0.1.0";
+const SERVER_VERSION = "0.2.0";
 const PROTOCOL_VERSION = "2025-06-18";
 const DEFAULT_API_BASE_URL = "https://cyberguardianscan.com";
 
 const SCOPES = ["mcp", "skill", "extension", "github_action", "package", "dependency"];
 const LANGUAGES = ["en", "he", "de", "ja", "ko", "fr", "pt"];
+const VERIFIED_ALTERNATIVE_SCORE = 96;
+const MAX_ALTERNATIVE_VERIFICATION_SCANS = 3;
 
 const TOOLS = [
   {
@@ -29,14 +31,16 @@ const TOOLS = [
   {
     name: "find_safer_alternative",
     title: "Find a safer alternative",
-    description: "Find a lower-risk similar component from Cyber-Guardian scan history. The result must be verified again before production use.",
+    description: "Find a similar lower-risk component, fetch its current source, and rescan it before recommending it.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
-      required: ["scope"],
+      required: ["scope", "user_confirmed"],
       properties: {
         scope: { type: "string", enum: SCOPES, default: "mcp" },
         purpose: { type: "string" },
+        desired_function: { type: "string", description: "Optional user description of what the replacement should do." },
+        user_confirmed: { type: "boolean", description: "Must be true only after the user explicitly approves using up to 3 scan credits." },
         threats: { type: "string" },
         source_url: { type: "string" },
         component_type: { type: "string" },
@@ -171,6 +175,17 @@ function decisionFromScan(scan) {
   return "fix_or_review_before_use";
 }
 
+function securityScoreFromScan(scan) {
+  const explicit = Number(scan?.security_score);
+  if (Number.isFinite(explicit)) return Math.max(0, Math.min(100, Math.round(explicit)));
+  return Math.max(0, Math.min(100, 100 - Math.round(Number(scan?.threat_score || 0))));
+}
+
+function isVerifiedAlternativeScan(scan) {
+  return decisionFromScan(scan) === "safe_to_install"
+    && securityScoreFromScan(scan) >= VERIFIED_ALTERNATIVE_SCORE;
+}
+
 function findingRows(scan) {
   const evidence = Array.isArray(scan?.evidence_report) ? scan.evidence_report : [];
   const threats = Array.isArray(scan?.threats) ? scan.threats : [];
@@ -238,6 +253,8 @@ async function scanCode(request, env, args) {
     decision: decisionFromScan(scan),
     status: scan.status || "",
     threat_score: Number(scan.threat_score || 0),
+    security_score: securityScoreFromScan(scan),
+    verified_by_cyber_guardian: Boolean(scan.verified_by_cyber_guardian),
     scope: payload.scope,
     summary: cleanText(scan?.decision_details?.plain_explanation || scan.summary || "", 900),
     recommendation: cleanText(scan?.decision_details?.next_step || scan.recommendation || "", 900),
@@ -288,8 +305,8 @@ async function getSecurityStats(env) {
   };
 }
 
-async function findSaferAlternative(env, args) {
-  const data = await callCyberGuardian(statsUrl(env, "alternatives", {
+function alternativeQuery(args) {
+  return {
     scope: normalizeScope(args.scope),
     threats: cleanText(args.threats, 500),
     source_url: cleanText(args.source_url, 1000),
@@ -297,24 +314,167 @@ async function findSaferAlternative(env, args) {
     component_type: cleanText(args.component_type, 120),
     capabilities: cleanList(args.capabilities),
     tags: cleanList(args.tags),
-  }), {
-    headers: { "User-Agent": `${SERVER_NAME}/${SERVER_VERSION}` },
-  });
+  };
+}
 
-  const alternative = Array.isArray(data.alternatives) ? data.alternatives[0] : null;
-  if (!alternative) {
+function alternativeSearchText(args) {
+  return [
+    cleanText(args.desired_function, 500),
+    cleanText(args.purpose, 500),
+    cleanText(args.component_type, 120),
+    ...cleanList(args.capabilities),
+    ...cleanList(args.tags),
+  ].filter(Boolean).join(" ");
+}
+
+function candidateKey(candidate) {
+  return cleanText(candidate?.source_url || candidate?.source_name, 1000).toLowerCase();
+}
+
+async function verifyAlternativeCandidate(request, env, candidate, scope) {
+  const sourceUrl = cleanText(candidate?.source_url, 1000);
+  if (!sourceUrl) return null;
+  const scan = await callCyberGuardian(`${apiBase(env)}/api/scan`, {
+    method: "POST",
+    headers: accountHeaders(request, env),
+    body: JSON.stringify({
+      code: sourceUrl,
+      scope: normalizeScope(candidate?.scope || scope),
+      source_url: sourceUrl,
+      source_name: cleanText(candidate?.source_name, 180),
+      source_owner: cleanText(candidate?.source_owner, 120),
+    }),
+  });
+  return {
+    decision: decisionFromScan(scan),
+    status: scan.status || "",
+    threat_score: Number(scan.threat_score || 0),
+    security_score: securityScoreFromScan(scan),
+    verified_by_cyber_guardian: Boolean(scan.verified_by_cyber_guardian),
+    summary: cleanText(scan?.decision_details?.plain_explanation || scan.summary || "", 900),
+    recommendation: cleanText(scan?.decision_details?.next_step || scan.recommendation || "", 900),
+    findings: findingRows(scan),
+    source_resolution: scan._source_resolution || {},
+  };
+}
+
+async function findSaferAlternative(request, env, args) {
+  if (args.user_confirmed !== true) {
+    const structured = {
+      status: "consent_required",
+      max_scan_credits: MAX_ALTERNATIVE_VERIFICATION_SCANS,
+      message: "Ask the user to approve the safer-alternative search before continuing.",
+    };
     return {
-      content: [{ type: "text", text: "No reliable safer alternative is available yet." }],
-      structuredContent: { status: "no_alternative", alternative: null },
+      content: [{ type: "text", text: "User confirmation is required. Explain that finding a safer alternative may use up to 3 regular scan credits, then call this tool again with user_confirmed=true." }],
+      structuredContent: structured,
     };
   }
+
+  const searchText = alternativeSearchText(args);
+  if (!searchText) {
+    const structured = {
+      status: "description_required",
+      message: "Ask the user what the desired replacement should do.",
+    };
+    return {
+      content: [{ type: "text", text: "The intended function is unclear. Ask the user to describe what the replacement should do, then call this tool again with desired_function and user_confirmed=true." }],
+      structuredContent: structured,
+    };
+  }
+
+  const query = alternativeQuery(args);
+  const headers = { "User-Agent": `${SERVER_NAME}/${SERVER_VERSION}` };
+  const attempts = [];
+  const seen = new Set();
+  let scansUsed = 0;
+
+  async function verifyCandidates(candidates, discovery) {
+    for (const candidate of candidates) {
+      if (scansUsed >= MAX_ALTERNATIVE_VERIFICATION_SCANS) break;
+      const key = candidateKey(candidate);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      scansUsed++;
+      try {
+        const verification = await verifyAlternativeCandidate(request, env, candidate, query.scope);
+        if (!verification) continue;
+        attempts.push({
+          discovery,
+          source_name: candidate.source_name || "",
+          source_url: candidate.source_url || "",
+          decision: verification.decision,
+          security_score: verification.security_score,
+        });
+        if (!isVerifiedAlternativeScan(verification)) continue;
+
+        const structured = {
+          status: "verified_current_alternative",
+          alternative: {
+            ...candidate,
+            decision: verification.decision,
+            security_score: verification.security_score,
+            verification_status: "verified_current",
+            requires_fresh_rescan: false,
+          },
+          verification,
+          attempts,
+        };
+        return {
+          content: [
+            { type: "text", text: `Verified safer alternative found\n================================\nSource: ${candidate.source_name || candidate.source_url}\nSecurity score: ${verification.security_score}/100\nDecision: safe to install\n\nThe current source was fetched and rescanned before this recommendation. Rescan again if the code changes.` },
+            { type: "text", text: JSON.stringify(structured, null, 2) },
+          ],
+          structuredContent: structured,
+        };
+      } catch (err) {
+        attempts.push({
+          discovery,
+          source_name: candidate.source_name || "",
+          source_url: candidate.source_url || "",
+          error: cleanText(err?.message || "Verification failed.", 500),
+        });
+      }
+    }
+    return null;
+  }
+
+  try {
+    const historical = await callCyberGuardian(statsUrl(env, "alternatives", query), { headers });
+    const verifiedHistorical = await verifyCandidates(
+      Array.isArray(historical.alternatives) ? historical.alternatives.slice(0, 1) : [],
+      "scan_history",
+    );
+    if (verifiedHistorical) return verifiedHistorical;
+  } catch (err) {
+    attempts.push({ discovery: "scan_history", error: cleanText(err?.message || "History search failed.", 500) });
+  }
+
+  if (searchText && scansUsed < MAX_ALTERNATIVE_VERIFICATION_SCANS) {
+    try {
+      const live = await callCyberGuardian(statsUrl(env, "web_alternatives", {
+        scope: query.scope,
+        q: searchText,
+        exclude: query.source_url,
+      }), { headers });
+      const verifiedLive = await verifyCandidates(
+        Array.isArray(live.candidates) ? live.candidates : [],
+        "live_search",
+      );
+      if (verifiedLive) return verifiedLive;
+    } catch (err) {
+      attempts.push({ discovery: "live_search", error: cleanText(err?.message || "Live search failed.", 500) });
+    }
+  }
+
   const structured = {
-    status: "historical_candidate_requires_fresh_verification",
-    alternative,
+    status: "no_verified_current_alternative",
+    alternative: null,
+    attempts,
   };
   return {
     content: [
-      { type: "text", text: `Potential safer alternative found\n================================\nSource: ${alternative.source_name || alternative.source_url || "unknown"}\nDecision: ${alternative.decision || "candidate"}\n\nImportant: verify the current source before trusting it.` },
+      { type: "text", text: "No currently verified safer alternative passed Cyber Guardian Scan at 96/100 or higher. No unverified candidate is being recommended." },
       { type: "text", text: JSON.stringify(structured, null, 2) },
     ],
     structuredContent: structured,
@@ -333,7 +493,8 @@ function serviceInfo(env) {
     notes: [
       "This remote MCP does not execute submitted code.",
       "It routes scans to Cyber-Guardian's existing scan API.",
-      "If CG_REMOTE_MCP_SHARED_TOKEN is configured, clients must send Authorization: Bearer <token>.",
+      "Clients must send Authorization: Bearer <token>; the service stays locked if CG_REMOTE_MCP_SHARED_TOKEN is missing.",
+      "Safer alternatives are fetched from their current source and rescanned before recommendation.",
       "Production customer auth should move to OAuth or account API tokens mapped to Supabase plans.",
     ],
   };
@@ -361,7 +522,7 @@ async function handleRpc(request, env, message) {
     const name = params.name;
     const args = params.arguments || {};
     if (name === "scan_code") return rpcResult(id, await scanCode(request, env, args));
-    if (name === "find_safer_alternative") return rpcResult(id, await findSaferAlternative(env, args));
+    if (name === "find_safer_alternative") return rpcResult(id, await findSaferAlternative(request, env, args));
     if (name === "get_security_stats") return rpcResult(id, await getSecurityStats(env));
     if (name === "service_info") {
       const info = serviceInfo(env);

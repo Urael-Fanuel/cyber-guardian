@@ -360,6 +360,8 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .alternative-link { display: inline-block; margin-top: 8px; color: var(--green); text-decoration: none; border: 1px solid rgba(0,230,118,0.24); padding: 5px 9px; border-radius: 2px; }
 .alternative-link:hover { color: #fff; border-color: var(--green); }
 .alternative-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.alternative-purpose-input { height: 96px; min-height: 96px; margin-top: 10px; resize: vertical; }
+.alternative-quota-note { margin-top: 8px; color: var(--orange); font-size: 10px; line-height: 1.6; }
 .alternative-verification { margin-top: 10px; padding: 10px 12px; border: 1px solid rgba(0,204,255,0.22); background: rgba(0,204,255,0.04); }
 .alternative-verification.safe { border-color: rgba(0,230,118,0.32); background: rgba(0,230,118,0.06); }
 .alternative-verification.risk { border-color: rgba(255,59,63,0.35); background: rgba(255,59,63,0.06); }
@@ -1667,6 +1669,8 @@ async function accountSignOut() {
 let currentScope = 'mcp';
 let lastScanResult = null;
 let lastAlternativeCandidate = null;
+let lastAlternativeDesiredFunction = '';
+let alternativeScansUsed = 0;
 function inputLengthBucket(length) {
   if (length < 500) return 'under_500';
   if (length < 2000) return '500_1999';
@@ -1923,7 +1927,7 @@ function scanNeedsAlternative(r) {
   return r?.status !== 'STATUS_SAFE' && !['install_ok', 'safe'].includes(decision);
 }
 
-function alternativeQuery(r) {
+function alternativeQuery(r, desiredFunction = '') {
   const profile = r?.code_profile || {};
   const tags = Array.isArray(profile.use_case_tags) ? profile.use_case_tags : [];
   const capabilities = Array.isArray(profile.capabilities) ? profile.capabilities : [];
@@ -1931,7 +1935,7 @@ function alternativeQuery(r) {
   const params = new URLSearchParams({
     mode: 'alternatives',
     scope: currentScope,
-    purpose: String(profile.purpose || '').slice(0, 260),
+    purpose: [desiredFunction, profile.purpose || profile.code_purpose || ''].filter(Boolean).join(' ').slice(0, 260),
     component_type: String(profile.component_type || currentScope).slice(0, 80),
     tags: tags.join(','),
     capabilities: capabilities.join(','),
@@ -1952,6 +1956,10 @@ function alternativeSourceQuery(item) {
 function alternativeIsInstallOk(result) {
   const decision = result?.decision_details?.decision || result?.decision || '';
   return result?.status === 'STATUS_SAFE' || decision === 'install_ok' || decision === 'safe';
+}
+
+function alternativeIsVerified(result) {
+  return alternativeIsInstallOk(result) && displaySecurityScore(result) >= 96;
 }
 
 // Display security score (100 = good). Older API rows may carry only threat_score
@@ -1983,7 +1991,7 @@ function renderAlternativeResult(item) {
 }
 
 function renderAlternativeVerification(result, item, source) {
-  const isOk = alternativeIsInstallOk(result);
+  const isOk = alternativeIsVerified(result);
   const title = isOk ? t('alternative_verified_safe_title') : t('alternative_verified_risk_title');
   const desc = isOk ? t('alternative_verified_safe_desc') : t('alternative_verified_risk_desc');
   const files = Array.isArray(source?.files) && source.files.length
@@ -2012,7 +2020,8 @@ function renderAlternativePaidCta() {
   </div>`;
 }
 
-async function findSaferAlternative() {
+async function legacyFindSaferAlternative() {
+  return findSaferAlternative();
   const target = document.getElementById('alternative-results');
   if (!target || !lastScanResult) return;
   lastAlternativeCandidate = null;
@@ -2026,6 +2035,63 @@ async function findSaferAlternative() {
     if (item) { target.innerHTML = renderAlternativeResult(item); return; }
     // Nothing relevant in our registry — search the public web and scan candidates live
     await cgWebAlternativeSearch(target);
+  } catch {
+    target.innerHTML = renderAlternativePaidCta();
+  }
+}
+
+function alternativePurposeSuggestion(r) {
+  const profile = r?.code_profile || {};
+  return String(profile.purpose || profile.code_purpose || '').trim();
+}
+
+function findSaferAlternative() {
+  const target = document.getElementById('alternative-results');
+  if (!target || !lastScanResult) return;
+  lastAlternativeCandidate = null;
+  lastAlternativeDesiredFunction = alternativePurposeSuggestion(lastScanResult);
+  alternativeScansUsed = 0;
+  if (window.cgTrack) window.cgTrack('safer_alternative_consent_opened', { scope: currentScope, decision: lastScanResult.decision || '' });
+  target.innerHTML = `<div class="alternative-box">
+    <div class="alternative-title">${t('alternative_consent_title')}</div>
+    <div>${t('alternative_consent_desc')}</div>
+    <textarea class="alternative-purpose-input" id="alternative-purpose-input" placeholder="${escHtml(t('alternative_consent_placeholder'))}">${escHtml(lastAlternativeDesiredFunction)}</textarea>
+    <div class="alternative-quota-note">${t('alternative_consent_quota')}</div>
+    <div class="alternative-actions">
+      <button type="button" class="act-btn" onclick="confirmSaferAlternativeSearch()">${t('alternative_consent_button')}</button>
+    </div>
+    <div id="alternative-consent-status"></div>
+  </div>`;
+}
+
+async function confirmSaferAlternativeSearch() {
+  const target = document.getElementById('alternative-results');
+  if (!target || !lastScanResult) return;
+  const input = document.getElementById('alternative-purpose-input');
+  const profile = lastScanResult.code_profile || {};
+  const profileSignals = [
+    profile.purpose || profile.code_purpose || '',
+    ...(Array.isArray(profile.use_case_tags) ? profile.use_case_tags : []),
+    ...(Array.isArray(profile.capabilities) ? profile.capabilities : []),
+  ].filter(Boolean);
+  lastAlternativeDesiredFunction = String(input?.value || '').trim();
+  if (!lastAlternativeDesiredFunction && !profileSignals.length) {
+    const status = document.getElementById('alternative-consent-status');
+    if (status) status.innerHTML = `<div class="alternative-quota-note">${t('alternative_description_required')}</div>`;
+    if (input) input.focus();
+    return;
+  }
+  if (!requireScanAccess()) return;
+  alternativeScansUsed = 0;
+  if (window.cgTrack) window.cgTrack('safer_alternative_confirmed', { scope: currentScope, decision: lastScanResult.decision || '', max_scans: 3 });
+  target.innerHTML = `<div class="alternative-box"><div class="alternative-title">${t('alternative_loading')}</div><div>${t('alternative_loading_desc')}</div></div>`;
+  try {
+    const response = await fetch(alternativeQuery(lastScanResult, lastAlternativeDesiredFunction));
+    const data = await response.json().catch(() => ({}));
+    const item = Array.isArray(data.alternatives) ? data.alternatives[0] : null;
+    lastAlternativeCandidate = item || null;
+    if (item) { await verifyAlternativeCandidate(true); return; }
+    await cgWebAlternativeSearch(target, lastAlternativeDesiredFunction);
   } catch {
     target.innerHTML = renderAlternativePaidCta();
   }
@@ -2051,10 +2117,11 @@ function cgApplyAccountFromScan(scanResult) {
 // Web-search fallback: understand what the flagged code does (the scan already
 // profiled it), search GitHub/npm for tools with the same purpose, scan the top
 // candidates one by one, and present the first verified-clean one as alternative.
-async function cgWebAlternativeSearch(target) {
+async function cgWebAlternativeSearch(target, desiredFunction = '') {
   const r = lastScanResult || {};
   const profile = r.code_profile || {};
   const purpose = [
+    desiredFunction,
     profile.code_purpose || profile.purpose || '',
     ...(Array.isArray(profile.use_case_tags) ? profile.use_case_tags : []),
     ...(Array.isArray(profile.capabilities) ? profile.capabilities : []),
@@ -2072,6 +2139,7 @@ async function cgWebAlternativeSearch(target) {
   if (!requireScanAccess()) return;
 
   for (let i = 0; i < candidates.length; i++) {
+    if (alternativeScansUsed >= 3) break;
     const cand = candidates[i];
     target.innerHTML = altStatusBox('🛡️ ' + t('alt_web_scanning').replace('{i}', i + 1).replace('{n}', candidates.length).replace('{name}', cand.source_name));
     try {
@@ -2080,6 +2148,7 @@ async function cgWebAlternativeSearch(target) {
         headers: scanHeaders(),
         body: JSON.stringify({ code: cand.source_url, scope: currentScope })
       });
+      alternativeScansUsed++;
       const scanResult = await scanResponse.json().catch(() => ({}));
       if (scanResponse.status === 429) {
         target.innerHTML = altStatusBox('⚠ ' + t('quota_exceeded_msg'));
@@ -2088,7 +2157,7 @@ async function cgWebAlternativeSearch(target) {
       if (!scanResponse.ok) continue;
       cgApplyAccountFromScan(scanResult);
       if (window.cgTrack) cgTrack('web_alternative_candidate_scanned', { scope: currentScope, candidate: cand.source_name, status: scanResult.status || '' });
-      if (alternativeIsInstallOk(scanResult) && displaySecurityScore(scanResult) >= 96) {
+      if (alternativeIsVerified(scanResult)) {
         lastAlternativeCandidate = { ...cand, scope: currentScope };
         target.innerHTML = `<div class="alternative-box">
           <div class="alternative-title">✅ ${t('alt_web_found')}</div>
@@ -2105,13 +2174,21 @@ async function cgWebAlternativeSearch(target) {
   target.innerHTML = altStatusBox(t('alt_web_none'));
 }
 
-async function verifyAlternativeCandidate() {
+async function verifyAlternativeCandidate(fallbackToWeb = false) {
   const target = document.getElementById('alternative-verification-status') || document.getElementById('alternative-results');
   const item = lastAlternativeCandidate;
   if (!target || !item) return;
   if (!requireScanAccess()) return;
   if (!item.source_url) {
+    if (fallbackToWeb) {
+      await cgWebAlternativeSearch(target, lastAlternativeDesiredFunction);
+      return;
+    }
     target.innerHTML = `<div class="alternative-verification risk"><div class="alternative-title">${t('alternative_manual_required_title')}</div><div>${t('alternative_manual_required_desc')}</div></div>`;
+    return;
+  }
+  if (alternativeScansUsed >= 3) {
+    target.innerHTML = altStatusBox(t('alt_web_none'));
     return;
   }
 
@@ -2134,6 +2211,7 @@ async function verifyAlternativeCandidate() {
         source_owner: source.source_owner || '',
       })
     });
+    alternativeScansUsed++;
     const scanResult = await scanResponse.json().catch(() => ({}));
     if (!scanResponse.ok) throw new Error(scanResult.error || t('alternative_verify_scan_failed'));
 
@@ -2153,12 +2231,22 @@ async function verifyAlternativeCandidate() {
       scope: item.scope || source.scope || currentScope,
       status: scanResult.status || '',
       threat_score: scanResult.threat_score || 0,
-      verified_safe: alternativeIsInstallOk(scanResult),
+      verified_safe: alternativeIsVerified(scanResult),
     });
-    target.innerHTML = renderAlternativeVerification(scanResult, item, source);
+    if (alternativeIsVerified(scanResult)) {
+      target.innerHTML = renderAlternativeVerification(scanResult, item, source);
+    } else if (fallbackToWeb) {
+      await cgWebAlternativeSearch(target, lastAlternativeDesiredFunction);
+    } else {
+      target.innerHTML = renderAlternativeVerification(scanResult, item, source);
+    }
   } catch (err) {
     if (window.cgTrack) window.cgTrack('safer_alternative_verify_failed', { scope: item.scope || currentScope, error: err.message || 'unknown' });
-    target.innerHTML = `<div class="alternative-verification risk"><div class="alternative-title">${t('alternative_manual_required_title')}</div><div>${escHtml(err.message || t('alternative_verify_scan_failed'))}</div><div class="alternative-actions"><button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_contact_sales')}</button></div></div>`;
+    if (fallbackToWeb) {
+      await cgWebAlternativeSearch(target, lastAlternativeDesiredFunction);
+    } else {
+      target.innerHTML = `<div class="alternative-verification risk"><div class="alternative-title">${t('alternative_manual_required_title')}</div><div>${escHtml(err.message || t('alternative_verify_scan_failed'))}</div><div class="alternative-actions"><button type="button" class="act-btn" onclick="openContact('sales')">${t('alternative_contact_sales')}</button></div></div>`;
+    }
   }
 }
 
