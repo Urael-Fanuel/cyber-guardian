@@ -298,18 +298,27 @@ function threatFamilies(summary) {
 }
 
 function classifyScan(scan) {
-  if (!scan) return 'review';
+  if (!scan) return 'inconclusive';
   const families = threatFamilies(scan.threats_summary);
-  if (scan.status === 'STATUS_SAFE' && Number(scan.threat_count || 0) === 0 && families.length === 0) return 'safe';
+  const threatCount = Number(scan.threat_count || 0);
+  const decision = String(scan.decision || '').trim().toLowerCase();
+  const riskType = String(scan.risk_type || '').trim().toLowerCase();
+
+  if (['safe', 'install_ok'].includes(decision)) return 'safe';
+  if (['blocked', 'do_not_install'].includes(decision)) return 'blocked';
+  if (['fix_before_use', 'install_with_caution', 'review'].includes(decision)) return 'review';
+  if (riskType === 'malicious_behavior') return 'blocked';
+  if (riskType === 'security_weakness') return 'review';
+  if (riskType === 'insufficient_context') return 'inconclusive';
+
+  if (scan.status === 'STATUS_SAFE' && threatCount === 0 && families.length === 0) return 'safe';
   if (families.some(name => BLOCKING_THREAT_FAMILIES.has(name))) return 'blocked';
-  return 'review';
+  if (threatCount > 0 || families.length > 0) return 'review';
+  return 'inconclusive';
 }
 
 function isConclusivePublicScan(scan) {
-  if (!scan || !scan.status || scan.status === 'STATUS_AMBIGUOUS') return false;
-  if (scan.status === 'STATUS_SAFE') return true;
-  const threatCount = Number(scan.threat_count || 0);
-  return threatCount > 0 || threatFamilies(scan.threats_summary).length > 0;
+  return ['safe', 'review', 'blocked'].includes(classifyScan(scan));
 }
 
 function normalizeScope(scope) {
@@ -672,7 +681,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ status: items.length ? 'ok' : 'empty', items });
     }
 
-    const baseSelect = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags';
+    const baseSelect = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,component_type,capabilities,use_case_tags,decision,risk_type';
     const enrichedSelect = `scan_run_id,${baseSelect}`;
     let { data: scans, error } = await sb
       .from('site_scans')
@@ -710,7 +719,9 @@ module.exports = async function handler(req, res) {
       error = legacy.error;
     }
     if (error) throw error;
-    scans = (scans || []).filter(isConclusivePublicScan);
+    const allScans = scans || [];
+    const inconclusive = allScans.filter(s => classifyScan(s) === 'inconclusive').length;
+    scans = allScans.filter(isConclusivePublicScan);
 
     if (!scans || scans.length === 0) {
       if (mode === 'alternatives') {
@@ -719,6 +730,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({
         total: 0, safe: 0, moderate: 0, critical: 0,
         review: 0, blocked: 0,
+        inconclusive,
         detection_rate: 0, attention_rate: 0, blocked_rate: 0, avg_threat_score: 0,
         by_scope: { mcp: 0, skill: 0, extension: 0, supply_chain: 0 },
         recent: [], trend: []
@@ -811,7 +823,7 @@ module.exports = async function handler(req, res) {
     }
 
     return res.status(200).json({
-      total, safe, moderate, critical, review, blocked,
+      total, safe, moderate, critical, review, blocked, inconclusive,
       detection_rate, attention_rate, blocked_rate, avg_threat_score,
       by_scope, recent, trend,
       last_scan: scans[0]?.scanned_at || null
