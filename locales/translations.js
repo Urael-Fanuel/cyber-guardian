@@ -3020,10 +3020,10 @@ Object.entries(SEO_RESOURCES_COPY).forEach(([lang, copy]) => {
 
 const HOMEPAGE_DESIGN_COPY = {
   en: {
-    hero_eyebrow: "Security scanner for MCP, AI Skills and developer supply chain",
-    hero_title_1: "Before you connect AI tools,",
-    hero_title_2: "scan the code.",
-    hero_sub: "Cyber Guardian Scan checks MCP servers, AI Skills, IDE extensions, GitHub Actions, packages and dependencies before they touch your machine, secrets or production workflow.",
+    hero_eyebrow: "Security scanner for AI tools and developer supply chain",
+    hero_title_1: "Before you trust AI tools,",
+    hero_title_2: "scan what they run.",
+    hero_sub: "Scan MCP servers, AI Skills, IDE extensions, GitHub Actions, packages and dependencies before they reach your machine, secrets, repositories or production workflows.",
     hero_primary_cta: "Start a free scan",
     hero_secondary_cta: "Create free account",
     proof_solo: "Solo developers",
@@ -3055,10 +3055,10 @@ const HOMEPAGE_DESIGN_COPY = {
     account_signup_hint: "Create a free account with 10 scans per month. No credit card required."
   },
   he: {
-    hero_eyebrow: "סורק אבטחה ל-MCP, AI Skills ושרשרת אספקת קוד",
-    hero_title_1: "לפני התקנה,",
-    hero_title_2: "סורקים את הקוד.",
-    hero_sub: "Cyber Guardian Scan בודק שרתי MCP, AI Skills, הרחבות IDE, GitHub Actions, חבילות ותלויות לפני שהם נוגעים במחשב, בסודות או בתהליכי פרודקשן.",
+    hero_eyebrow: "סורק אבטחה לכלי AI ולשרשרת אספקת קוד",
+    hero_title_1: "לפני שסומכים על כלי AI,",
+    hero_title_2: "סורקים את מה שהוא מריץ.",
+    hero_sub: "סרוק שרתי MCP, AI Skills, הרחבות IDE, GitHub Actions, חבילות ותלויות לפני שהם מקבלים גישה למחשב, לסודות, למאגרים או לתהליכי פרודקשן.",
     hero_primary_cta: "התחל סריקה בחינם",
     hero_secondary_cta: "צור חשבון חינמי",
     proof_solo: "מפתחים עצמאיים",
@@ -3090,10 +3090,10 @@ const HOMEPAGE_DESIGN_COPY = {
     account_signup_hint: "צור חשבון חינמי עם 10 סריקות בחודש. אין צורך בכרטיס אשראי."
   },
   de: {
-    hero_eyebrow: "Security-Scanner fuer MCP, AI Skills und Developer Supply Chain",
-    hero_title_1: "Bevor Sie AI-Tools verbinden,",
-    hero_title_2: "scannen Sie den Code.",
-    hero_sub: "Cyber Guardian Scan prueft MCP-Server, AI Skills, IDE-Erweiterungen, GitHub Actions, Pakete und Dependencies, bevor sie Rechner, Secrets oder Produktionsablaufe beruehren.",
+    hero_eyebrow: "Security-Scanner fuer AI-Tools und Developer Supply Chain",
+    hero_title_1: "Bevor Sie AI-Tools vertrauen,",
+    hero_title_2: "scannen Sie, was sie ausfuehren.",
+    hero_sub: "Scannen Sie MCP-Server, AI Skills, IDE-Erweiterungen, GitHub Actions, Pakete und Dependencies, bevor sie Rechner, Secrets, Repositories oder Produktionsablaeufe erreichen.",
     hero_primary_cta: "Kostenlos scannen",
     hero_secondary_cta: "Kostenloses Konto",
     proof_solo: "Solo-Entwickler",
@@ -3125,10 +3125,10 @@ const HOMEPAGE_DESIGN_COPY = {
     account_signup_hint: "Erstellen Sie ein kostenloses Konto mit 10 Scans pro Monat. Keine Kreditkarte erforderlich."
   },
   ja: {
-    hero_eyebrow: "MCP、AI Skills、開発者サプライチェーン向けセキュリティスキャナー",
-    hero_title_1: "AIツールを接続する前に、",
-    hero_title_2: "コードをスキャン。",
-    hero_sub: "Cyber Guardian Scanは、MCPサーバー、AI Skills、IDE拡張、GitHub Actions、パッケージ、依存関係が端末や秘密情報、本番ワークフローに触れる前に確認します。",
+    hero_eyebrow: "AIツールと開発者サプライチェーン向けセキュリティスキャナー",
+    hero_title_1: "AIツールを信頼する前に、",
+    hero_title_2: "実行される内容をスキャン。",
+    hero_sub: "MCPサーバー、AI Skills、IDE拡張、GitHub Actions、パッケージ、依存関係が端末、秘密情報、リポジトリ、本番ワークフローに到達する前にスキャンします。",
     hero_primary_cta: "無料でスキャン",
     hero_secondary_cta: "無料アカウント作成",
     proof_solo: "個人開発者",
@@ -3160,10 +3160,10 @@ const HOMEPAGE_DESIGN_COPY = {
     account_signup_hint: "月10回スキャンできる無料アカウントを作成します。クレジットカードは不要です。"
   },
   ko: {
-    hero_eyebrow: "MCP, AI Skills, 개발자 공급망 보안 스캐너",
-    hero_title_1: "AI 도구를 연결하기 전에,",
-    hero_title_2: "코드를 스캔하세요.",
-    hero_sub: "Cyber Guardian Scan은 MCP 서버, AI Skills, IDE 확장, GitHub Actions, 패키지, 의존성이 컴퓨터, secrets, 프로덕션 워크플로에 닿기 전에 검사합니다.",
+    hero_eyebrow: "AI 도구와 개발자 공급망 보안 스캐너",
+    hero_title_1: "AI 도구를 신뢰하기 전에,",
+    hero_title_2: "실행되는 내용을 스캔하세요.",
+    hero_sub: "MCP 서버, AI Skills, IDE 확장, GitHub Actions, 패키지, 의존성이 컴퓨터, secrets, 저장소 또는 프로덕션 워크플로에 접근하기 전에 스캔하세요.",
     hero_primary_cta: "무료 스캔 시작",
     hero_secondary_cta: "무료 계정 만들기",
     proof_solo: "개인 개발자",
@@ -3195,10 +3195,10 @@ const HOMEPAGE_DESIGN_COPY = {
     account_signup_hint: "월 10회 스캔 가능한 무료 계정을 만드세요. 신용카드는 필요 없습니다."
   },
   fr: {
-    hero_eyebrow: "Scanner securite pour MCP, AI Skills et supply chain developpeur",
-    hero_title_1: "Avant de connecter des outils AI,",
-    hero_title_2: "scannez le code.",
-    hero_sub: "Cyber Guardian Scan verifie serveurs MCP, AI Skills, extensions IDE, GitHub Actions, paquets et dependances avant qu'ils touchent votre machine, vos secrets ou vos workflows de production.",
+    hero_eyebrow: "Scanner securite pour outils AI et supply chain developpeur",
+    hero_title_1: "Avant de faire confiance a des outils AI,",
+    hero_title_2: "scannez ce qu ils executent.",
+    hero_sub: "Scannez serveurs MCP, AI Skills, extensions IDE, GitHub Actions, paquets et dependances avant qu ils atteignent votre machine, vos secrets, vos depots ou vos workflows de production.",
     hero_primary_cta: "Lancer un scan gratuit",
     hero_secondary_cta: "Creer un compte gratuit",
     proof_solo: "Developpeurs solo",
@@ -3230,10 +3230,10 @@ const HOMEPAGE_DESIGN_COPY = {
     account_signup_hint: "Creez un compte gratuit avec 10 scans par mois. Aucune carte bancaire requise."
   },
   pt: {
-    hero_eyebrow: "Scanner de seguranca para MCP, AI Skills e supply chain de desenvolvimento",
-    hero_title_1: "Antes de conectar ferramentas AI,",
-    hero_title_2: "escaneie o codigo.",
-    hero_sub: "Cyber Guardian Scan verifica servidores MCP, AI Skills, extensoes IDE, GitHub Actions, pacotes e dependencias antes que toquem sua maquina, secrets ou workflow de producao.",
+    hero_eyebrow: "Scanner de seguranca para ferramentas AI e supply chain de desenvolvimento",
+    hero_title_1: "Antes de confiar em ferramentas AI,",
+    hero_title_2: "escaneie o que elas executam.",
+    hero_sub: "Escaneie servidores MCP, AI Skills, extensoes IDE, GitHub Actions, pacotes e dependencias antes que alcancem sua maquina, secrets, repositorios ou workflows de producao.",
     hero_primary_cta: "Iniciar scan gratis",
     hero_secondary_cta: "Criar conta gratis",
     proof_solo: "Desenvolvedores solo",
