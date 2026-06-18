@@ -306,6 +306,7 @@ function classifyScan(scan) {
   const coverage = scan.scan_coverage && typeof scan.scan_coverage === 'object' ? scan.scan_coverage : {};
   const incompleteCoverage = scan.coverage_capped === true || coverage.complete === false;
 
+  if (incompleteCoverage) return 'inconclusive';
   if (['safe', 'install_ok'].includes(decision)) return 'safe';
   if (['blocked', 'do_not_install'].includes(decision)) return 'blocked';
   if (['fix_before_use', 'install_with_caution', 'review'].includes(decision)) return 'review';
@@ -316,7 +317,6 @@ function classifyScan(scan) {
   if (scan.status === 'STATUS_SAFE' && threatCount === 0 && families.length === 0) return 'safe';
   if (families.some(name => BLOCKING_THREAT_FAMILIES.has(name))) return 'blocked';
   if (threatCount > 0 || families.length > 0) return 'review';
-  if (incompleteCoverage) return 'inconclusive';
   return 'inconclusive';
 }
 

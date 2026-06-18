@@ -135,6 +135,9 @@ class ScannedServer:
     risk_level:    str        = "clean" # clean | low | medium | high | critical
     threats:       list[Threat] = field(default_factory=list)
     files_scanned: int        = 0
+    files_total:   int        = 0
+    coverage_complete: bool   = True
+    coverage_reason: str      = ""
     scan_error:    str        = ""
     content_hash:  str        = ""
     source_code:   str        = ""  # combined code for AI scan (max 200k chars)
@@ -560,13 +563,15 @@ def github_file_priority(item: dict) -> tuple[int, int, str]:
     return (priority, size, path)
 
 
-async def fetch_github_code(client: httpx.AsyncClient, full_name: str) -> dict[str, str]:
+async def fetch_github_code(client: httpx.AsyncClient, full_name: str) -> tuple[dict[str, str], int, bool]:
     """Fetch all scannable files from a GitHub repo using the Trees API."""
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
     }
     files: dict[str, str] = {}
+    files_total = 0
+    coverage_complete = True
     try:
         # Get default branch
         r = await client.get(
@@ -600,14 +605,17 @@ async def fetch_github_code(client: httpx.AsyncClient, full_name: str) -> dict[s
             eligible.append(item)
 
         eligible.sort(key=github_file_priority)
+        files_total = len(eligible)
 
         fetched_bytes = 0
         for item in eligible:
             if len(files) >= MAX_REPO_SCAN_FILES or fetched_bytes >= MAX_REPO_SCAN_BYTES:
+                coverage_complete = False
                 break
             path = item["path"]
             size = int(item.get("size") or 0)
             if size and fetched_bytes + size > MAX_REPO_SCAN_BYTES:
+                coverage_complete = False
                 continue
 
             try:
@@ -627,8 +635,13 @@ async def fetch_github_code(client: httpx.AsyncClient, full_name: str) -> dict[s
 
     except Exception as e:
         log.warning(f"Failed to fetch code for {full_name}: {e}")
+        coverage_complete = False
 
-    return files
+    if files_total == 0:
+        files_total = len(files)
+    if files_total > len(files):
+        coverage_complete = False
+    return files, files_total, coverage_complete
 
 
 async def scan_github_server(client: httpx.AsyncClient, repo: dict) -> ScannedServer:
@@ -644,8 +657,12 @@ async def scan_github_server(client: httpx.AsyncClient, repo: dict) -> ScannedSe
         owner=repo.get("owner", {}).get("login", ""),
     )
 
-    files = await fetch_github_code(client, full_name)
+    files, files_total, coverage_complete = await fetch_github_code(client, full_name)
     server.files_scanned = len(files)
+    server.files_total = files_total
+    server.coverage_complete = coverage_complete
+    if not coverage_complete:
+        server.coverage_reason = "github_source_partial"
 
     all_content = "\n".join(files.values())
     server.content_hash = hashlib.sha256(all_content.encode()).hexdigest()[:16]
@@ -739,37 +756,41 @@ async def fetch_npm_scope(client: httpx.AsyncClient, scope: str, limit: int) -> 
     return await fetch_npm_packages(client, limit, terms)
 
 
-async def fetch_npm_tarball_contents(client: httpx.AsyncClient, name: str, version: str) -> dict[str, str]:
+async def fetch_npm_tarball_contents(client: httpx.AsyncClient, name: str, version: str) -> tuple[dict[str, str], int, bool]:
     """Download and extract the npm tarball to analyze JS/TS source files."""
     import tarfile
     import io
 
     files: dict[str, str] = {}
+    files_total = 0
+    coverage_complete = True
     try:
         url = f"https://registry.npmjs.org/{name}/-/{name.split('/')[-1]}-{version}.tgz"
         r = await client.get(url, timeout=30, follow_redirects=True)
         if r.status_code != 200:
-            return files
+            return files, files_total, False
         content_length = int(r.headers.get("content-length") or 0)
         if content_length > MAX_ARCHIVE_SIZE or len(r.content) > MAX_ARCHIVE_SIZE:
             log.warning(f"  npm tarball too large, skipping {name}")
-            return files
+            return files, files_total, False
 
         tgz = io.BytesIO(r.content)
         with tarfile.open(fileobj=tgz, mode="r:gz") as tar:
             members = tar.getmembers()
             if len(members) > MAX_ARCHIVE_MEMBERS:
                 log.warning(f"  npm tarball has too many files, skipping {name}")
-                return files
+                return files, files_total, False
+            eligible = [
+                member for member in members
+                if ("." + member.name.rsplit(".", 1)[-1] if "." in member.name else "").lower() in SCAN_EXTENSIONS
+                and member.size <= MAX_FILE_SIZE
+            ]
+            files_total = len(eligible)
             extracted_bytes = 0
-            for member in members:
+            for member in eligible:
                 path = member.name
-                ext  = "." + path.rsplit(".", 1)[-1] if "." in path else ""
-                if ext.lower() not in SCAN_EXTENSIONS:
-                    continue
-                if member.size > MAX_FILE_SIZE:
-                    continue
                 if extracted_bytes + member.size > MAX_EXTRACTED_BYTES:
+                    coverage_complete = False
                     break
                 try:
                     f = tar.extractfile(member)
@@ -781,7 +802,12 @@ async def fetch_npm_tarball_contents(client: httpx.AsyncClient, name: str, versi
                     pass
     except Exception as e:
         log.debug(f"  npm tarball error {name}: {e}")
-    return files
+        coverage_complete = False
+    if files_total == 0:
+        files_total = len(files)
+    if files_total > len(files):
+        coverage_complete = False
+    return files, files_total, coverage_complete
 
 
 async def scan_npm_server(client: httpx.AsyncClient, pkg: dict) -> ScannedServer:
@@ -810,8 +836,12 @@ async def scan_npm_server(client: httpx.AsyncClient, pkg: dict) -> ScannedServer
         weekly_dl=weekly_dl,
     )
 
-    files = await fetch_npm_tarball_contents(client, name, version)
+    files, files_total, coverage_complete = await fetch_npm_tarball_contents(client, name, version)
     server.files_scanned = len(files)
+    server.files_total = files_total
+    server.coverage_complete = coverage_complete
+    if not coverage_complete:
+        server.coverage_reason = "npm_archive_partial"
 
     all_content = "\n".join(files.values())
     server.content_hash = hashlib.sha256(all_content.encode()).hexdigest()[:16]
@@ -947,12 +977,15 @@ def _site_scan_row(scope: str, result: dict, server=None) -> dict:
         threats_summary = ", ".join([t.get("family", "") for t in threats[:5] if t.get("family")])
 
     profile = result.get("code_profile") if isinstance(result.get("code_profile"), dict) else {}
+    decision_details = result.get("decision_details") if isinstance(result.get("decision_details"), dict) else {}
     row = {
         "scope":            scope,
         "status":           status,
         "threat_score":     result.get("threat_score", 0),
         "threat_count":     len(threats),
         "threats_summary":  threats_summary,
+        "decision":         _clean_text(result.get("decision") or decision_details.get("decision"), 64),
+        "risk_type":        _clean_text(decision_details.get("risk_type"), 64),
         "code_purpose":     _clean_text(profile.get("purpose") or profile.get("summary"), 280),
         "component_type":   _clean_text(profile.get("component_type") or scope, 48).lower(),
         "capabilities":     _clean_list(profile.get("capabilities"), 8),
@@ -960,11 +993,21 @@ def _site_scan_row(scope: str, result: dict, server=None) -> dict:
         "dynamic_sandbox":  result.get("behavior_review") if isinstance(result.get("behavior_review"), dict) else (result.get("dynamic_sandbox") if isinstance(result.get("dynamic_sandbox"), dict) else {}),
     }
     if server:
+        coverage_complete = bool(getattr(server, "coverage_complete", True))
+        files_scanned = int(getattr(server, "files_scanned", 0) or 0)
+        files_total = int(getattr(server, "files_total", files_scanned) or files_scanned)
         row.update({
             "source_name":  _clean_text(getattr(server, "name", ""), 160),
             "source_url":   _clean_text(getattr(server, "url", ""), 500),
             "source_owner": _clean_text(getattr(server, "owner", ""), 120),
             "code_hash":    _clean_text(getattr(server, "content_hash", ""), 80),
+            "scan_coverage": {
+                "complete": coverage_complete,
+                "files_scanned": files_scanned,
+                "files_total": files_total,
+                "reason": _clean_text(getattr(server, "coverage_reason", ""), 80),
+            },
+            "coverage_capped": not coverage_complete,
         })
     return row
 
@@ -1018,8 +1061,12 @@ def save_site_scan(sb: Client, scope: str, result: dict, server=None) -> bool:
                 try:
                     enriched = dict(row)
                     enriched.pop("dynamic_sandbox", None)
+                    enriched.pop("scan_coverage", None)
+                    enriched.pop("coverage_capped", None)
+                    enriched.pop("decision", None)
+                    enriched.pop("risk_type", None)
                     sb.table("site_scans").insert(enriched).execute()
-                    log.warning("  [CG] saved site_scan without dynamic_sandbox; run migration 007")
+                    log.warning("  [CG] saved site_scan without newest metadata; run latest migrations")
                     return True
                 except Exception:
                     pass
