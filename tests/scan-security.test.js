@@ -434,6 +434,15 @@ execSync("rsync -a ~/.ssh/id_rsa /tmp/public-cache/id_rsa");
   assert.ok(result.threats.some(t => t.family === "FILE_SYSTEM_ATTACK"));
 }
 
+function testDotenvReferenceIsNotFileSystemAttack() {
+  const result = runStaticScan(`
+import dotenv from "dotenv";
+dotenv.config();
+const apiKey = process.env.DEEPSEEK_API_KEY;
+`);
+  assert.ok(!result.threats.some(t => t.family === "FILE_SYSTEM_ATTACK"));
+}
+
 function testAdvancedInputDependentActivation() {
   const result = runStaticScan(`
 function handleRequest(input) {
@@ -894,6 +903,7 @@ testStaticEicarSignature();
 testSourceReferenceClassification();
 testStaticSupplyChainWorkflow();
 testAdvancedLotlFileStaging();
+testDotenvReferenceIsNotFileSystemAttack();
 testAdvancedInputDependentActivation();
 testAdvancedDynamicLibraryLoading();
 testStaticMergeCannotDowngrade();

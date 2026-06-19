@@ -881,8 +881,8 @@ const STATIC_RULES = [
     family: "FILE_SYSTEM_ATTACK",
     severity: "MEDIUM",
     score: 55,
-    pattern: /(\/etc\/shadow|\/etc\/passwd|\.ssh\/id_rsa|\.aws\/credentials|\.npmrc|\.pypirc|\.env)/i,
-    description: "The code references sensitive local files or credential stores.",
+    pattern: /(\breadFile(?:Sync)?\b|\bopen\s*\(|\bcat\s+|\btype\s+|\bGet-Content\b|\bcopyFile(?:Sync)?\b|\brename(?:Sync)?\b|\bunlink(?:Sync)?\b|\brm\s+-|\bglob\b|\breaddir(?:Sync)?\b|\bwalk\b|\bfind\s+).{0,180}(\/etc\/shadow|\/etc\/passwd|\.ssh\/id_rsa|\.aws\/credentials|\.npmrc|\.pypirc|\.env)|((\/etc\/shadow|\/etc\/passwd|\.ssh\/id_rsa|\.aws\/credentials|\.npmrc|\.pypirc|\.env).{0,180}(\breadFile(?:Sync)?\b|\bopen\s*\(|\bcat\s+|\btype\s+|\bGet-Content\b|\bcopyFile(?:Sync)?\b|\brename(?:Sync)?\b|\bunlink(?:Sync)?\b|\brm\s+-|\bglob\b|\breaddir(?:Sync)?\b|\bwalk\b|\bfind\s+))/i,
+    description: "The code performs file operations on sensitive local files or credential stores.",
   },
   {
     family: "PROMPT_INJECTION",
