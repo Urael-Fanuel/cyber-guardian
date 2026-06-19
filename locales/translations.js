@@ -3306,7 +3306,7 @@ const PUBLIC_POLISH_COPY = {
     stat_families: "משפחות איומים",
     footer_tagline: "אבטחת כלי AI · 60 משפחות איומים · מנוע אבטחה",
     hero_eyebrow: "תקן האמון לכלי AI",
-    hero_title_1: "לפני שמתקינים כלי AI,‏",
+    hero_title_1: "לפני שמתקינים כלי AI‏",
     hero_title_2: "מוודאים שאפשר לסמוך עליו.",
     hero_sub: "סורקים שרתי MCP, סוכני AI, Skills, הרחבות IDE ו-VS Code, כלי Cursor, מאגרי GitHub ו-Actions, חבילות npm ותלויות לפני שמעניקים להם גישה למערכות, מידע, פרטי גישה או תהליכי עבודה.",
     hero_question: "האם הקוד שלך נסרק על ידי Cyber Guardian Scan?‏",

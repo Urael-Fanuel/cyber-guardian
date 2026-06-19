@@ -120,12 +120,14 @@ nav {
 .hero-inner { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(320px,0.95fr); gap: 44px; align-items: center; }
 .hero-copy { min-width: 0; text-align: left; }
 [dir="rtl"] .hero-copy { text-align: right; }
-.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 10.5px; letter-spacing: 2.5px; color: var(--cyan); text-transform: uppercase; margin-bottom: 18px; animation: fu 0.5s 0.1s both; border: 1px solid rgba(0,212,255,0.24); background: rgba(0,212,255,0.065); padding: 7px 11px; border-radius: 999px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; letter-spacing: 2.2px; color: var(--cyan); text-transform: uppercase; margin-bottom: 18px; animation: fu 0.5s 0.1s both; border: 1px solid rgba(0,212,255,0.36); background: rgba(0,212,255,0.1); padding: 9px 14px; border-radius: 999px; box-shadow: 0 0 18px rgba(0,212,255,0.12); }
 h1 { font-family: var(--sans); font-size: 52px; font-weight: 800; line-height: 1.08; color: #fff; margin-bottom: 18px; letter-spacing: 0; animation: fu 0.5s 0.2s both; text-wrap: balance; }
 h1 br { display: none; }
 h1 span { display: block; }
 h1 [data-i18n="hero_title_1"] { font-size: 0.86em; }
 h1 .hl { color: var(--cyan); text-shadow: 0 0 26px rgba(0,212,255,0.28); }
+[dir="rtl"] h1 { max-width: 780px; margin-inline-start: auto; }
+[dir="rtl"] h1 [data-i18n="hero_title_1"] { white-space: nowrap; }
 .hero-sub { font-size: clamp(14px,1.25vw,16px); line-height: 1.75; color: var(--text-dim); max-width: 650px; margin: 0 0 14px; overflow-wrap: anywhere; animation: fu 0.5s 0.3s both; }
 .hero-question { max-width: 650px; margin: 0 0 24px; color: #fff; font-family: var(--sans); font-size: 15px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; animation: fu 0.5s 0.32s both; }
 .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; animation: fu 0.5s 0.34s both; }
@@ -649,6 +651,7 @@ footer a:hover { color: var(--cyan); }
   .hero-copy { text-align: center; }
   [dir="rtl"] .hero-copy { text-align: center; }
   .hero-sub { margin-left: auto; margin-right: auto; }
+  [dir="rtl"] h1 [data-i18n="hero_title_1"] { white-space: normal; }
   .hero-actions, .hero-proof { justify-content: center; }
   .hero-cta { width: 100%; }
   .hero-visual { min-height: auto; }
@@ -728,7 +731,7 @@ footer a:hover { color: var(--cyan); }
       <p class="hero-question" data-i18n="hero_question">Has your code been scanned by Cyber Guardian Scan?</p>
       <div class="hero-actions">
         <a class="hero-cta primary" href="#scanner" data-i18n="hero_primary_cta">Scan Code Now</a>
-        <a class="hero-cta secondary" href="#scanner" data-i18n="hero_secondary_cta">Search Verified Tools</a>
+        <a class="hero-cta secondary" href="#cg-search" onclick="scrollToSearchHistory(event)" data-i18n="hero_secondary_cta">Search Verified Tools</a>
       </div>
       <div class="hero-proof" aria-label="Cyber Guardian Scan audiences">
         <span class="proof-pill" data-i18n="proof_solo">Solo developers</span>
@@ -842,7 +845,7 @@ footer a:hover { color: var(--cyan); }
       <button class="scan-btn" id="scan-btn" onclick="runScan()">▶ &nbsp;<span data-i18n="btn_scan">SCAN NOW</span></button>
     </div>
 
-    <div class="cg-search" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
+    <div class="cg-search" id="cg-search" style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)">
       <label class="lbl" for="cg-search-input" data-i18n="search_label">Already scanned? Check the history before you scan</label>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
         <input id="cg-search-input" type="text" data-i18n-placeholder="search_placeholder" placeholder="Paste code, or type a repo name / GitHub URL" style="flex:1;min-width:220px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.25);color:inherit;font:inherit" onkeydown="if(event.key==='Enter'){event.preventDefault();cgCodeSearch();}" />
@@ -2845,6 +2848,12 @@ async function cgLoadVerifiedBanner() {
 }
 
 function scrollToScanner() { document.getElementById('scanner').scrollIntoView({ behavior:'smooth' }); }
+function scrollToSearchHistory(event) {
+  if (event) event.preventDefault();
+  const target = document.getElementById('cg-search');
+  target?.scrollIntoView({ behavior:'smooth', block:'center' });
+  setTimeout(() => document.getElementById('cg-search-input')?.focus({ preventScroll: true }), 450);
+}
 
 async function subscribeEmail() {
   const input = document.getElementById('email-input');
