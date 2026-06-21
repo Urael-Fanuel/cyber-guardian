@@ -163,6 +163,11 @@ canvas { max-height: 200px; }
 .decision-line strong { color: var(--green); }
 .feed-item.risk-mod .decision-line strong { color: var(--orange); }
 .feed-item.risk-crit .decision-line strong { color: var(--red); }
+.review-clarity-card { border: 1px solid rgba(255,157,0,0.34); background: linear-gradient(135deg, rgba(255,157,0,0.09), rgba(8,18,30,0.78)); color: var(--text); padding: 11px 13px; margin: 8px 0 10px; border-radius: 8px; line-height: 1.65; }
+.review-clarity-title { color: var(--orange); font-weight: 900; font-size: 13px; margin-bottom: 4px; }
+.review-clarity-card p { margin: 0 0 6px; font-size: 12px; }
+.review-clarity-card p:last-child { margin-bottom: 0; }
+.review-clarity-next { color: var(--cyan); font-weight: 800; }
 .verified-trust-card { display: grid; grid-template-columns: 54px minmax(0,1fr) minmax(110px,auto); align-items: center; gap: 13px; margin: 4px 0 12px; padding: 12px 14px; border: 1px solid rgba(0,230,118,0.54); border-radius: 8px; background: linear-gradient(135deg,rgba(0,230,118,0.09),rgba(5,8,13,0.88) 48%); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 30px rgba(0,0,0,0.2); }
 .verified-trust-logo { position: relative; width: 54px; height: 54px; overflow: hidden; border: 1px solid rgba(255,189,46,0.58); border-radius: 8px; background: #080808; box-shadow: 0 0 18px rgba(255,189,46,0.17); }
 .verified-trust-logo img { position: absolute; width: 98px; max-width: none; height: auto; left: 50%; top: -7px; transform: translateX(-50%); }
@@ -1146,6 +1151,69 @@ Object.entries(SIMPLE_EVIDENCE_COPY).forEach(([lang, copy]) => {
   DECISION_COPY[lang] = { ...(DECISION_COPY[lang] || DECISION_COPY.en), ...copy };
 });
 
+const REVIEW_CLARITY_COPY = {
+  en: {
+    review_clarity_title: 'Security review required',
+    review_clarity_plain: 'This does not automatically mean the code is malicious. It means the scan found behavior that should be checked or fixed before installation.',
+    review_clarity_assessment: 'System assessment: this may be a security weakness, unclear intent, or risky implementation rather than deliberate malware.',
+    review_clarity_next: 'Next step: read the listed findings, ask the author for clarification or a fix, then rescan before installing.',
+    review_count_prefix: 'Findings that need review',
+    review_no_count: 'No confirmed threat count was reported, but the scan needs review.',
+  },
+  he: {
+    review_clarity_title: '\u05d1\u05d3\u05d9\u05e7\u05ea \u05d0\u05d1\u05d8\u05d7\u05d4 \u05e0\u05d3\u05e8\u05e9\u05ea',
+    review_clarity_plain: '\u05d6\u05d4 \u05dc\u05d0 \u05d0\u05d5\u05de\u05e8 \u05d1\u05d4\u05db\u05e8\u05d7 \u05e9\u05d4\u05e7\u05d5\u05d3 \u05d6\u05d3\u05d5\u05e0\u05d9. \u05d6\u05d4 \u05d0\u05d5\u05de\u05e8 \u05e9\u05d4\u05e1\u05e8\u05d9\u05e7\u05d4 \u05de\u05e6\u05d0\u05d4 \u05d4\u05ea\u05e0\u05d4\u05d2\u05d5\u05ea \u05e9\u05e6\u05e8\u05d9\u05da \u05dc\u05d1\u05d3\u05d5\u05e7 \u05d0\u05d5 \u05dc\u05ea\u05e7\u05df \u05dc\u05e4\u05e0\u05d9 \u05d4\u05ea\u05e7\u05e0\u05d4.',
+    review_clarity_assessment: '\u05d4\u05e2\u05e8\u05db\u05ea \u05d4\u05de\u05e2\u05e8\u05db\u05ea: \u05d9\u05d9\u05ea\u05db\u05df \u05e9\u05de\u05d3\u05d5\u05d1\u05e8 \u05d1\u05d7\u05d5\u05dc\u05e9\u05ea \u05d0\u05d1\u05d8\u05d7\u05d4, \u05db\u05d5\u05d5\u05e0\u05d4 \u05dc\u05d0 \u05d1\u05e8\u05d5\u05e8\u05d4 \u05d0\u05d5 \u05de\u05d9\u05de\u05d5\u05e9 \u05de\u05e1\u05d5\u05db\u05df, \u05d5\u05dc\u05d0 \u05d1\u05d4\u05db\u05e8\u05d7 \u05e7\u05d5\u05d3 \u05d6\u05d3\u05d5\u05e0\u05d9.',
+    review_clarity_next: '\u05d4\u05e6\u05e2\u05d3 \u05d4\u05d1\u05d0: \u05dc\u05e7\u05e8\u05d5\u05d0 \u05d0\u05ea \u05d4\u05de\u05de\u05e6\u05d0\u05d9\u05dd, \u05dc\u05d1\u05e7\u05e9 \u05de\u05d4\u05de\u05d7\u05d1\u05e8 \u05d4\u05e1\u05d1\u05e8 \u05d0\u05d5 \u05ea\u05d9\u05e7\u05d5\u05df, \u05d5\u05dc\u05e1\u05e8\u05d5\u05e7 \u05e9\u05d5\u05d1 \u05dc\u05e4\u05e0\u05d9 \u05d4\u05ea\u05e7\u05e0\u05d4.',
+    review_count_prefix: '\u05de\u05de\u05e6\u05d0\u05d9\u05dd \u05e9\u05d3\u05d5\u05e8\u05e9\u05d9\u05dd \u05d1\u05d3\u05d9\u05e7\u05d4',
+    review_no_count: '\u05dc\u05d0 \u05d3\u05d5\u05d5\u05d7 \u05de\u05e1\u05e4\u05e8 \u05d0\u05d9\u05d5\u05de\u05d9\u05dd \u05de\u05d0\u05d5\u05de\u05ea, \u05d0\u05d1\u05dc \u05d4\u05e1\u05e8\u05d9\u05e7\u05d4 \u05d3\u05d5\u05e8\u05e9\u05ea \u05d1\u05d3\u05d9\u05e7\u05d4.',
+  },
+  de: {
+    review_clarity_title: 'Sicherheitspruefung erforderlich',
+    review_clarity_plain: 'Das bedeutet nicht automatisch, dass der Code boesartig ist. Der Scan fand Verhalten, das vor der Installation geprueft oder korrigiert werden sollte.',
+    review_clarity_assessment: 'Systemeinschaetzung: moeglicherweise eine Sicherheitsluecke, unklare Absicht oder riskante Umsetzung statt absichtlicher Malware.',
+    review_clarity_next: 'Naechster Schritt: Befunde lesen, Erklaerung oder Fix anfordern und vor der Installation erneut scannen.',
+    review_count_prefix: 'Befunde, die geprueft werden muessen',
+    review_no_count: 'Keine bestaetigte Bedrohungsanzahl gemeldet, aber der Scan muss geprueft werden.',
+  },
+  ja: {
+    review_clarity_title: '\u30bb\u30ad\u30e5\u30ea\u30c6\u30a3\u78ba\u8a8d\u304c\u5fc5\u8981\u3067\u3059',
+    review_clarity_plain: '\u3053\u308c\u306f\u30b3\u30fc\u30c9\u304c\u81ea\u52d5\u7684\u306b\u60aa\u610f\u3042\u308b\u3068\u3044\u3046\u610f\u5473\u3067\u306f\u3042\u308a\u307e\u305b\u3093\u3002\u30a4\u30f3\u30b9\u30c8\u30fc\u30eb\u524d\u306b\u78ba\u8a8d\u307e\u305f\u306f\u4fee\u6b63\u3059\u3079\u304d\u52d5\u4f5c\u304c\u898b\u3064\u304b\u3063\u305f\u3068\u3044\u3046\u610f\u5473\u3067\u3059\u3002',
+    review_clarity_assessment: '\u30b7\u30b9\u30c6\u30e0\u8a55\u4fa1: \u610f\u56f3\u7684\u306a\u30de\u30eb\u30a6\u30a7\u30a2\u3067\u306f\u306a\u304f\u3001\u30bb\u30ad\u30e5\u30ea\u30c6\u30a3\u4e0a\u306e\u5f31\u70b9\u3001\u4e0d\u660e\u78ba\u306a\u610f\u56f3\u3001\u307e\u305f\u306f\u30ea\u30b9\u30af\u306e\u3042\u308b\u5b9f\u88c5\u306e\u53ef\u80fd\u6027\u304c\u3042\u308a\u307e\u3059\u3002',
+    review_clarity_next: '\u6b21\u306e\u624b\u9806: \u6307\u6458\u3092\u8aad\u307f\u3001\u4f5c\u6210\u8005\u306b\u8aac\u660e\u307e\u305f\u306f\u4fee\u6b63\u3092\u6c42\u3081\u3001\u30a4\u30f3\u30b9\u30c8\u30fc\u30eb\u524d\u306b\u518d\u30b9\u30ad\u30e3\u30f3\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
+    review_count_prefix: '\u78ba\u8a8d\u304c\u5fc5\u8981\u306a\u6307\u6458',
+    review_no_count: '\u78ba\u8a8d\u6e08\u307f\u306e\u8105\u5a01\u6570\u306f\u5831\u544a\u3055\u308c\u3066\u3044\u307e\u305b\u3093\u304c\u3001\u30b9\u30ad\u30e3\u30f3\u306b\u306f\u78ba\u8a8d\u304c\u5fc5\u8981\u3067\u3059\u3002',
+  },
+  ko: {
+    review_clarity_title: '\ubcf4\uc548 \uac80\ud1a0\uac00 \ud544\uc694\ud569\ub2c8\ub2e4',
+    review_clarity_plain: '\uc774\uac83\uc740 \ucf54\ub4dc\uac00 \uc790\ub3d9\uc73c\ub85c \uc545\uc131\uc774\ub77c\ub294 \ub73b\uc774 \uc544\ub2d9\ub2c8\ub2e4. \uc124\uce58 \uc804\uc5d0 \ud655\uc778\ud558\uac70\ub098 \uc218\uc815\ud574\uc57c \ud560 \ub3d9\uc791\uc744 \uc2a4\uce94\uc774 \ucc3e\uc558\ub2e4\ub294 \ub73b\uc785\ub2c8\ub2e4.',
+    review_clarity_assessment: '\uc2dc\uc2a4\ud15c \ud3c9\uac00: \uc758\ub3c4\uc801\uc778 \uc545\uc131\ucf54\ub4dc\ubcf4\ub2e4\ub294 \ubcf4\uc548 \uc57d\uc810, \ubd88\uba85\ud655\ud55c \uc758\ub3c4, \ub610\ub294 \uc704\ud5d8\ud55c \uad6c\ud604\uc77c \uc218 \uc788\uc2b5\ub2c8\ub2e4.',
+    review_clarity_next: '\ub2e4\uc74c \ub2e8\uacc4: \ub098\uc5f4\ub41c \uc9c0\uc801\uc744 \uc77d\uace0, \uc791\uc131\uc790\uc5d0\uac8c \uc124\uba85\uc774\ub098 \uc218\uc815\uc744 \uc694\uccad\ud55c \ub4a4, \uc124\uce58 \uc804\uc5d0 \ub2e4\uc2dc \uc2a4\uce94\ud558\uc138\uc694.',
+    review_count_prefix: '\uac80\ud1a0\uac00 \ud544\uc694\ud55c \uc9c0\uc801',
+    review_no_count: '\ud655\uc778\ub41c \uc704\ud611 \uc218\ub294 \ubcf4\uace0\ub418\uc9c0 \uc54a\uc558\uc9c0\ub9cc \uac80\ud1a0\uac00 \ud544\uc694\ud569\ub2c8\ub2e4.',
+  },
+  fr: {
+    review_clarity_title: 'Revue de securite requise',
+    review_clarity_plain: 'Cela ne signifie pas automatiquement que le code est malveillant. Le scan a trouve un comportement a verifier ou corriger avant installation.',
+    review_clarity_assessment: 'Evaluation: il peut s agir d une faiblesse de securite, d une intention peu claire ou d une implementation risquee, pas forcement d un malware volontaire.',
+    review_clarity_next: 'Prochaine etape: lisez les constats, demandez une explication ou un correctif, puis relancez le scan avant installation.',
+    review_count_prefix: 'Constats a verifier',
+    review_no_count: 'Aucun nombre de menaces confirme n a ete signale, mais le scan demande une revue.',
+  },
+  pt: {
+    review_clarity_title: 'Revisao de seguranca necessaria',
+    review_clarity_plain: 'Isso nao significa automaticamente que o codigo e malicioso. O scan encontrou comportamento que deve ser verificado ou corrigido antes da instalacao.',
+    review_clarity_assessment: 'Avaliacao: pode ser uma fraqueza de seguranca, intencao pouco clara ou implementacao arriscada, nao necessariamente malware intencional.',
+    review_clarity_next: 'Proximo passo: leia os achados, peca explicacao ou correcao ao autor e escaneie novamente antes de instalar.',
+    review_count_prefix: 'Achados que precisam de revisao',
+    review_no_count: 'Nenhuma contagem confirmada de ameacas foi informada, mas o scan precisa de revisao.',
+  },
+};
+
+Object.entries(REVIEW_CLARITY_COPY).forEach(([lang, copy]) => {
+  DECISION_COPY[lang] = { ...(DECISION_COPY[lang] || DECISION_COPY.en), ...copy };
+});
+
 const THREAT_EXPLANATIONS = {
   en: {
     credential: 'The code touches passwords, tokens, API keys, SSH keys, or other secrets. Installing it can expose accounts or infrastructure.',
@@ -1392,6 +1460,21 @@ function scanDecision(scanOrStatus, decisionOverride) {
   if (value === 'blocked') return { value, className: 'risk-crit', text: c.block, action: c.action_block };
   if (value === 'review') return { value, className: 'risk-mod', text: c.review, action: c.action_review };
   return { value, className: 'risk-safe', text: c.install_ok, action: c.action_safe };
+}
+
+function reviewClarityHtml(scan, decision) {
+  if (decision.value !== 'review') return '';
+  const findingCount = Number(scan.threat_count || 0);
+  const countText = findingCount > 0
+    ? decisionText('review_count_prefix', 'Findings that need review') + ': ' + findingCount
+    : decisionText('review_no_count', 'No confirmed threat count was reported, but the scan needs review.');
+  return `<div class="review-clarity-card">
+    <div class="review-clarity-title">${escapeHtml(decisionText('review_clarity_title', 'Security review required'))}</div>
+    <p>${escapeHtml(decisionText('review_clarity_plain', 'This does not automatically mean the code is malicious. It means the scan found behavior that should be checked or fixed before installation.'))}</p>
+    <p>${escapeHtml(decisionText('review_clarity_assessment', 'System assessment: this may be a security weakness, unclear intent, or risky implementation rather than deliberate malware.'))}</p>
+    <p class="review-clarity-next">${escapeHtml(decisionText('review_clarity_next', 'Next step: read the listed findings, ask the author for clarification or a fix, then rescan before installing.'))}</p>
+    <p>${escapeHtml(countText)}</p>
+  </div>`;
 }
 
 function evidenceImpactText(item, category) {
@@ -1727,6 +1810,7 @@ function renderRecentScan(s) {
         ${verifiedMark}
         ${purposeHtml(s)}
         ${sandboxEvidenceHtml(s)}
+        ${reviewClarityHtml(s, decision)}
         <div class="decision-line"><strong>${escapeHtml(decision.text)}</strong></div>
         ${threatDetailsHtml(s)}
         ${alternativesHtml(s)}
