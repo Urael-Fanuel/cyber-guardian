@@ -307,6 +307,11 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .decision-action { margin-top: 8px; color: #fff; }
 .decision-next { margin: 10px 0 0; padding-left: 18px; color: var(--text-dim); }
 [dir="rtl"] .decision-next { padding-left: 0; padding-right: 18px; }
+.review-clarity-box { margin: 0 24px 16px; padding: 15px 17px; border: 1px solid rgba(255,145,0,0.32); border-radius: 4px; background: linear-gradient(135deg, rgba(255,145,0,0.08), rgba(11,17,24,0.86)); color: var(--text); font-size: 12px; line-height: 1.7; }
+.review-clarity-title { color: var(--orange); font-family: var(--sans); font-size: 15px; font-weight: 900; margin-bottom: 5px; }
+.review-clarity-box p { margin: 0 0 7px; }
+.review-clarity-box p:last-child { margin-bottom: 0; }
+.review-clarity-next { color: var(--cyan); font-weight: 800; }
 .threats-box { padding: 4px 24px 20px; }
 .t-heading { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin: 16px 0 10px; display: flex; align-items: center; gap: 8px; }
 .t-heading::after { content: ''; flex: 1; height: 1px; background: var(--border); }
@@ -1940,6 +1945,25 @@ function renderDecisionDetails(r) {
   </div>`;
 }
 
+function renderReviewClarity(r) {
+  const details = r?.decision_details || {};
+  const decision = details.decision || (r?.status === 'STATUS_SAFE' ? 'install_ok' : (r?.status === 'STATUS_CRITICAL' ? 'do_not_install' : 'security_review'));
+  if (decision !== 'security_review') return '';
+
+  const findingCount = Number(r?.threat_count || 0);
+  const countText = findingCount > 0
+    ? `${t('review_clarity_count_prefix')}: ${findingCount}`
+    : t('review_clarity_no_count');
+
+  return `<div class="review-clarity-box" role="note">
+    <div class="review-clarity-title">${escHtml(t('review_clarity_title'))}</div>
+    <p>${escHtml(t('review_clarity_plain'))}</p>
+    <p>${escHtml(t('review_clarity_assessment'))}</p>
+    <p class="review-clarity-next">${escHtml(t('review_clarity_next'))}</p>
+    <p>${escHtml(countText)}</p>
+  </div>`;
+}
+
 function scanNeedsAlternative(r) {
   const decision = r?.decision_details?.decision || r?.decision || '';
   return r?.status !== 'STATUS_SAFE' && !['install_ok', 'safe'].includes(decision);
@@ -2562,6 +2586,7 @@ function renderResult(r) {
   </div>`;
 
   html += renderDecisionDetails(r);
+  html += renderReviewClarity(r);
 
   const summaryText = localizedSummary(r);
   if (summaryText) html += `<div class="summary-box"><strong>${t('summary_label')}</strong> ${escHtml(summaryText)}</div>`;
