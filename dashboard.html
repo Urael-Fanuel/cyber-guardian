@@ -1581,8 +1581,15 @@ function sandboxEvidenceHtml(scan) {
   </div>`;
 }
 
+function alternativeSecurityScore(item) {
+  return Number.isFinite(Number(item?.security_score)) && Number(item.security_score) > 0
+    ? Math.round(Number(item.security_score))
+    : Math.max(0, Math.min(100, 100 - Math.round(Number(item?.threat_score || 0))));
+}
+
 function alternativesHtml(scan) {
-  const items = Array.isArray(scan.alternatives) ? scan.alternatives : [];
+  const items = (Array.isArray(scan.alternatives) ? scan.alternatives : [])
+    .filter(item => item?.decision === 'safe' && alternativeSecurityScore(item) >= 96);
   if (!items.length && scanDecision(scan).value !== 'safe') {
     return `<div class="alternatives-box">
       <div class="alt-title">${escapeHtml(decisionText('safer_alternatives', 'Similar lower-risk scans'))}</div>
@@ -1596,9 +1603,7 @@ function alternativesHtml(scan) {
       const label = item.source_name || item.code_purpose || scopeLabel(scan.scope);
       const sourceUrl = /^https?:\/\//i.test(String(item.source_url || '')) ? item.source_url : '';
       // Show the security score (100 = good). Older rows carry only threat_score (0 = good).
-      const secScore = Number.isFinite(Number(item.security_score)) && Number(item.security_score) > 0
-        ? Math.round(Number(item.security_score))
-        : Math.max(0, Math.min(100, 100 - Math.round(Number(item.threat_score || 0))));
+      const secScore = alternativeSecurityScore(item);
       const meta = [
         item.decision === 'safe' ? t('safe_lbl') : t('review_lbl'),
         `${t('score')}: ${secScore}/100`,

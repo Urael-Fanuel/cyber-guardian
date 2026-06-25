@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { isVerifiedAlternativeCandidate } = require("../lib/alternative-policy");
 const crypto = require("node:crypto");
 const Module = require("node:module");
 
@@ -864,6 +865,23 @@ const CLEAN_DOCUMENTED_SKILL = [
   "```",
 ].join("\n");
 
+function testAlternativeRecommendationRequiresVerified96() {
+  const base = {
+    decision: "safe",
+    status: "STATUS_SAFE",
+    source_url: "https://github.com/example/tool",
+    threat_count: 0,
+    threats_summary: "",
+  };
+
+  assert.equal(isVerifiedAlternativeCandidate({ ...base, threat_score: 0, security_score: 96 }), true);
+  assert.equal(isVerifiedAlternativeCandidate({ ...base, decision: "review", threat_score: 0, security_score: 100 }), false);
+  assert.equal(isVerifiedAlternativeCandidate({ ...base, threat_score: 0, security_score: 95 }), false);
+  assert.equal(isVerifiedAlternativeCandidate({ ...base, threat_score: 0, security_score: 45 }), false);
+  assert.equal(isVerifiedAlternativeCandidate({ ...base, threat_score: 0, security_score: 40 }), false);
+  assert.equal(isVerifiedAlternativeCandidate({ ...base, source_url: "", threat_score: 0, security_score: 100 }), false);
+}
+
 // Clean code with documentation that NAMES threats (to say it avoids them) must not be flagged.
 function testCleanDocumentationNotFlagged() {
   const result = runStaticScan(CLEAN_DOCUMENTED_SKILL);
@@ -891,6 +909,7 @@ function testPromptInjectionInProseStillCaught() {
   assert.ok(result.threats.some(t => t.family === "PROMPT_INJECTION"));
 }
 
+testAlternativeRecommendationRequiresVerified96();
 testStaticReverseShell();
 testCleanDocumentationNotFlagged();
 testReverseShellInFencedBlockStillCritical();

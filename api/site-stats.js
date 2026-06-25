@@ -1,6 +1,7 @@
 // api/site-stats.js — Cyber-Guardian Site Scan Statistics
 const { createClient } = require('@supabase/supabase-js');
 const { securityScoreForResult, isVerifiedInstallResult } = require('../lib/security-score');
+const { isVerifiedAlternativeCandidate } = require('../lib/alternative-policy');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -422,7 +423,9 @@ function saferAlternatives(scan, scans) {
       if (currentUrl && candidateUrl === currentUrl) return false;
       return true;
     })
-    .filter(candidate => ['safe', 'review'].includes(classifyScan(candidate)))
+    // A recommendation must meet the same 96+ verified-install standard as
+    // the public trust badge. Review or low-score scans are never alternatives.
+    .filter(candidate => isVerifiedAlternativeCandidate(candidate, classifyScan(candidate)))
     .map(candidate => ({ candidate, score: similarityScore(scan, candidate) }))
     // Require a real topical match (3+ shared tags). One shared generic word used to
     // surface unrelated tools (e.g. a hello-world demo) as an "alternative".
