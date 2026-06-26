@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -605,6 +605,45 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
   .reputation-toolbar { display: block; }
   .reputation-search-btn { width: 100%; margin-top: 14px; }
   .reputation-grid { grid-template-columns: 1fr; }
+}
+
+.safe-alternatives { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
+.alternatives-board { display: grid; grid-template-columns: minmax(0,0.92fr) minmax(0,1.08fr); gap: 14px; align-items: stretch; }
+.alternative-card { min-width: 0; border: 1px solid rgba(49,74,97,0.78); border-radius: 10px; background: linear-gradient(145deg,rgba(11,17,24,0.96),rgba(6,12,18,0.92)); box-shadow: 0 18px 45px rgba(0,0,0,0.2); overflow: hidden; }
+.alternative-card.danger { border-color: rgba(255,77,77,0.34); }
+.alternative-card.safe { border-color: rgba(0,230,118,0.24); }
+.alternative-card-head { padding: 16px 18px; border-bottom: 1px solid rgba(49,74,97,0.55); background: rgba(5,8,13,0.42); }
+.alternative-eyebrow { color: var(--text-dim); font-size: 9px; font-weight: 800; letter-spacing: 1.7px; line-height: 1.4; text-transform: uppercase; }
+[dir="rtl"] .alternative-eyebrow { text-transform: none; }
+.alternative-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.alternative-tool-name { color: #fff; font-family: var(--sans); font-size: 17px; font-weight: 800; line-height: 1.35; }
+.alternative-score { flex: 0 0 auto; font-family: var(--sans); font-size: 28px; font-weight: 800; line-height: 1; white-space: nowrap; }
+.alternative-score.danger { color: #ff4d4d; }
+.alternative-score.safe { color: var(--green); }
+.alternative-score small { color: var(--text-dim); font-size: 10px; }
+.alternative-status { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; padding: 7px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; line-height: 1; }
+.alternative-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 9px currentColor; }
+.alternative-status.danger { color: #ff7474; background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.2); }
+.alternative-status.safe { color: var(--green); background: rgba(0,230,118,0.07); border: 1px solid rgba(0,230,118,0.18); }
+.alternative-body { padding: 16px 18px 18px; }
+.alternative-risk-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.alternative-risk-list li { display: flex; gap: 8px; color: var(--text-dim); font-size: 11px; line-height: 1.65; }
+.alternative-risk-list li::before { content: ''; flex: 0 0 auto; width: 6px; height: 6px; margin-top: 7px; border-radius: 50%; background: #ff4d4d; box-shadow: 0 0 10px rgba(255,77,77,0.55); }
+.alternative-list { display: grid; gap: 10px; }
+.alternative-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid rgba(49,74,97,0.56); border-radius: 8px; background: rgba(5,8,13,0.42); }
+.alternative-row-name { color: #fff; font-size: 13px; font-weight: 800; line-height: 1.4; }
+.alternative-row-purpose { margin-top: 4px; color: var(--text-dim); font-size: 10px; line-height: 1.5; }
+.alternative-row-score { color: var(--green); font-family: var(--sans); font-size: 22px; font-weight: 800; line-height: 1; text-align: end; }
+.alternative-row-score small { color: var(--text-dim); font-size: 9px; }
+.alternative-note { margin-top: 14px; padding: 12px 14px; border: 1px solid rgba(0,212,255,0.18); border-radius: 8px; background: rgba(0,212,255,0.055); color: var(--text-dim); font-size: 11px; line-height: 1.7; }
+.alternative-note strong { color: var(--cyan); }
+@media(max-width:760px) {
+  .safe-alternatives { padding: 0 12px; }
+  .alternatives-board { grid-template-columns: 1fr; }
+  .alternative-title-row { display: block; }
+  .alternative-score { margin-top: 10px; }
+  .alternative-row { grid-template-columns: 1fr; }
+  .alternative-row-score { text-align: start; }
 }
 
 /* ── OTHER PRODUCTS SECTION (NEW) ── */
@@ -1268,6 +1307,65 @@ footer a:hover { color: var(--cyan); }
   </div>
   <div class="reputation-grid" id="reputation-grid" aria-live="polite">
     <div class="reputation-empty" data-i18n="reputation_loading">Loading verified tools...</div>
+  </div>
+</section>
+
+<section class="safe-alternatives" id="safe-alternatives">
+  <div class="section-lbl" data-i18n="alternatives_label">Safe Alternatives Engine™</div>
+  <h2 class="section-title" data-i18n="alternatives_title">When a tool is risky, show a safer path forward</h2>
+  <p class="section-sub" data-i18n="alternatives_sub">Cyber Guardian Scan helps teams avoid a dead end: when one tool is dangerous, verified alternatives with similar functionality can be reviewed before install.</p>
+  <div class="alternatives-board" aria-label="Safe alternatives example">
+    <article class="alternative-card danger">
+      <div class="alternative-card-head">
+        <div class="alternative-eyebrow" data-i18n="alternatives_original_label">Original tool</div>
+        <div class="alternative-title-row">
+          <div>
+            <div class="alternative-tool-name" data-i18n="alternatives_original_name">Unverified MCP connector</div>
+            <div class="alternative-status danger" data-i18n="alternatives_danger_status">Danger for Install</div>
+          </div>
+          <div class="alternative-score danger">24<small>/100</small></div>
+        </div>
+      </div>
+      <div class="alternative-body">
+        <ul class="alternative-risk-list">
+          <li data-i18n="alternatives_risk_1">Requests broad file access before the user understands the scope.</li>
+          <li data-i18n="alternatives_risk_2">Runs shell commands from tool input without a clear permission boundary.</li>
+          <li data-i18n="alternatives_risk_3">No current Cyber Guardian Scan verification for this source fingerprint.</li>
+        </ul>
+      </div>
+    </article>
+    <article class="alternative-card safe">
+      <div class="alternative-card-head">
+        <div class="alternative-eyebrow" data-i18n="alternatives_recommended_label">Recommended verified alternatives</div>
+        <div class="alternative-status safe" data-i18n="alternatives_safe_status">Safe for Install</div>
+      </div>
+      <div class="alternative-body">
+        <div class="alternative-list">
+          <div class="alternative-row">
+            <div>
+              <div class="alternative-row-name" data-i18n="alternatives_tool_a">Verified MCP Files Bridge</div>
+              <div class="alternative-row-purpose" data-i18n="alternatives_tool_a_purpose">Similar file-workflow functionality, scanned source and fingerprint.</div>
+            </div>
+            <div class="alternative-row-score">97<small>/100</small></div>
+          </div>
+          <div class="alternative-row">
+            <div>
+              <div class="alternative-row-name" data-i18n="alternatives_tool_b">Guarded Workspace Connector</div>
+              <div class="alternative-row-purpose" data-i18n="alternatives_tool_b_purpose">Similar workspace automation scope with tighter permission handling.</div>
+            </div>
+            <div class="alternative-row-score">96<small>/100</small></div>
+          </div>
+          <div class="alternative-row">
+            <div>
+              <div class="alternative-row-name" data-i18n="alternatives_tool_c">Minimal Repo Context Server</div>
+              <div class="alternative-row-purpose" data-i18n="alternatives_tool_c_purpose">Similar repository context access, verified for the scanned version.</div>
+            </div>
+            <div class="alternative-row-score">96<small>/100</small></div>
+          </div>
+        </div>
+        <div class="alternative-note" data-i18n-html="alternatives_note"><strong>Important:</strong> alternatives are not identical replacements. They must be rescanned from the current public source before being recommended as safe.</div>
+      </div>
+    </article>
   </div>
 </section>
 
