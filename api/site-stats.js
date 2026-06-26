@@ -653,14 +653,17 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ status: matches.length ? 'found' : 'not_found', matches });
     }
 
-    // Verified-tools showcase: gold-badge (Verified) scans only, for the homepage banner.
+    // Verified-tools database: gold-badge (Verified) scans only. The homepage
+    // consumes the first few records; the full database page can request more.
     if (mode === 'verified') {
+      const requestedLimit = Number(url.searchParams.get('limit') || 12);
+      const itemLimit = Math.max(1, Math.min(100, Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : 12));
       const verifiedCols = 'scope,status,threat_score,threat_count,threats_summary,scanned_at,source_name,source_url,source_owner,code_purpose,code_hash';
       const { data: verifiedRows, error: verifiedError } = await sb
         .from('site_scans')
         .select(verifiedCols)
         .order('scanned_at', { ascending: false })
-        .limit(300);
+        .limit(Math.max(300, itemLimit * 4));
       if (verifiedError) {
         if (tableMissing(verifiedError)) return res.status(200).json({ status: 'empty', items: [] });
         throw verifiedError;
@@ -682,7 +685,7 @@ module.exports = async function handler(req, res) {
           scanned_at: s.scanned_at,
           code_fingerprint: s.code_hash || '',
         });
-        if (items.length >= 12) break;
+        if (items.length >= itemLimit) break;
       }
       return res.status(200).json({ status: items.length ? 'ok' : 'empty', items });
     }

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verified AI Tools Database | Cyber Guardian Scan</title>
+<meta name="description" content="Search public AI tools, MCP servers, AI Skills, IDE extensions, GitHub Actions and packages that reached the Cyber Guardian Scan verification standard for the exact scanned version.">
+<link rel="canonical" href="https://cyberguardianscan.com/verified-tools">
+<link rel="alternate" hreflang="en" href="https://cyberguardianscan.com/verified-tools?lang=en">
+<link rel="alternate" hreflang="he" href="https://cyberguardianscan.com/verified-tools?lang=he">
+<link rel="alternate" hreflang="de" href="https://cyberguardianscan.com/verified-tools?lang=de">
+<link rel="alternate" hreflang="ja" href="https://cyberguardianscan.com/verified-tools?lang=ja">
+<link rel="alternate" hreflang="ko" href="https://cyberguardianscan.com/verified-tools?lang=ko">
+<link rel="alternate" hreflang="fr" href="https://cyberguardianscan.com/verified-tools?lang=fr">
+<link rel="alternate" hreflang="pt" href="https://cyberguardianscan.com/verified-tools?lang=pt">
+<link rel="alternate" hreflang="x-default" href="https://cyberguardianscan.com/verified-tools">
+<meta property="og:title" content="Verified AI Tools Database | Cyber Guardian Scan">
+<meta property="og:description" content="Check the exact scanned version, score, source and code fingerprint before trusting an AI tool.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cyberguardianscan.com/verified-tools">
+<meta property="og:site_name" content="Cyber Guardian Scan">
+<meta property="og:image" content="https://cyberguardianscan.com/assets/cyber-guardian-scan-logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Verified AI Tools Database | Cyber Guardian Scan">
+<meta name="twitter:description" content="Search tools that reached the 96+ Cyber Guardian Scan verification standard for the exact scanned code fingerprint.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Cyber Guardian Scan Verified Tools Database",
+  "description": "A searchable database of public AI tools verified for a specific scanned version and code fingerprint.",
+  "url": "https://cyberguardianscan.com/verified-tools",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Cyber Guardian Scan",
+    "url": "https://cyberguardianscan.com"
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+Hebrew:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#05080d; --bg2:#0b1118; --bg3:#111a24; --panel:rgba(10,18,28,.9);
+  --border:#1b2a3a; --border2:#314a61; --cyan:#00d4ff; --green:#00e676;
+  --yellow:#ffbd2e; --text:#e5f2fb; --muted:#8ea6b9; --dim:#5f768a;
+  --mono:"IBM Plex Mono","Noto Sans JP","Noto Sans KR","Noto Sans Hebrew",monospace;
+  --sans:"Syne","Noto Sans JP","Noto Sans KR","Noto Sans Hebrew",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;line-height:1.7;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(120deg,rgba(0,212,255,.11),transparent 28%,transparent 72%,rgba(0,230,118,.07)),linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:auto,56px 56px,56px 56px;opacity:.42}
+[dir="rtl"]{text-align:right}
+a{color:inherit}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 32px;border-bottom:1px solid rgba(49,74,97,.72);background:rgba(5,8,13,.9);backdrop-filter:blur(18px)}
+.brand{display:inline-flex;align-items:center;gap:10px;color:#fff;font-family:var(--sans);font-size:17px;font-weight:800;text-decoration:none;white-space:nowrap}
+.brand-mark{position:relative;width:36px;height:36px;overflow:hidden;border:1px solid rgba(255,189,46,.52);border-radius:8px;background:#090909;box-shadow:0 0 22px rgba(255,189,46,.18)}
+.brand-mark img{position:absolute;width:68px;max-width:none;left:50%;top:-5px;transform:translateX(-50%)}
+.nav-right,.lang-switcher{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.nav-link,.lang-btn,.button{display:inline-flex;align-items:center;justify-content:center;min-height:36px;border:1px solid rgba(49,74,97,.8);border-radius:8px;background:rgba(13,25,36,.72);color:var(--text);font:700 11px var(--mono);text-decoration:none;cursor:pointer;transition:.16s ease}
+.nav-link,.button{padding:8px 13px}
+.nav-link:hover,.lang-btn:hover,.button.secondary:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.08)}
+.nav-link.primary,.button.primary{border-color:transparent;color:#001018;background:linear-gradient(135deg,var(--cyan),var(--green));font-weight:800}
+.lang-btn{width:42px;padding:6px;color:var(--muted)}
+.lang-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.13)}
+.page{position:relative;z-index:1}
+.hero{max-width:1180px;margin:0 auto;padding:66px 24px 30px}
+.eyebrow{display:inline-flex;padding:7px 11px;border:1px solid rgba(0,212,255,.34);border-radius:999px;color:var(--cyan);background:rgba(0,212,255,.08);font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase}
+[dir="rtl"] .eyebrow,[dir="rtl"] .meta-label,[dir="rtl"] .filter-label{text-transform:none;letter-spacing:0}
+h1{max-width:900px;margin:16px 0 18px;color:#fff;font-family:var(--sans);font-size:clamp(38px,6vw,68px);line-height:1.04;text-wrap:balance}
+.hero-sub{max-width:780px;color:var(--muted);font-size:16px;line-height:1.8}
+.trust-note{display:grid;grid-template-columns:auto 1fr;gap:12px;max-width:800px;margin-top:24px;padding:15px 16px;border:1px solid rgba(255,189,46,.35);border-radius:8px;background:rgba(255,189,46,.055);color:#d9c98d}
+.trust-note strong{color:var(--yellow)}
+.trust-dot{width:9px;height:9px;margin-top:8px;border-radius:50%;background:var(--yellow);box-shadow:0 0 12px rgba(255,189,46,.8)}
+.database{max-width:1180px;margin:0 auto;padding:16px 24px 80px}
+.toolbar{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:14px;align-items:end;padding:18px;border:1px solid rgba(49,74,97,.76);border-radius:10px;background:rgba(8,14,21,.88);box-shadow:0 18px 50px rgba(0,0,0,.24)}
+.filter-label{display:block;margin-bottom:7px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
+.search-input{width:100%;min-height:46px;padding:11px 14px;border:1px solid var(--border2);border-radius:8px;outline:none;background:rgba(5,8,13,.9);color:#fff;font:inherit}
+.search-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.08)}
+.filters{display:flex;gap:7px;flex-wrap:wrap}
+.filter-btn{min-height:38px;padding:8px 12px;border:1px solid var(--border2);border-radius:8px;background:var(--bg3);color:var(--muted);font:700 10px var(--mono);cursor:pointer}
+.filter-btn:hover,.filter-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.09)}
+.summary{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:18px 0;color:var(--muted);font-size:11px}
+.summary strong{color:#fff}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.tool-card{min-width:0;padding:20px;border:1px solid rgba(49,74,97,.8);border-radius:10px;background:linear-gradient(145deg,rgba(11,17,24,.97),rgba(6,12,18,.94));box-shadow:0 16px 40px rgba(0,0,0,.2)}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.tool-name{color:#fff;font:800 17px/1.4 var(--sans);overflow-wrap:anywhere}
+.category{margin-top:5px;color:var(--cyan);font-size:9px;font-weight:800;text-transform:uppercase}
+[dir="rtl"] .category{text-transform:none}
+.score{flex:0 0 auto;color:var(--green);font:800 29px/1 var(--sans);white-space:nowrap}
+.score small{color:var(--dim);font:700 10px var(--mono)}
+.verified{display:inline-flex;align-items:center;gap:7px;margin-top:14px;color:var(--green);font-size:10px;font-weight:800}
+.verified::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 9px currentColor}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:15px}
+.meta-box{min-width:0;padding:9px 10px;border:1px solid rgba(49,74,97,.52);border-radius:7px;background:rgba(5,8,13,.52)}
+.meta-label{color:var(--dim);font-size:8px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+.meta-value{margin-top:3px;color:var(--text);font-size:10px;overflow-wrap:anywhere}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(49,74,97,.5)}
+.install{color:var(--green);font-size:10px;font-weight:800}
+.card-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.button{min-height:34px;padding:7px 10px;font-size:9px}
+.empty{grid-column:1/-1;padding:38px 24px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);color:var(--muted);text-align:center}
+.loading{display:inline-block;width:18px;height:18px;margin-bottom:8px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.footer{position:relative;z-index:1;padding:28px 24px;border-top:1px solid var(--border);color:var(--dim);text-align:center;font-size:10px}
+.modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.76);backdrop-filter:blur(8px)}
+.modal.open{display:flex}
+.modal-panel{width:min(680px,100%);max-height:88vh;overflow:auto;border:1px solid var(--border2);border-radius:12px;background:#0b1118;box-shadow:0 30px 90px rgba(0,0,0,.58)}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:20px;border-bottom:1px solid var(--border)}
+.modal-title{color:#fff;font:800 20px/1.4 var(--sans)}
+.close-btn{width:36px;height:36px;border:1px solid var(--border2);border-radius:8px;background:var(--bg3);color:var(--text);font-size:20px;cursor:pointer}
+.modal-body{padding:20px}
+.report-score{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:16px;border:1px solid rgba(0,230,118,.35);border-radius:9px;background:rgba(0,230,118,.055)}
+.report-score-value{color:var(--green);font:800 38px/1 var(--sans)}
+.report-score-copy strong{display:block;color:#fff;font-family:var(--sans)}
+.report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}
+.report-warning{margin-top:14px;padding:13px;border:1px solid rgba(255,189,46,.3);border-radius:8px;color:#d9c98d;background:rgba(255,189,46,.045);font-size:11px}
+.modal-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+@media(max-width:820px){.topbar{padding:10px 14px;align-items:flex-start}.brand{font-size:14px}.brand-mark{width:31px;height:31px}.brand-mark img{width:59px}.nav-link{display:none}.hero{padding-top:46px}.toolbar{grid-template-columns:1fr}.cards{grid-template-columns:1fr}}
+@media(max-width:520px){.hero,.database{padding-left:14px;padding-right:14px}.lang-switcher:not(.open) .lang-btn:not(.active){display:none}.lang-switcher:not(.open) .lang-btn.active::after{content:"▾";margin-inline-start:4px}.meta,.report-grid{grid-template-columns:1fr}.card-foot{align-items:flex-start;flex-direction:column}.card-actions{width:100%;justify-content:stretch}.card-actions .button{flex:1}.summary{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">
+    <span class="brand-mark" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
+    Cyber Guardian Scan
+  </a>
+  <div class="nav-right">
+    <div class="lang-switcher" id="lang-switcher"></div>
+    <a class="nav-link" href="/dashboard.html" data-copy="dashboard">Dashboard</a>
+    <a class="nav-link primary" href="/#scanner" data-copy="scan_now">Scan now</a>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="eyebrow" data-copy="eyebrow">Public Reputation Database</div>
+    <h1 data-copy="title">Check the exact version before you trust the tool.</h1>
+    <p class="hero-sub" data-copy="subtitle">Search public tools that reached the Cyber Guardian Scan verification standard. Every listing is tied to the source and code fingerprint scanned at that point in time.</p>
+    <div class="trust-note">
+      <span class="trust-dot" aria-hidden="true"></span>
+      <div><strong data-copy="point_title">Point-in-time verification.</strong> <span data-copy="point_text">A listing does not mean a tool is safe forever. If its code changes, scan the current version again before installation.</span></div>
+    </div>
+  </section>
+
+  <section class="database" aria-labelledby="database-heading">
+    <h2 id="database-heading" hidden data-copy="database_heading">Verified tools database</h2>
+    <div class="toolbar">
+      <div>
+        <label class="filter-label" for="search" data-copy="search_label">Search name, source or fingerprint</label>
+        <input class="search-input" id="search" type="search" autocomplete="off" data-copy-placeholder="search_placeholder" placeholder="Search verified tools">
+      </div>
+      <div>
+        <div class="filter-label" data-copy="filter_label">Filter by category</div>
+        <div class="filters" id="filters"></div>
+      </div>
+    </div>
+    <div class="summary">
+      <div id="result-count" aria-live="polite"></div>
+      <div data-copy="verified_rule">Only public scans with a Security Score of 96 or higher appear here.</div>
+    </div>
+    <div class="cards" id="cards" aria-live="polite">
+      <div class="empty"><span class="loading" aria-hidden="true"></span><div data-copy="loading">Loading verified tools...</div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <span data-copy="footer">Cyber Guardian Scan verifies the exact scanned version and fingerprint. Rescan after code changes.</span>
+</footer>
+
+<div class="modal" id="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-title">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div>
+        <div class="eyebrow" data-copy="report_eyebrow">Verification summary</div>
+        <h2 class="modal-title" id="report-title"></h2>
+      </div>
+      <button class="close-btn" id="close-modal" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="report-body"></div>
+  </div>
+</div>
+
+<script src="/analytics.js?v=2"></script>
+<script>
+const LANGS = {
+  en:{label:"EN",dir:"ltr"}, he:{label:"IL",dir:"rtl"}, de:{label:"DE",dir:"ltr"},
+  ja:{label:"JP",dir:"ltr"}, ko:{label:"KR",dir:"ltr"}, fr:{label:"FR",dir:"ltr"}, pt:{label:"BR",dir:"ltr"}
+};
+
+const COPY = {
+  en:{
+    dashboard:"Dashboard",scan_now:"Scan now",eyebrow:"Public Reputation Database",title:"Check the exact version before you trust the tool.",
+    subtitle:"Search public tools that reached the Cyber Guardian Scan verification standard. Every listing is tied to the source and code fingerprint scanned at that point in time.",
+    point_title:"Point-in-time verification.",point_text:"A listing does not mean a tool is safe forever. If its code changes, scan the current version again before installation.",
+    database_heading:"Verified tools database",search_label:"Search name, source or fingerprint",search_placeholder:"Search verified tools",filter_label:"Filter by category",
+    all:"All",mcp:"MCP",agent:"AI Agent",skill:"AI Skill",extension:"Extension",repo:"GitHub Repo",action:"GitHub Action",package:"Package",dependency:"Dependency",
+    verified_rule:"Only public scans with a Security Score of 96 or higher appear here.",loading:"Loading verified tools...",empty:"No verified tools match this search.",
+    unavailable:"Not available",verified_current:"Verified current",last_scanned:"Last scanned",fingerprint:"Code fingerprint",source:"Public source",
+    recommended:"Recommended for install",view_report:"View report",view_source:"View source",results_one:"1 verified tool",results_many:"{count} verified tools",
+    report_eyebrow:"Verification summary",score_label:"Cyber Guardian Security Score™",status_label:"Status",status_safe:"Safe for Install",
+    exact_version:"This exact version was scanned.",report_note:"This summary reflects the recorded scan only. Check the fingerprint and rescan if the source has changed.",
+    scan_date:"Scan date",category:"Category",close:"Close",footer:"Cyber Guardian Scan verifies the exact scanned version and fingerprint. Rescan after code changes.",load_error:"The verified tools database could not be loaded. Please try again."
+  },
+  he:{
+    dashboard:"לוח בקרה",scan_now:"סריקה עכשיו",eyebrow:"מאגר המוניטין הציבורי",title:"בדקו את הגרסה המדויקת לפני שאתם סומכים על הכלי.",
+    subtitle:"חפשו כלים ציבוריים שהגיעו לתקן האימות של Cyber Guardian Scan. כל רשומה קשורה למקור ולטביעת הקוד שנסרקו באותה נקודת זמן.",
+    point_title:"אימות לנקודת זמן.",point_text:"הופעה במאגר אינה אומרת שהכלי בטוח לנצח. אם הקוד השתנה, יש לסרוק מחדש את הגרסה הנוכחית לפני ההתקנה.",
+    database_heading:"מאגר כלים מאומתים",search_label:"חיפוש לפי שם, מקור או טביעת קוד",search_placeholder:"חיפוש כלים מאומתים",filter_label:"סינון לפי קטגוריה",
+    all:"הכול",mcp:"MCP",agent:"סוכן AI",skill:"AI Skill",extension:"הרחבה",repo:"מאגר GitHub",action:"GitHub Action",package:"חבילה",dependency:"תלות",
+    verified_rule:"מוצגות רק סריקות ציבוריות עם ציון בטיחות 96 ומעלה.",loading:"טוען כלים מאומתים...",empty:"לא נמצאו כלים מאומתים המתאימים לחיפוש.",
+    unavailable:"לא זמין",verified_current:"האימות עדכני",last_scanned:"סריקה אחרונה",fingerprint:"טביעת קוד",source:"מקור ציבורי",
+    recommended:"מומלץ להתקנה",view_report:"צפייה בדוח",view_source:"צפייה במקור",results_one:"כלי מאומת אחד",results_many:"{count} כלים מאומתים",
+    report_eyebrow:"תקציר אימות",score_label:"Cyber Guardian Security Score™",status_label:"סטטוס",status_safe:"Safe for Install",
+    exact_version:"הגרסה המדויקת הזו נסרקה.",report_note:"התקציר משקף את הסריקה המתועדת בלבד. יש לבדוק את טביעת הקוד ולסרוק מחדש אם המקור השתנה.",
+    scan_date:"תאריך סריקה",category:"קטגוריה",close:"סגירה",footer:"Cyber Guardian Scan מאמת את הגרסה וטביעת הקוד המדויקות שנסרקו. לאחר שינוי בקוד נדרשת סריקה מחדש.",load_error:"לא ניתן לטעון את מאגר הכלים המאומתים. נסו שוב."
+  },
+  de:{
+    dashboard:"Dashboard",scan_now:"Jetzt scannen",eyebrow:"Oeffentliche Reputationsdatenbank",title:"Pruefen Sie die genaue Version, bevor Sie dem Tool vertrauen.",
+    subtitle:"Durchsuchen Sie oeffentliche Tools, die den Verifizierungsstandard von Cyber Guardian Scan erreicht haben. Jeder Eintrag ist an die damals gescannte Quelle und den Code-Fingerabdruck gebunden.",
+    point_title:"Zeitpunktbezogene Verifizierung.",point_text:"Ein Eintrag bedeutet nicht, dass ein Tool fuer immer sicher ist. Wenn sich der Code aendert, scannen Sie die aktuelle Version vor der Installation erneut.",
+    database_heading:"Datenbank verifizierter Tools",search_label:"Name, Quelle oder Fingerabdruck suchen",search_placeholder:"Verifizierte Tools suchen",filter_label:"Nach Kategorie filtern",
+    all:"Alle",mcp:"MCP",agent:"AI Agent",skill:"AI Skill",extension:"Erweiterung",repo:"GitHub Repo",action:"GitHub Action",package:"Paket",dependency:"Abhaengigkeit",
+    verified_rule:"Hier erscheinen nur oeffentliche Scans mit einem Security Score von mindestens 96.",loading:"Verifizierte Tools werden geladen...",empty:"Keine verifizierten Tools passen zu dieser Suche.",
+    unavailable:"Nicht verfuegbar",verified_current:"Aktuell verifiziert",last_scanned:"Zuletzt gescannt",fingerprint:"Code-Fingerabdruck",source:"Oeffentliche Quelle",
+    recommended:"Zur Installation empfohlen",view_report:"Bericht ansehen",view_source:"Quelle ansehen",results_one:"1 verifiziertes Tool",results_many:"{count} verifizierte Tools",
+    report_eyebrow:"Verifizierungsuebersicht",score_label:"Cyber Guardian Security Score™",status_label:"Status",status_safe:"Safe for Install",
+    exact_version:"Diese genaue Version wurde gescannt.",report_note:"Diese Zusammenfassung gilt nur fuer den gespeicherten Scan. Pruefen Sie den Fingerabdruck und scannen Sie erneut, wenn sich die Quelle geaendert hat.",
+    scan_date:"Scan-Datum",category:"Kategorie",close:"Schliessen",footer:"Cyber Guardian Scan verifiziert die genaue gescannte Version und den Fingerabdruck. Nach Codeaenderungen erneut scannen.",load_error:"Die Datenbank konnte nicht geladen werden. Bitte versuchen Sie es erneut."
+  },
+  ja:{
+    dashboard:"ダッシュボード",scan_now:"今すぐスキャン",eyebrow:"公開レピュテーションデータベース",title:"ツールを信頼する前に正確なバージョンを確認。",
+    subtitle:"Cyber Guardian Scan の検証基準を満たした公開ツールを検索できます。各掲載情報は、その時点でスキャンされたソースとコード指紋に紐づきます。",
+    point_title:"特定時点の検証です。",point_text:"掲載は将来にわたる安全性を意味しません。コードが変更された場合は、インストール前に現在のバージョンを再スキャンしてください。",
+    database_heading:"検証済みツールデータベース",search_label:"名前、ソース、指紋で検索",search_placeholder:"検証済みツールを検索",filter_label:"カテゴリで絞り込む",
+    all:"すべて",mcp:"MCP",agent:"AIエージェント",skill:"AI Skill",extension:"拡張機能",repo:"GitHubリポジトリ",action:"GitHub Action",package:"パッケージ",dependency:"依存関係",
+    verified_rule:"Security Score 96 以上の公開スキャンのみ掲載されます。",loading:"検証済みツールを読み込み中...",empty:"検索に一致する検証済みツールはありません。",
+    unavailable:"利用不可",verified_current:"現在の検証済み",last_scanned:"最終スキャン",fingerprint:"コード指紋",source:"公開ソース",
+    recommended:"インストール推奨",view_report:"レポートを見る",view_source:"ソースを見る",results_one:"検証済みツール 1 件",results_many:"検証済みツール {count} 件",
+    report_eyebrow:"検証概要",score_label:"Cyber Guardian Security Score™",status_label:"ステータス",status_safe:"Safe for Install",
+    exact_version:"この正確なバージョンがスキャンされました。",report_note:"この概要は記録されたスキャンのみを反映します。ソースが変更された場合は指紋を確認して再スキャンしてください。",
+    scan_date:"スキャン日",category:"カテゴリ",close:"閉じる",footer:"Cyber Guardian Scan はスキャンされた正確なバージョンと指紋を検証します。コード変更後は再スキャンしてください。",load_error:"検証済みツールデータベースを読み込めませんでした。もう一度お試しください。"
+  },
+  ko:{
+    dashboard:"대시보드",scan_now:"지금 스캔",eyebrow:"공개 평판 데이터베이스",title:"도구를 신뢰하기 전에 정확한 버전을 확인하세요.",
+    subtitle:"Cyber Guardian Scan 검증 기준을 통과한 공개 도구를 검색하세요. 각 항목은 해당 시점에 스캔된 소스와 코드 지문에 연결됩니다.",
+    point_title:"특정 시점의 검증입니다.",point_text:"목록에 있다는 것이 영구적인 안전을 의미하지 않습니다. 코드가 변경되면 설치 전에 현재 버전을 다시 스캔하세요.",
+    database_heading:"검증된 도구 데이터베이스",search_label:"이름, 소스 또는 지문 검색",search_placeholder:"검증된 도구 검색",filter_label:"카테고리 필터",
+    all:"전체",mcp:"MCP",agent:"AI 에이전트",skill:"AI Skill",extension:"확장",repo:"GitHub 저장소",action:"GitHub Action",package:"패키지",dependency:"종속성",
+    verified_rule:"Security Score 96점 이상의 공개 스캔만 표시됩니다.",loading:"검증된 도구를 불러오는 중...",empty:"검색과 일치하는 검증된 도구가 없습니다.",
+    unavailable:"사용 불가",verified_current:"현재 검증됨",last_scanned:"마지막 스캔",fingerprint:"코드 지문",source:"공개 소스",
+    recommended:"설치 권장",view_report:"보고서 보기",view_source:"소스 보기",results_one:"검증된 도구 1개",results_many:"검증된 도구 {count}개",
+    report_eyebrow:"검증 요약",score_label:"Cyber Guardian Security Score™",status_label:"상태",status_safe:"Safe for Install",
+    exact_version:"이 정확한 버전이 스캔되었습니다.",report_note:"이 요약은 기록된 스캔만 반영합니다. 소스가 변경되었다면 지문을 확인하고 다시 스캔하세요.",
+    scan_date:"스캔 날짜",category:"카테고리",close:"닫기",footer:"Cyber Guardian Scan은 스캔된 정확한 버전과 지문을 검증합니다. 코드 변경 후 다시 스캔하세요.",load_error:"검증된 도구 데이터베이스를 불러올 수 없습니다. 다시 시도하세요."
+  },
+  fr:{
+    dashboard:"Tableau de bord",scan_now:"Scanner",eyebrow:"Base publique de reputation",title:"Verifiez la version exacte avant de faire confiance a l'outil.",
+    subtitle:"Recherchez les outils publics ayant atteint le standard de verification Cyber Guardian Scan. Chaque fiche est liee a la source et a l'empreinte analysees a cet instant.",
+    point_title:"Verification a un instant donne.",point_text:"Une fiche ne signifie pas qu'un outil est sur pour toujours. Si le code change, analysez de nouveau la version actuelle avant installation.",
+    database_heading:"Base des outils verifies",search_label:"Rechercher nom, source ou empreinte",search_placeholder:"Rechercher les outils verifies",filter_label:"Filtrer par categorie",
+    all:"Tous",mcp:"MCP",agent:"Agent IA",skill:"Skill IA",extension:"Extension",repo:"Depot GitHub",action:"GitHub Action",package:"Package",dependency:"Dependance",
+    verified_rule:"Seuls les scans publics avec un Security Score de 96 ou plus apparaissent ici.",loading:"Chargement des outils verifies...",empty:"Aucun outil verifie ne correspond a cette recherche.",
+    unavailable:"Indisponible",verified_current:"Verification actuelle",last_scanned:"Dernier scan",fingerprint:"Empreinte du code",source:"Source publique",
+    recommended:"Recommande pour installation",view_report:"Voir le rapport",view_source:"Voir la source",results_one:"1 outil verifie",results_many:"{count} outils verifies",
+    report_eyebrow:"Resume de verification",score_label:"Cyber Guardian Security Score™",status_label:"Statut",status_safe:"Safe for Install",
+    exact_version:"Cette version exacte a ete analysee.",report_note:"Ce resume reflete uniquement le scan enregistre. Verifiez l'empreinte et relancez un scan si la source a change.",
+    scan_date:"Date du scan",category:"Categorie",close:"Fermer",footer:"Cyber Guardian Scan verifie la version et l'empreinte exactes analysees. Relancez un scan apres toute modification.",load_error:"Impossible de charger la base des outils verifies. Reessayez."
+  },
+  pt:{
+    dashboard:"Painel",scan_now:"Escanear agora",eyebrow:"Banco publico de reputacao",title:"Verifique a versao exata antes de confiar na ferramenta.",
+    subtitle:"Pesquise ferramentas publicas que atingiram o padrao de verificacao do Cyber Guardian Scan. Cada item esta ligado a fonte e a impressao digital escaneadas naquele momento.",
+    point_title:"Verificacao em um ponto no tempo.",point_text:"Uma listagem nao significa que a ferramenta e segura para sempre. Se o codigo mudar, escaneie novamente a versao atual antes da instalacao.",
+    database_heading:"Banco de ferramentas verificadas",search_label:"Pesquisar nome, fonte ou impressao digital",search_placeholder:"Pesquisar ferramentas verificadas",filter_label:"Filtrar por categoria",
+    all:"Todas",mcp:"MCP",agent:"Agente de IA",skill:"Skill de IA",extension:"Extensao",repo:"Repositorio GitHub",action:"GitHub Action",package:"Pacote",dependency:"Dependencia",
+    verified_rule:"Apenas scans publicos com Security Score 96 ou superior aparecem aqui.",loading:"Carregando ferramentas verificadas...",empty:"Nenhuma ferramenta verificada corresponde a pesquisa.",
+    unavailable:"Indisponivel",verified_current:"Verificacao atual",last_scanned:"Ultimo scan",fingerprint:"Impressao digital",source:"Fonte publica",
+    recommended:"Recomendada para instalacao",view_report:"Ver relatorio",view_source:"Ver fonte",results_one:"1 ferramenta verificada",results_many:"{count} ferramentas verificadas",
+    report_eyebrow:"Resumo da verificacao",score_label:"Cyber Guardian Security Score™",status_label:"Status",status_safe:"Safe for Install",
+    exact_version:"Esta versao exata foi escaneada.",report_note:"Este resumo reflete somente o scan registrado. Confira a impressao digital e escaneie novamente se a fonte mudou.",
+    scan_date:"Data do scan",category:"Categoria",close:"Fechar",footer:"Cyber Guardian Scan verifica a versao exata e a impressao digital escaneadas. Escaneie novamente apos mudancas.",load_error:"Nao foi possivel carregar o banco de ferramentas verificadas. Tente novamente."
+  }
+};
+
+const FILTERS = ["all","mcp","agent","skill","extension","repo","action","package","dependency"];
+let currentLang = "en";
+let currentFilter = "all";
+let allItems = [];
+
+function esc(value){
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
+}
+
+function text(key){ return COPY[currentLang]?.[key] || COPY.en[key] || key; }
+
+function initialLanguage(){
+  const param = new URLSearchParams(location.search).get("lang");
+  const saved = localStorage.getItem("cg-lang");
+  const browser = (navigator.language || "en").split("-")[0];
+  return LANGS[param] ? param : LANGS[saved] ? saved : LANGS[browser] ? browser : "en";
+}
+
+function setLanguage(code){
+  currentLang = LANGS[code] ? code : "en";
+  localStorage.setItem("cg-lang", currentLang);
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = LANGS[currentLang].dir;
+  document.querySelectorAll("[data-copy]").forEach(el => { el.textContent = text(el.dataset.copy); });
+  document.querySelectorAll("[data-copy-placeholder]").forEach(el => { el.placeholder = text(el.dataset.copyPlaceholder); });
+  document.getElementById("close-modal").setAttribute("aria-label", text("close"));
+  renderLanguages();
+  renderFilters();
+  renderItems();
+}
+
+function renderLanguages(){
+  const wrap = document.getElementById("lang-switcher");
+  wrap.innerHTML = Object.entries(LANGS).map(([code,lang]) =>
+    `<button type="button" class="lang-btn${code === currentLang ? " active" : ""}" data-lang="${code}" aria-label="${code}" aria-pressed="${code === currentLang}">${lang.label}</button>`
+  ).join("");
+  wrap.querySelectorAll("[data-lang]").forEach(btn => btn.addEventListener("click", event => {
+    if (matchMedia("(max-width:520px)").matches && !wrap.classList.contains("open")) {
+      wrap.classList.add("open");
+      return;
+    }
+    wrap.classList.remove("open");
+    setLanguage(event.currentTarget.dataset.lang);
+  }));
+}
+
+function categoryKey(scope){
+  const value = String(scope || "").toLowerCase();
+  if (value.includes("mcp")) return "mcp";
+  if (value.includes("agent")) return "agent";
+  if (value.includes("skill")) return "skill";
+  if (value.includes("extension") || value.includes("ide")) return "extension";
+  if (value.includes("repo")) return "repo";
+  if (value.includes("action") || value.includes("workflow")) return "action";
+  if (value.includes("package") || value.includes("npm") || value.includes("pypi")) return "package";
+  return "dependency";
+}
+
+function renderFilters(){
+  const wrap = document.getElementById("filters");
+  wrap.innerHTML = FILTERS.map(key =>
+    `<button type="button" class="filter-btn${key === currentFilter ? " active" : ""}" data-filter="${key}" aria-pressed="${key === currentFilter}">${esc(text(key))}</button>`
+  ).join("");
+  wrap.querySelectorAll("[data-filter]").forEach(btn => btn.addEventListener("click", event => {
+    currentFilter = event.currentTarget.dataset.filter;
+    renderFilters();
+    renderItems();
+  }));
+}
+
+function displayDate(value){
+  const date = value ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) return text("unavailable");
+  try { return date.toLocaleDateString(currentLang, {year:"numeric",month:"short",day:"numeric"}); }
+  catch { return date.toLocaleDateString(); }
+}
+
+function shortFingerprint(value){
+  const fingerprint = String(value || "").trim();
+  return fingerprint ? `${fingerprint.slice(0,10)}...${fingerprint.slice(-8)}` : text("unavailable");
+}
+
+function sourceHost(value){
+  try { return new URL(value).hostname.replace(/^www\./,""); }
+  catch { return text("unavailable"); }
+}
+
+function filteredItems(){
+  const query = document.getElementById("search").value.trim().toLowerCase();
+  return allItems.filter(item => {
+    const category = categoryKey(item.scope);
+    if (currentFilter !== "all" && category !== currentFilter) return false;
+    if (!query) return true;
+    return [item.source_name,item.source_url,item.code_purpose,item.code_fingerprint,category]
+      .some(value => String(value || "").toLowerCase().includes(query));
+  });
+}
+
+function renderItems(){
+  const cards = document.getElementById("cards");
+  if (!cards || !document.getElementById("search")) return;
+  const items = filteredItems();
+  const count = items.length;
+  document.getElementById("result-count").innerHTML = `<strong>${esc((count === 1 ? text("results_one") : text("results_many")).replace("{count}",count))}</strong>`;
+  if (!items.length) {
+    cards.innerHTML = `<div class="empty">${esc(text("empty"))}</div>`;
+    return;
+  }
+  cards.innerHTML = items.map(item => {
+    const name = item.source_name || item.code_purpose || text("unavailable");
+    const category = categoryKey(item.scope);
+    const url = /^https?:\/\//i.test(String(item.source_url || "")) ? item.source_url : "";
+    return `<article class="tool-card">
+      <div class="card-head">
+        <div><h3 class="tool-name">${esc(name)}</h3><div class="category">${esc(text(category))}</div></div>
+        <div class="score">${Math.round(Number(item.security_score || 0))}<small>/100</small></div>
+      </div>
+      <div class="verified">${esc(text("verified_current"))}</div>
+      <div class="meta">
+        <div class="meta-box"><div class="meta-label">${esc(text("last_scanned"))}</div><div class="meta-value">${esc(displayDate(item.scanned_at))}</div></div>
+        <div class="meta-box"><div class="meta-label">${esc(text("fingerprint"))}</div><div class="meta-value">${esc(shortFingerprint(item.code_fingerprint))}</div></div>
+        <div class="meta-box"><div class="meta-label">${esc(text("source"))}</div><div class="meta-value">${esc(sourceHost(url))}</div></div>
+        <div class="meta-box"><div class="meta-label">${esc(text("status_label"))}</div><div class="meta-value">${esc(text("status_safe"))}</div></div>
+      </div>
+      <div class="card-foot">
+        <div class="install">${esc(text("recommended"))}</div>
+        <div class="card-actions">
+          <button class="button secondary" type="button" data-report="${esc(item.code_fingerprint || item.source_url || name)}">${esc(text("view_report"))}</button>
+          ${url ? `<a class="button primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(text("view_source"))}</a>` : ""}
+        </div>
+      </div>
+    </article>`;
+  }).join("");
+  cards.querySelectorAll("[data-report]").forEach(btn => btn.addEventListener("click", () => {
+    const key = btn.dataset.report;
+    const item = allItems.find(entry => String(entry.code_fingerprint || entry.source_url || entry.source_name) === key);
+    if (item) openReport(item);
+  }));
+}
+
+function openReport(item){
+  const name = item.source_name || item.code_purpose || text("unavailable");
+  const category = categoryKey(item.scope);
+  const url = /^https?:\/\//i.test(String(item.source_url || "")) ? item.source_url : "";
+  document.getElementById("report-title").textContent = name;
+  document.getElementById("report-body").innerHTML = `
+    <div class="report-score">
+      <div class="report-score-value">${Math.round(Number(item.security_score || 0))}/100</div>
+      <div class="report-score-copy"><strong>${esc(text("score_label"))}</strong><span>${esc(text("exact_version"))}</span></div>
+    </div>
+    <div class="report-grid">
+      <div class="meta-box"><div class="meta-label">${esc(text("status_label"))}</div><div class="meta-value">${esc(text("status_safe"))}</div></div>
+      <div class="meta-box"><div class="meta-label">${esc(text("category"))}</div><div class="meta-value">${esc(text(category))}</div></div>
+      <div class="meta-box"><div class="meta-label">${esc(text("scan_date"))}</div><div class="meta-value">${esc(displayDate(item.scanned_at))}</div></div>
+      <div class="meta-box"><div class="meta-label">${esc(text("source"))}</div><div class="meta-value">${esc(sourceHost(url))}</div></div>
+      <div class="meta-box" style="grid-column:1/-1"><div class="meta-label">${esc(text("fingerprint"))}</div><div class="meta-value">${esc(item.code_fingerprint || text("unavailable"))}</div></div>
+    </div>
+    <div class="report-warning">${esc(text("report_note"))}</div>
+    <div class="modal-actions">
+      ${url ? `<a class="button primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(text("view_source"))}</a>` : ""}
+      <button class="button secondary" type="button" data-close-report>${esc(text("close"))}</button>
+    </div>`;
+  document.getElementById("report-modal").classList.add("open");
+  document.querySelector("[data-close-report]")?.addEventListener("click", closeReport);
+}
+
+function closeReport(){ document.getElementById("report-modal").classList.remove("open"); }
+
+async function loadItems(){
+  try {
+    const response = await fetch("/api/site-stats?mode=verified&limit=100");
+    if (!response.ok) throw new Error("request failed");
+    const data = await response.json();
+    allItems = (Array.isArray(data.items) ? data.items : [])
+      .filter(item => Number(item.security_score || 0) >= 96 && /^https?:\/\//i.test(String(item.source_url || "")));
+    renderItems();
+  } catch {
+    document.getElementById("cards").innerHTML = `<div class="empty">${esc(text("load_error"))}</div>`;
+    document.getElementById("result-count").textContent = "";
+  }
+}
+
+document.getElementById("search").addEventListener("input", renderItems);
+document.getElementById("close-modal").addEventListener("click", closeReport);
+document.getElementById("report-modal").addEventListener("click", event => { if (event.target.id === "report-modal") closeReport(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape") closeReport(); });
+
+setLanguage(initialLanguage());
+loadItems();
+</script>
+</body>
+</html>
