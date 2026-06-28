@@ -4712,6 +4712,7 @@ const ALTERNATIVES_SECTION_COPY = {
     alternatives_tool_c: "Minimal Repo Context Server",
     alternatives_tool_c_purpose: "Similar repository context access, verified for the scanned version.",
     alternatives_note: "<strong>Important:</strong> alternatives are not identical replacements. They must be rescanned from the current public source before being recommended as safe.",
+    alternatives_cta: "Find a safer alternative",
   },
   he: {
     alternatives_label: "Safe Alternatives Engine™",
@@ -4732,6 +4733,7 @@ const ALTERNATIVES_SECTION_COPY = {
     alternatives_tool_c: "Minimal Repo Context Server",
     alternatives_tool_c_purpose: "גישה דומה להקשר של repository, מאומתת לגרסה שנסרקה.",
     alternatives_note: "<strong>חשוב:</strong> חלופות אינן תחליף זהה. יש לסרוק אותן מחדש מהמקור הציבורי הנוכחי לפני שממליצים עליהן כבטוחות.",
+    alternatives_cta: "מצא חלופה בטוחה יותר",
   },
   de: {
     alternatives_label: "Safe Alternatives Engine™",
@@ -4752,6 +4754,7 @@ const ALTERNATIVES_SECTION_COPY = {
     alternatives_tool_c: "Minimal Repo Context Server",
     alternatives_tool_c_purpose: "Ähnlicher Repository-Kontextzugriff, verifiziert für die gescannte Version.",
     alternatives_note: "<strong>Wichtig:</strong> Alternativen sind keine identischen Ersatzlösungen. Sie müssen aus der aktuellen öffentlichen Quelle neu gescannt werden, bevor sie als sicher empfohlen werden.",
+    alternatives_cta: "Sicherere Alternative finden",
   },
   ja: {
     alternatives_label: "Safe Alternatives Engine™",
@@ -4772,6 +4775,7 @@ const ALTERNATIVES_SECTION_COPY = {
     alternatives_tool_c: "Minimal Repo Context Server",
     alternatives_tool_c_purpose: "類似のリポジトリコンテキストアクセス。スキャン済みバージョンで検証済み。",
     alternatives_note: "<strong>重要:</strong> 代替候補は同一の置き換えではありません。安全として推奨する前に、現在の公開ソースから再スキャンする必要があります。",
+    alternatives_cta: "より安全な代替を探す",
   },
   ko: {
     alternatives_label: "Safe Alternatives Engine™",
@@ -4792,6 +4796,7 @@ const ALTERNATIVES_SECTION_COPY = {
     alternatives_tool_c: "Minimal Repo Context Server",
     alternatives_tool_c_purpose: "유사한 저장소 컨텍스트 접근, 스캔된 버전에 대해 검증됨.",
     alternatives_note: "<strong>중요:</strong> 대안은 동일한 대체물이 아닙니다. 안전한 것으로 추천하기 전에 현재 공개 소스에서 다시 스캔해야 합니다.",
+    alternatives_cta: "더 안전한 대안 찾기",
   },
   fr: {
     alternatives_label: "Safe Alternatives Engine™",
@@ -4812,6 +4817,7 @@ const ALTERNATIVES_SECTION_COPY = {
     alternatives_tool_c: "Minimal Repo Context Server",
     alternatives_tool_c_purpose: "Accès similaire au contexte repository, vérifié pour la version analysée.",
     alternatives_note: "<strong>Important:</strong> les alternatives ne sont pas des remplacements identiques. Elles doivent être réanalysées depuis la source publique actuelle avant d'être recommandées comme sûres.",
+    alternatives_cta: "Trouver une alternative plus sûre",
   },
   pt: {
     alternatives_label: "Safe Alternatives Engine™",
@@ -4832,6 +4838,7 @@ const ALTERNATIVES_SECTION_COPY = {
     alternatives_tool_c: "Minimal Repo Context Server",
     alternatives_tool_c_purpose: "Acesso semelhante ao contexto de repositório, verificado para a versão escaneada.",
     alternatives_note: "<strong>Importante:</strong> alternativas não são substituições idênticas. Elas devem ser reescaneadas da fonte pública atual antes de serem recomendadas como seguras.",
+    alternatives_cta: "Encontrar alternativa mais segura",
   },
 };
 Object.entries(ALTERNATIVES_SECTION_COPY).forEach(([lang, copy]) => {

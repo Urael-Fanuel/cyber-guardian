@@ -637,6 +637,9 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .alternative-row-score small { color: var(--text-dim); font-size: 9px; }
 .alternative-note { margin-top: 14px; padding: 12px 14px; border: 1px solid rgba(0,212,255,0.18); border-radius: 8px; background: rgba(0,212,255,0.055); color: var(--text-dim); font-size: 11px; line-height: 1.7; }
 .alternative-note strong { color: var(--cyan); }
+.alternative-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+.alternative-cta { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 10px 16px; border: 1px solid var(--cyan); border-radius: 7px; background: rgba(0,212,255,0.08); color: var(--cyan); font-family: var(--sans); font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.15s; }
+.alternative-cta:hover { color: #001018; background: var(--cyan); }
 @media(max-width:760px) {
   .safe-alternatives { padding: 0 12px; }
   .alternatives-board { grid-template-columns: 1fr; }
@@ -644,6 +647,8 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
   .alternative-score { margin-top: 10px; }
   .alternative-row { grid-template-columns: 1fr; }
   .alternative-row-score { text-align: start; }
+  .alternative-actions { justify-content: stretch; }
+  .alternative-cta { width: 100%; }
 }
 
 .developer-certification { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
@@ -1403,6 +1408,7 @@ footer a:hover { color: var(--cyan); }
           </div>
         </div>
         <div class="alternative-note" data-i18n-html="alternatives_note"><strong>Important:</strong> alternatives are not identical replacements. They must be rescanned from the current public source before being recommended as safe.</div>
+        <div class="alternative-actions"><button type="button" class="alternative-cta" onclick="openContact('alternative')" data-i18n="alternatives_cta">Find a safer alternative</button></div>
       </div>
     </article>
   </div>
