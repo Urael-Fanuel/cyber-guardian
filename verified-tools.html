@@ -412,17 +412,12 @@ function renderItems(){
       <div class="card-foot">
         <div class="install">${esc(text("recommended"))}</div>
         <div class="card-actions">
-          <button class="button secondary" type="button" data-report="${esc(item.code_fingerprint || item.source_url || name)}">${esc(text("view_report"))}</button>
+          <a class="button secondary" href="/report?fingerprint=${encodeURIComponent(item.code_fingerprint || "")}&source=${encodeURIComponent(item.source_url || "")}">${esc(text("view_report"))}</a>
           ${url ? `<a class="button primary" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(text("view_source"))}</a>` : ""}
         </div>
       </div>
     </article>`;
   }).join("");
-  cards.querySelectorAll("[data-report]").forEach(btn => btn.addEventListener("click", () => {
-    const key = btn.dataset.report;
-    const item = allItems.find(entry => String(entry.code_fingerprint || entry.source_url || entry.source_name) === key);
-    if (item) openReport(item);
-  }));
 }
 
 function openReport(item){

@@ -6,6 +6,7 @@
   },
   "rewrites": [
     { "source": "/verified-tools", "destination": "/verified-tools.html" },
+    { "source": "/report", "destination": "/report.html" },
     { "source": "/api/(.*)", "destination": "/api/$1" }
   ],
   "headers": [
