@@ -471,6 +471,25 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .trust-note { margin-top: 14px; border: 1px solid rgba(255,189,46,0.28); background: rgba(255,189,46,0.06); color: var(--text); padding: 14px 16px; font-size: 12px; line-height: 1.7; }
 @media(max-width:700px){ .trust-grid { grid-template-columns: 1fr; } }
 
+.intent-section { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
+.intent-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.intent-card { min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: rgba(11,17,24,0.92); box-shadow: var(--shadow); }
+.intent-card-head { padding: 22px 22px 18px; border-bottom: 1px solid var(--border); }
+.intent-card.malicious .intent-card-head { background: linear-gradient(145deg,rgba(255,61,61,0.13),rgba(11,17,24,0.94)); }
+.intent-card.unsafe .intent-card-head { background: linear-gradient(145deg,rgba(255,189,46,0.12),rgba(11,17,24,0.94)); }
+.intent-k { color: var(--red); font-size: 9px; font-weight: 800; letter-spacing: 1.7px; text-transform: uppercase; }
+.intent-card.unsafe .intent-k { color: var(--yellow); }
+[dir="rtl"] .intent-k { letter-spacing: 0; text-transform: none; }
+.intent-t { margin-top: 7px; color: #fff; font-family: var(--sans); font-size: 20px; font-weight: 800; line-height: 1.35; }
+.intent-d { margin-top: 8px; color: #AABCCB; font-size: 11.5px; line-height: 1.75; }
+.intent-list { display: grid; gap: 10px; padding: 19px 22px 22px; }
+.intent-item { position: relative; padding-inline-start: 17px; color: var(--text-dim); font-size: 11px; line-height: 1.65; }
+.intent-item::before { content: ""; position: absolute; inset-inline-start: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--red); box-shadow: 0 0 9px rgba(255,61,61,0.55); }
+.intent-card.unsafe .intent-item::before { background: var(--yellow); box-shadow: 0 0 9px rgba(255,189,46,0.5); }
+.intent-decision { margin-top: 14px; padding: 15px 17px; border: 1px solid rgba(0,212,255,0.24); background: rgba(0,212,255,0.045); color: var(--text); font-size: 11.5px; line-height: 1.75; }
+.intent-decision strong { color: var(--cyan); }
+@media(max-width:700px){ .intent-grid { grid-template-columns: 1fr; } }
+
 .security-score-section { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
 .security-score-card { display: grid; grid-template-columns: minmax(230px,0.78fr) minmax(0,1.5fr); overflow: hidden; border: 1px solid rgba(49,74,97,0.82); border-radius: 8px; background: rgba(11,17,24,0.9); box-shadow: var(--shadow); }
 .security-score-summary { display: flex; flex-direction: column; justify-content: center; min-height: 330px; padding: 34px; border-right: 1px solid var(--border); background: linear-gradient(145deg,rgba(0,230,118,0.12),rgba(5,8,13,0.92) 58%); }
@@ -1230,6 +1249,39 @@ footer a:hover { color: var(--cyan); }
     </div>
   </div>
   <div class="trust-note" data-i18n="integrity_note">Cyber Guardian Scan does not present a protection capability as active until it is connected, tested, reliable, and ready for users.</div>
+</section>
+
+<section class="intent-section">
+  <div class="section-lbl" data-i18n="intent_label">Understand the result</div>
+  <h2 class="section-title" data-i18n="intent_title">Malicious code and unsafe code are not the same.</h2>
+  <p class="section-sub" data-i18n="intent_sub">Cyber Guardian Scan separates harmful intent from security weaknesses so users can block attacks without unfairly labeling developer mistakes as malicious.</p>
+  <div class="intent-grid">
+    <article class="intent-card malicious">
+      <div class="intent-card-head">
+        <div class="intent-k" data-i18n="intent_malicious_k">Intentional harm</div>
+        <h3 class="intent-t" data-i18n="intent_malicious_t">Malicious code</h3>
+        <p class="intent-d" data-i18n="intent_malicious_d">Behavior deliberately designed to steal, hide, damage, gain unauthorized access or execute actions the user did not approve.</p>
+      </div>
+      <div class="intent-list">
+        <div class="intent-item" data-i18n="intent_malicious_1">Credential theft or data exfiltration</div>
+        <div class="intent-item" data-i18n="intent_malicious_2">Hidden commands, reverse shells or destructive payloads</div>
+        <div class="intent-item" data-i18n="intent_malicious_3">Obfuscation intended to conceal harmful behavior</div>
+      </div>
+    </article>
+    <article class="intent-card unsafe">
+      <div class="intent-card-head">
+        <div class="intent-k" data-i18n="intent_unsafe_k">Security weakness</div>
+        <h3 class="intent-t" data-i18n="intent_unsafe_t">Unsafe code</h3>
+        <p class="intent-d" data-i18n="intent_unsafe_d">Code that may be well-intentioned but contains weak validation, excessive permissions, insecure architecture or missing safeguards.</p>
+      </div>
+      <div class="intent-list">
+        <div class="intent-item" data-i18n="intent_unsafe_1">Unvalidated input or insecure configuration</div>
+        <div class="intent-item" data-i18n="intent_unsafe_2">Permissions broader than the tool needs</div>
+        <div class="intent-item" data-i18n="intent_unsafe_3">Risky dependencies or missing authentication controls</div>
+      </div>
+    </article>
+  </div>
+  <div class="intent-decision"><strong data-i18n="intent_decision_k">How to read the verdict:</strong> <span data-i18n="intent_decision_d">Needs Review can indicate an unsafe implementation, incomplete evidence or unclear intent. Danger for Install is reserved for serious risk or strong malicious indicators. Read the findings before deciding what to do.</span></div>
 </section>
 
 <section class="seo-hub" id="resources">

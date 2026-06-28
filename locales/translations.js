@@ -5067,6 +5067,79 @@ Object.entries(SECTION_TOGGLE_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const MALICIOUS_UNSAFE_COPY = {
+  en: {
+    intent_label: "Understand the result", intent_title: "Malicious code and unsafe code are not the same.",
+    intent_sub: "Cyber Guardian Scan separates harmful intent from security weaknesses so users can block attacks without unfairly labeling developer mistakes as malicious.",
+    intent_malicious_k: "Intentional harm", intent_malicious_t: "Malicious code",
+    intent_malicious_d: "Behavior deliberately designed to steal, hide, damage, gain unauthorized access or execute actions the user did not approve.",
+    intent_malicious_1: "Credential theft or data exfiltration", intent_malicious_2: "Hidden commands, reverse shells or destructive payloads", intent_malicious_3: "Obfuscation intended to conceal harmful behavior",
+    intent_unsafe_k: "Security weakness", intent_unsafe_t: "Unsafe code",
+    intent_unsafe_d: "Code that may be well-intentioned but contains weak validation, excessive permissions, insecure architecture or missing safeguards.",
+    intent_unsafe_1: "Unvalidated input or insecure configuration", intent_unsafe_2: "Permissions broader than the tool needs", intent_unsafe_3: "Risky dependencies or missing authentication controls",
+    intent_decision_k: "How to read the verdict:", intent_decision_d: "Needs Review can indicate an unsafe implementation, incomplete evidence or unclear intent. Danger for Install is reserved for serious risk or strong malicious indicators. Read the findings before deciding what to do."
+  },
+  he: {
+    intent_label: "איך להבין את התוצאה", intent_title: "קוד זדוני וקוד לא בטוח אינם אותו דבר.",
+    intent_sub: "Cyber Guardian Scan מפריד בין כוונת פגיעה לבין חולשות אבטחה, כדי לחסום תקיפות בלי להציג טעות של מפתח כפעולה זדונית.",
+    intent_malicious_k: "פגיעה מכוונת", intent_malicious_t: "קוד זדוני",
+    intent_malicious_d: "התנהגות שנבנתה בכוונה לגנוב, להסתיר, לגרום נזק, להשיג גישה לא מורשית או לבצע פעולות שהמשתמש לא אישר.",
+    intent_malicious_1: "גניבת פרטי גישה או הוצאת מידע", intent_malicious_2: "פקודות נסתרות, reverse shell או מטען הרסני", intent_malicious_3: "הסוואה שנועדה להסתיר התנהגות מזיקה",
+    intent_unsafe_k: "חולשת אבטחה", intent_unsafe_t: "קוד לא בטוח",
+    intent_unsafe_d: "קוד שייתכן שנכתב בכוונה טובה, אך כולל אימות חלש, הרשאות עודפות, ארכיטקטורה לא בטוחה או אמצעי הגנה חסרים.",
+    intent_unsafe_1: "קלט ללא אימות או הגדרה לא מאובטחת", intent_unsafe_2: "הרשאות רחבות יותר ממה שהכלי צריך", intent_unsafe_3: "תלויות מסוכנות או בקרות אימות חסרות",
+    intent_decision_k: "כך קוראים את ההחלטה:", intent_decision_d: "נדרשת בדיקה יכולה להצביע על מימוש לא בטוח, ראיות חלקיות או כוונה לא ברורה. מסוכן להתקנה שמור לסיכון חמור או לסימנים חזקים של כוונת זדון. יש לקרוא את הממצאים לפני שמחליטים מה לעשות."
+  },
+  de: {
+    intent_label: "Ergebnis verstehen", intent_title: "Boesartiger und unsicherer Code sind nicht dasselbe.",
+    intent_sub: "Cyber Guardian Scan trennt schaedliche Absicht von Sicherheitsfehlern, damit Angriffe blockiert werden, ohne Entwicklerfehler als boesartig zu bezeichnen.",
+    intent_malicious_k: "Absichtlicher Schaden", intent_malicious_t: "Boesartiger Code", intent_malicious_d: "Bewusst entwickeltes Verhalten zum Stehlen, Verbergen, Beschaedigen oder fuer unbefugten Zugriff.",
+    intent_malicious_1: "Diebstahl von Zugangsdaten oder Datenabfluss", intent_malicious_2: "Versteckte Befehle, Reverse Shells oder destruktive Payloads", intent_malicious_3: "Verschleierung schaedlichen Verhaltens",
+    intent_unsafe_k: "Sicherheitsluecke", intent_unsafe_t: "Unsicherer Code", intent_unsafe_d: "Gut gemeinter Code mit schwacher Validierung, zu vielen Rechten, unsicherer Architektur oder fehlenden Schutzmassnahmen.",
+    intent_unsafe_1: "Ungepruefte Eingaben oder unsichere Konfiguration", intent_unsafe_2: "Mehr Berechtigungen als erforderlich", intent_unsafe_3: "Riskante Abhaengigkeiten oder fehlende Authentifizierung",
+    intent_decision_k: "So lesen Sie das Urteil:", intent_decision_d: "Needs Review kann unsichere Umsetzung, unvollstaendige Nachweise oder unklare Absicht bedeuten. Danger for Install ist fuer ernste Risiken oder starke boesartige Hinweise reserviert."
+  },
+  ja: {
+    intent_label: "結果の理解", intent_title: "悪意のあるコードと安全でないコードは同じではありません。",
+    intent_sub: "Cyber Guardian Scan は攻撃を阻止しつつ、開発ミスを悪意と決めつけないよう意図と弱点を区別します。",
+    intent_malicious_k: "意図的な被害", intent_malicious_t: "悪意のあるコード", intent_malicious_d: "窃取、隠蔽、破壊、不正アクセス、未承認操作を意図して作られた動作です。",
+    intent_malicious_1: "認証情報の窃取やデータ流出", intent_malicious_2: "隠しコマンド、リバースシェル、破壊的ペイロード", intent_malicious_3: "有害な動作を隠す難読化",
+    intent_unsafe_k: "セキュリティ上の弱点", intent_unsafe_t: "安全でないコード", intent_unsafe_d: "悪意はなくても、検証不足、過剰権限、安全でない設計、保護不足を含むコードです。",
+    intent_unsafe_1: "未検証入力や安全でない設定", intent_unsafe_2: "必要以上に広い権限", intent_unsafe_3: "危険な依存関係や認証制御の不足",
+    intent_decision_k: "判定の読み方:", intent_decision_d: "Needs Review は安全でない実装、不完全な証拠、不明確な意図を示す場合があります。Danger for Install は重大なリスクや強い悪意の兆候に使用されます。"
+  },
+  ko: {
+    intent_label: "결과 이해", intent_title: "악성 코드와 안전하지 않은 코드는 같지 않습니다.",
+    intent_sub: "Cyber Guardian Scan은 공격을 차단하면서 개발 실수를 악성으로 단정하지 않도록 해로운 의도와 보안 약점을 구분합니다.",
+    intent_malicious_k: "의도적 피해", intent_malicious_t: "악성 코드", intent_malicious_d: "탈취, 은폐, 손상, 무단 접근 또는 승인되지 않은 작업을 의도한 동작입니다.",
+    intent_malicious_1: "자격 증명 탈취 또는 데이터 유출", intent_malicious_2: "숨겨진 명령, 리버스 셸 또는 파괴적 페이로드", intent_malicious_3: "유해 동작을 숨기기 위한 난독화",
+    intent_unsafe_k: "보안 약점", intent_unsafe_t: "안전하지 않은 코드", intent_unsafe_d: "의도는 좋더라도 약한 검증, 과도한 권한, 안전하지 않은 구조 또는 보호 장치 누락이 있는 코드입니다.",
+    intent_unsafe_1: "검증되지 않은 입력 또는 안전하지 않은 설정", intent_unsafe_2: "도구에 필요한 범위보다 넓은 권한", intent_unsafe_3: "위험한 의존성 또는 인증 제어 누락",
+    intent_decision_k: "판정 읽는 법:", intent_decision_d: "Needs Review는 안전하지 않은 구현, 불완전한 증거 또는 불분명한 의도를 뜻할 수 있습니다. Danger for Install은 심각한 위험이나 강한 악성 징후에 사용됩니다."
+  },
+  fr: {
+    intent_label: "Comprendre le resultat", intent_title: "Un code malveillant et un code non sur ne sont pas identiques.",
+    intent_sub: "Cyber Guardian Scan distingue l'intention nuisible des faiblesses de securite pour bloquer les attaques sans qualifier injustement une erreur de developpement de malveillante.",
+    intent_malicious_k: "Prejudice intentionnel", intent_malicious_t: "Code malveillant", intent_malicious_d: "Comportement concu pour voler, dissimuler, endommager, obtenir un acces non autorise ou executer une action non approuvee.",
+    intent_malicious_1: "Vol d'identifiants ou exfiltration de donnees", intent_malicious_2: "Commandes cachees, reverse shells ou charges destructrices", intent_malicious_3: "Obfuscation destinee a cacher un comportement nuisible",
+    intent_unsafe_k: "Faiblesse de securite", intent_unsafe_t: "Code non sur", intent_unsafe_d: "Code bien intentionne avec validation faible, permissions excessives, architecture non sure ou protections manquantes.",
+    intent_unsafe_1: "Entree non validee ou configuration non sure", intent_unsafe_2: "Permissions plus larges que necessaire", intent_unsafe_3: "Dependances risquees ou controles d'authentification manquants",
+    intent_decision_k: "Lire le verdict:", intent_decision_d: "Needs Review peut indiquer une implementation non sure, des preuves incompletes ou une intention incertaine. Danger for Install est reserve aux risques graves ou aux indicateurs malveillants forts."
+  },
+  pt: {
+    intent_label: "Entenda o resultado", intent_title: "Codigo malicioso e codigo inseguro nao sao a mesma coisa.",
+    intent_sub: "O Cyber Guardian Scan separa intencao nociva de fraquezas de seguranca para bloquear ataques sem rotular injustamente erros de desenvolvimento como maliciosos.",
+    intent_malicious_k: "Dano intencional", intent_malicious_t: "Codigo malicioso", intent_malicious_d: "Comportamento criado para roubar, ocultar, causar dano, obter acesso nao autorizado ou executar acoes nao aprovadas.",
+    intent_malicious_1: "Roubo de credenciais ou exfiltracao de dados", intent_malicious_2: "Comandos ocultos, reverse shells ou payloads destrutivos", intent_malicious_3: "Ofuscacao para esconder comportamento nocivo",
+    intent_unsafe_k: "Fraqueza de seguranca", intent_unsafe_t: "Codigo inseguro", intent_unsafe_d: "Codigo bem-intencionado com validacao fraca, permissoes excessivas, arquitetura insegura ou protecoes ausentes.",
+    intent_unsafe_1: "Entrada nao validada ou configuracao insegura", intent_unsafe_2: "Permissoes maiores que o necessario", intent_unsafe_3: "Dependencias arriscadas ou controles de autenticacao ausentes",
+    intent_decision_k: "Como ler o veredito:", intent_decision_d: "Needs Review pode indicar implementacao insegura, evidencias incompletas ou intencao incerta. Danger for Install e reservado para riscos graves ou fortes indicadores maliciosos."
+  }
+};
+Object.entries(MALICIOUS_UNSAFE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 window.TRANSLATIONS = TRANSLATIONS;
 window.LANGS = LANGS;
 window.loadContentOverrides = loadContentOverrides;
