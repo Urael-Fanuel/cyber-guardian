@@ -713,6 +713,32 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
   .certification-cta { width: 100%; margin-top: 12px; }
 }
 
+.enterprise-section { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
+.enterprise-panel { overflow: hidden; border: 1px solid rgba(49,74,97,0.82); border-radius: 9px; background: linear-gradient(145deg,rgba(13,24,36,0.96),rgba(6,11,17,0.95)); box-shadow: var(--shadow); }
+.enterprise-head { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 24px; padding: 27px 28px; border-bottom: 1px solid var(--border); background: linear-gradient(120deg,rgba(0,212,255,0.08),transparent 46%,rgba(157,78,221,0.08)); }
+.enterprise-headline { color: #fff; font-family: var(--sans); font-size: 21px; font-weight: 800; line-height: 1.35; }
+.enterprise-copy { max-width: 650px; margin-top: 8px; color: #AABCCB; font-size: 11.5px; line-height: 1.75; }
+.enterprise-cta { min-height: 42px; padding: 10px 18px; border: 0; border-radius: 7px; background: linear-gradient(135deg,var(--cyan),var(--green)); color: #001018; font-family: var(--mono); font-size: 10px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.enterprise-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+.enterprise-item { min-width: 0; padding: 19px 21px; border-bottom: 1px solid var(--border); }
+.enterprise-item:nth-child(odd) { border-right: 1px solid var(--border); }
+[dir="rtl"] .enterprise-item:nth-child(odd) { border-right: none; border-left: 1px solid var(--border); }
+.enterprise-item:last-child { grid-column: 1 / -1; border: 0; }
+.enterprise-item-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.enterprise-item-title { color: #fff; font-family: var(--sans); font-size: 14px; font-weight: 700; }
+.enterprise-state { flex: 0 0 auto; padding: 4px 7px; border: 1px solid rgba(0,230,118,0.28); border-radius: 999px; color: var(--green); background: rgba(0,230,118,0.055); font-size: 8px; font-weight: 800; }
+.enterprise-state.discuss { border-color: rgba(255,189,46,0.3); color: var(--yellow); background: rgba(255,189,46,0.055); }
+.enterprise-item-copy { margin-top: 7px; color: var(--text-dim); font-size: 10.5px; line-height: 1.7; }
+.enterprise-note { padding: 14px 20px; border-top: 1px solid rgba(0,212,255,0.17); color: var(--text-dim); background: rgba(0,212,255,0.035); font-size: 10px; line-height: 1.7; }
+@media(max-width:700px) {
+  .enterprise-head { grid-template-columns: 1fr; align-items: start; padding: 23px 20px; }
+  .enterprise-cta { width: 100%; }
+  .enterprise-grid { grid-template-columns: 1fr; }
+  .enterprise-item,.enterprise-item:nth-child(odd),[dir="rtl"] .enterprise-item:nth-child(odd) { border-right: 0; border-left: 0; }
+  .enterprise-item:last-child { grid-column: auto; }
+}
+@media(max-width:520px) { .enterprise-section { padding: 0 12px; } .enterprise-item-top { align-items: flex-start; flex-direction: column; } }
+
 /* ── OTHER PRODUCTS SECTION (NEW) ── */
 .other { position: relative; z-index: 2; max-width: 900px; margin: 0 auto 72px; padding: 0 20px; }
 .other-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
@@ -1532,6 +1558,31 @@ footer a:hover { color: var(--cyan); }
         <div class="certified-badge-meta-item"><strong data-i18n="certification_meta_listing">Public verified listing</strong><span data-i18n="certification_meta_listing_copy">Qualified tools can appear in the scanned tools database with source and fingerprint metadata.</span></div>
       </div>
     </article>
+  </div>
+</section>
+
+<section class="enterprise-section" id="enterprise">
+  <div class="section-lbl" data-i18n="enterprise_label">Teams and organizations</div>
+  <h2 class="section-title" data-i18n="enterprise_title">Turn scan evidence into a repeatable approval process</h2>
+  <p class="section-sub" data-i18n="enterprise_sub">Cyber Guardian Scan helps teams evaluate AI tools before they reach systems, credentials and production workflows. Available foundations are shown separately from organization-specific requirements.</p>
+  <div class="enterprise-panel">
+    <div class="enterprise-head">
+      <div>
+        <div class="enterprise-headline" data-i18n="enterprise_headline">Build an evidence-based AI tool review workflow</div>
+        <div class="enterprise-copy" data-i18n="enterprise_copy">Start with version-bound reports and scan history, then discuss volume, access, integration and governance requirements for your organization.</div>
+      </div>
+      <button type="button" class="enterprise-cta" onclick="openContact('enterprise')" data-i18n="enterprise_cta">Contact Sales</button>
+    </div>
+    <div class="enterprise-grid">
+      <article class="enterprise-item"><div class="enterprise-item-top"><div class="enterprise-item-title" data-i18n="enterprise_dashboard_t">Team Dashboard</div><span class="enterprise-state discuss" data-i18n="enterprise_discuss">Discuss requirements</span></div><div class="enterprise-item-copy" data-i18n="enterprise_dashboard_d">Discuss team access, roles, shared visibility and workspace requirements.</div></article>
+      <article class="enterprise-item"><div class="enterprise-item-top"><div class="enterprise-item-title" data-i18n="enterprise_reports_t">Shared Reports</div><span class="enterprise-state" data-i18n="enterprise_available">Available now</span></div><div class="enterprise-item-copy" data-i18n="enterprise_reports_d">Share professional, version-bound public scan reports with reviewers and stakeholders.</div></article>
+      <article class="enterprise-item"><div class="enterprise-item-top"><div class="enterprise-item-title" data-i18n="enterprise_audit_t">Audit Trail</div><span class="enterprise-state" data-i18n="enterprise_available">Available now</span></div><div class="enterprise-item-copy" data-i18n="enterprise_audit_d">Recorded scan history and fingerprints provide evidence for point-in-time decisions.</div></article>
+      <article class="enterprise-item"><div class="enterprise-item-top"><div class="enterprise-item-title" data-i18n="enterprise_api_t">API Access</div><span class="enterprise-state discuss" data-i18n="enterprise_discuss">Discuss requirements</span></div><div class="enterprise-item-copy" data-i18n="enterprise_api_d">Contact the team to discuss supported integration, volume and authentication requirements.</div></article>
+      <article class="enterprise-item"><div class="enterprise-item-top"><div class="enterprise-item-title" data-i18n="enterprise_cicd_t">CI/CD Integration</div><span class="enterprise-state discuss" data-i18n="enterprise_discuss">Discuss requirements</span></div><div class="enterprise-item-copy" data-i18n="enterprise_cicd_d">Plan security checks around repositories and GitHub Actions before code reaches production.</div></article>
+      <article class="enterprise-item"><div class="enterprise-item-top"><div class="enterprise-item-title" data-i18n="enterprise_policy_t">Policy Enforcement</div><span class="enterprise-state discuss" data-i18n="enterprise_discuss">Discuss requirements</span></div><div class="enterprise-item-copy" data-i18n="enterprise_policy_d">Use scan verdicts to inform approval policy. Runtime enforcement is not presented as active protection.</div></article>
+      <article class="enterprise-item"><div class="enterprise-item-top"><div class="enterprise-item-title" data-i18n="enterprise_catalog_t">Approved Tool Catalog</div><span class="enterprise-state" data-i18n="enterprise_available">Available now</span></div><div class="enterprise-item-copy" data-i18n="enterprise_catalog_d">Use the public verified-tools database as a starting point, then confirm the current source and fingerprint before approval.</div></article>
+    </div>
+    <div class="enterprise-note" data-i18n="enterprise_note">Contact Sales is a requirements conversation, not a claim that every enterprise control is already enabled. Cyber Guardian Scan will scope only capabilities that can be delivered and verified.</div>
   </div>
 </section>
 
