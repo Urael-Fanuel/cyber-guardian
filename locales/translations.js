@@ -34,8 +34,8 @@ const TRANSLATIONS = {
     ai_badge_post: "· 60 threat families · MCP-aware",
     loading_main: "ANALYZING CODE",
     loading_sub: "Security Engine · MCP-aware · Zero-Trust",
-    verdict_safe_title: "SAFE TO INSTALL",
-    verdict_safe_sub: "NO THREATS DETECTED",
+    verdict_safe_title: "SAFE FOR INSTALL",
+    verdict_safe_sub: "NO MEANINGFUL SECURITY CONCERNS FOUND",
     verdict_mod_title: "REVIEW BEFORE INSTALLING",
     verdict_mod_sub: "SUSPICIOUS PATTERNS FOUND",
     verdict_crit_title: "DO NOT INSTALL",
@@ -4110,7 +4110,7 @@ const CG_SEARCH_COPY = {
     result_verified_title: "Verified by Cyber Guardian Scan™",
     result_clean_title: "Clean — passed automated security review",
     result_clean_note: "Static and AI analysis found no security issues. A deeper behavior review can add the Verified badge.",
-    result_status_safe_to_install: "Safe to Install",
+    result_status_safe_to_install: "Safe for Install",
   },
   he: {
     search_label: "כבר נסרק? בדוק בהיסטוריה לפני שאתה סורק",
@@ -4295,7 +4295,7 @@ const SHARE_BADGE_COPY = {
   en: {
     share_pride_title: "Share your verified clean code",
     share_pride_body: "{source_name} passed automated security analysis — Score: {score}/100, no threats found.",
-    share_pride_tweet: "I verified {source_name} with Cyber Guardian Scan — Security Score: {score}/100, zero threats detected. Install safely: {source_url} | Verified by: {site_url}",
+    share_pride_tweet: "I scanned {source_name} with Cyber Guardian Scan — Security Score: {score}/100. Result applies to the scanned version; rescan after changes: {source_url} | Report: {site_url}",
     share_btn_share: "Share",
     share_btn_x: "Share on X",
     share_btn_linkedin: "Share on LinkedIn",
@@ -5239,6 +5239,19 @@ const PRICING_STRUCTURE_COPY = {
   pt:{pricing_structure_label:"Planos",pricing_structure_title:"Comece na beta gratis. Escolha o fluxo necessario depois.",pricing_structure_sub:"A beta gratis esta disponivel. Planos comerciais mostram uma estrutura de produto, nao assinaturas compraveis ou precos confirmados.",pricing_available:"Disponivel agora",pricing_planned:"Plano planejado",pricing_workflow:"Fluxo disponivel",pricing_discuss:"Discutir requisitos",pricing_free_name:"Beta gratis",pricing_free_for:"Para avaliacao individual",pricing_free_value:"10 scans / mes",pricing_free_f1:"Cyber Guardian Security Score",pricing_free_f2:"Achados basicos e recomendacao",pricing_free_f3:"Scan de fontes publicas",pricing_pro_name:"Pro",pricing_pro_for:"Para revisao frequente",pricing_contact_value:"Preco a confirmar",pricing_pro_f1:"Maior volume de scans",pricing_pro_f2:"Achados detalhados e relatorios",pricing_pro_f3:"Fluxo de alternativa mais segura",pricing_interest:"Registrar interesse",pricing_cert_name:"Certificacao de desenvolvedor",pricing_cert_for:"Para autores melhorando o proprio codigo",pricing_cert_f1:"Orientacao de melhoria",pricing_cert_f2:"Rescan e qualificacao",pricing_cert_f3:"Badge vinculado a versao e listagem publica",pricing_team_name:"Team / Enterprise",pricing_team_for:"Para organizacoes e compras",pricing_custom_value:"Escopo personalizado",pricing_team_f1:"Volume e integracao",pricing_team_f2:"Revisao de equipe e governanca",pricing_team_f3:"Discussao de scans privados",pricing_honesty_note:"Nenhum preco pago, cota ou SLA esta confirmado. Pagamento nao muda score nem decisao de verificacao."}
 };
 Object.entries(PRICING_STRUCTURE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
+const LEGAL_TRUST_COPY = {
+  en:{verdict_safe_title:"SAFE FOR INSTALL",verdict_safe_sub:"NO MEANINGFUL SECURITY CONCERNS FOUND",result_status_safe_to_install:"Safe for Install",share_pride_title:"Share this version's verification",share_pride_body:"{source_name} was scanned by Cyber Guardian Scan — Score: {score}/100. This result applies to the scanned version.",share_pride_tweet:"I scanned {source_name} with Cyber Guardian Scan — Security Score: {score}/100. Result applies to the scanned version; rescan after changes: {source_url} | Report: {site_url}"},
+  he:{verdict_safe_title:"בטוח להתקנה",verdict_safe_sub:"לא נמצאו חששות אבטחה משמעותיים",result_status_safe_to_install:"בטוח להתקנה",share_pride_title:"שיתוף האימות של הגרסה הזו",share_pride_body:"{source_name} נסרק באמצעות Cyber Guardian Scan — ציון: {score}/100. התוצאה חלה על הגרסה שנסרקה.",share_pride_tweet:"סרקתי את {source_name} באמצעות Cyber Guardian Scan — ציון אבטחה: {score}/100. התוצאה חלה על הגרסה שנסרקה; לאחר שינוי נדרשת סריקה מחדש: {source_url} | דוח: {site_url}"},
+  de:{verdict_safe_title:"SICHER ZUR INSTALLATION",verdict_safe_sub:"KEINE WESENTLICHEN SICHERHEITSBEDENKEN GEFUNDEN",result_status_safe_to_install:"Sicher zur Installation",share_pride_title:"Verifizierung dieser Version teilen",share_pride_body:"{source_name} wurde von Cyber Guardian Scan geprueft — Score: {score}/100. Das Ergebnis gilt fuer die gescannte Version.",share_pride_tweet:"Ich habe {source_name} mit Cyber Guardian Scan geprueft — Score: {score}/100. Ergebnis gilt fuer die gescannte Version; nach Aenderungen neu scannen: {source_url} | Bericht: {site_url}"},
+  ja:{verdict_safe_title:"インストール可能",verdict_safe_sub:"重大なセキュリティ懸念は検出されませんでした",result_status_safe_to_install:"インストール可能",share_pride_title:"このバージョンの検証を共有",share_pride_body:"{source_name} を Cyber Guardian Scan でスキャンしました — スコア: {score}/100。この結果はスキャンしたバージョンにのみ適用されます。",share_pride_tweet:"{source_name} を Cyber Guardian Scan でスキャン — スコア: {score}/100。結果はスキャン版に限定され、変更後は再スキャンが必要です: {source_url} | レポート: {site_url}"},
+  ko:{verdict_safe_title:"설치 가능",verdict_safe_sub:"의미 있는 보안 우려가 발견되지 않음",result_status_safe_to_install:"설치 가능",share_pride_title:"이 버전의 검증 공유",share_pride_body:"{source_name}을 Cyber Guardian Scan으로 스캔했습니다 — 점수: {score}/100. 결과는 스캔된 버전에만 적용됩니다.",share_pride_tweet:"{source_name}을 Cyber Guardian Scan으로 스캔 — 점수: {score}/100. 결과는 스캔 버전에 한정되며 변경 후 재스캔이 필요합니다: {source_url} | 보고서: {site_url}"},
+  fr:{verdict_safe_title:"SUR POUR INSTALLATION",verdict_safe_sub:"AUCUN PROBLEME DE SECURITE SIGNIFICATIF DETECTE",result_status_safe_to_install:"Sur pour installation",share_pride_title:"Partager la verification de cette version",share_pride_body:"{source_name} a ete analyse par Cyber Guardian Scan — Score: {score}/100. Ce resultat s'applique a la version analysee.",share_pride_tweet:"J'ai analyse {source_name} avec Cyber Guardian Scan — Score: {score}/100. Le resultat s'applique a la version analysee; rescanner apres modification: {source_url} | Rapport: {site_url}"},
+  pt:{verdict_safe_title:"SEGURO PARA INSTALACAO",verdict_safe_sub:"NENHUMA PREOCUPACAO DE SEGURANCA RELEVANTE ENCONTRADA",result_status_safe_to_install:"Seguro para instalacao",share_pride_title:"Compartilhar a verificacao desta versao",share_pride_body:"{source_name} foi analisado pelo Cyber Guardian Scan — Pontuacao: {score}/100. O resultado vale para a versao analisada.",share_pride_tweet:"Analisei {source_name} com o Cyber Guardian Scan — Pontuacao: {score}/100. O resultado vale para a versao analisada; reescaneie apos mudancas: {source_url} | Relatorio: {site_url}"}
+};
+Object.entries(LEGAL_TRUST_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 

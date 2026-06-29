@@ -422,7 +422,7 @@ async function findSaferAlternative(request, env, args) {
         };
         return {
           content: [
-            { type: "text", text: `Verified safer alternative found\n================================\nSource: ${candidate.source_name || candidate.source_url}\nSecurity score: ${verification.security_score}/100\nDecision: safe to install\n\nThe current source was fetched and rescanned before this recommendation. Rescan again if the code changes.` },
+            { type: "text", text: `Verified safer alternative found\n================================\nSource: ${candidate.source_name || candidate.source_url}\nSecurity score: ${verification.security_score}/100\nDecision: Safe for Install\n\nThe current source was fetched and rescanned before this recommendation. Rescan again if the code changes.` },
             { type: "text", text: JSON.stringify(structured, null, 2) },
           ],
           structuredContent: structured,

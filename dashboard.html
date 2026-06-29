@@ -840,7 +840,7 @@ const DASH_EXTRA_COPY = {
 };
 
 const DASH_SHARE_COPY = {
-  en: { share_btn_share: "Share", share_btn_x: "Share on X", share_btn_linkedin: "Share on LinkedIn", share_btn_copy: "Copy link", share_copied: "Copied!", share_tweet: "I verified {source_name} with Cyber Guardian Scan — Security Score: {score}/100, zero threats detected. Install safely: {source_url} | Verified by: {site_url}" },
+  en: { share_btn_share: "Share", share_btn_x: "Share on X", share_btn_linkedin: "Share on LinkedIn", share_btn_copy: "Copy link", share_copied: "Copied!", share_tweet: "I scanned {source_name} with Cyber Guardian Scan — Security Score: {score}/100. Result applies to the scanned version; rescan after changes: {source_url} | Report: {site_url}" },
   he: { share_btn_share: "שתפו", share_btn_x: "שתפו ב-X", share_btn_linkedin: "שתפו ב-LinkedIn", share_btn_copy: "העתיקו קישור", share_copied: "הועתק!", share_tweet: "אימתתי את {source_name} עם Cyber Guardian Scan — ציון אבטחה: {score}/100, אפס איומים. התקינו בבטחה: {source_url} | אומת על ידי: {site_url}" },
   de: { share_btn_share: "Teilen", share_btn_x: "Auf X teilen", share_btn_linkedin: "Auf LinkedIn teilen", share_btn_copy: "Link kopieren", share_copied: "Kopiert!", share_tweet: "Ich habe {source_name} mit Cyber Guardian Scan verifiziert — Sicherheitsscore: {score}/100, null Bedrohungen. Sicher installieren: {source_url} | Verifiziert von: {site_url}" },
   ja: { share_btn_share: "シェア", share_btn_x: "Xでシェア", share_btn_linkedin: "LinkedInでシェア", share_btn_copy: "リンクをコピー", share_copied: "コピーしました!", share_tweet: "Cyber Guardian Scanで{source_name}を認証しました — セキュリティスコア: {score}/100、脅威ゼロ。安全にインストール: {source_url} | 認証: {site_url}" },
@@ -850,6 +850,18 @@ const DASH_SHARE_COPY = {
 };
 Object.entries(DASH_SHARE_COPY).forEach(([lang, labels]) => {
   DASH_T[lang] = { ...(DASH_T[lang] || {}), ...labels };
+});
+const DASH_LEGAL_SHARE_COPY = {
+  en:"I scanned {source_name} with Cyber Guardian Scan — Security Score: {score}/100. Result applies to the scanned version; rescan after changes: {source_url} | Report: {site_url}",
+  he:"סרקתי את {source_name} באמצעות Cyber Guardian Scan — ציון אבטחה: {score}/100. התוצאה חלה על הגרסה שנסרקה; לאחר שינוי נדרשת סריקה מחדש: {source_url} | דוח: {site_url}",
+  de:"Ich habe {source_name} mit Cyber Guardian Scan geprueft — Score: {score}/100. Ergebnis gilt fuer die gescannte Version; nach Aenderungen neu scannen: {source_url} | Bericht: {site_url}",
+  ja:"{source_name} を Cyber Guardian Scan でスキャン — スコア: {score}/100。結果はスキャン版に限定され、変更後は再スキャンが必要です: {source_url} | レポート: {site_url}",
+  ko:"{source_name}을 Cyber Guardian Scan으로 스캔 — 점수: {score}/100. 결과는 스캔 버전에 한정되며 변경 후 재스캔이 필요합니다: {source_url} | 보고서: {site_url}",
+  fr:"J'ai analyse {source_name} avec Cyber Guardian Scan — Score: {score}/100. Le resultat s'applique a la version analysee; rescanner apres modification: {source_url} | Rapport: {site_url}",
+  pt:"Analisei {source_name} com o Cyber Guardian Scan — Pontuacao: {score}/100. O resultado vale para a versao analisada; reescaneie apos mudancas: {source_url} | Relatorio: {site_url}"
+};
+Object.entries(DASH_LEGAL_SHARE_COPY).forEach(([lang, share_tweet]) => {
+  DASH_T[lang] = { ...(DASH_T[lang] || {}), share_tweet };
 });
 
 function dashNativeShare(btn) {

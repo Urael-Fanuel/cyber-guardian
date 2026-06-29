@@ -22,7 +22,7 @@ const LABELS = {
   en: {
     resultTitle: "Cyber-Guardian security result",
     decision: "Decision",
-    safe: "SAFE TO INSTALL",
+    safe: "SAFE FOR INSTALL",
     review: "FIX OR REVIEW BEFORE USE",
     block: "DO NOT INSTALL",
     score: "Threat score",
