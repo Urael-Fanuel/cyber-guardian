@@ -465,11 +465,15 @@ textarea::placeholder { color: var(--text-dim); font-size: 11.5px; }
 .trust { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
 .trust-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-top: 22px; }
 .trust-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 20px; }
+.detection-grid .trust-card { position: relative; overflow: hidden; border-radius: 8px; }
+.detection-grid .trust-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(var(--cyan),var(--purple)); }
+[dir="rtl"] .detection-grid .trust-card::before { inset: 0 0 0 auto; }
+.detection-grid .trust-card:last-child { grid-column: 1 / -1; }
 .trust-k { font-size: 10px; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; margin-bottom: 8px; }
 .trust-t { font-family: var(--sans); font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 8px; }
 .trust-d { font-size: 12px; color: var(--text-dim); line-height: 1.75; }
 .trust-note { margin-top: 14px; border: 1px solid rgba(255,189,46,0.28); background: rgba(255,189,46,0.06); color: var(--text); padding: 14px 16px; font-size: 12px; line-height: 1.7; }
-@media(max-width:700px){ .trust-grid { grid-template-columns: 1fr; } }
+@media(max-width:700px){ .trust-grid { grid-template-columns: 1fr; } .detection-grid .trust-card:last-child { grid-column: auto; } }
 
 .intent-section { position: relative; z-index: 2; max-width: 980px; margin: 0 auto 72px; padding: 0 20px; }
 .intent-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
@@ -1192,7 +1196,7 @@ footer a:hover { color: var(--cyan); }
   <div class="section-lbl" data-i18n="trust_label">Technical transparency</div>
   <h2 class="section-title" data-i18n="trust_title">How the engine works</h2>
   <p class="section-sub" data-i18n="trust_sub">Cyber Guardian Scan is a static, pre-installation security review. It combines deterministic rules with semantic analysis, then returns a practical install decision.</p>
-  <div class="trust-grid">
+  <div class="trust-grid detection-grid">
     <div class="trust-card">
       <div class="trust-k" data-i18n="trust_static_k">Layer 1</div>
       <div class="trust-t" data-i18n="trust_static_t">Static analysis</div>
@@ -1209,11 +1213,17 @@ footer a:hover { color: var(--cyan); }
       <div class="trust-d" data-i18n="trust_sandbox_d">When deeper review evidence is available, the report can include behavior signals and practical limits. Cyber Guardian Scan presents only verified evidence in the public report.</div>
     </div>
     <div class="trust-card">
-      <div class="trust-k" data-i18n="trust_fp_k">Accuracy</div>
-      <div class="trust-t" data-i18n="trust_fp_t">False positives are tracked, not hidden</div>
-      <div class="trust-d" data-i18n="trust_fp_d">The beta does not publish a measured false-positive rate yet. REVIEW means investigate before installing; DO NOT INSTALL is reserved for high-risk behavior or strong malicious indicators.</div>
+      <div class="trust-k" data-i18n="trust_intel_k">Layer 4</div>
+      <div class="trust-t" data-i18n="trust_intel_t">Threat intelligence</div>
+      <div class="trust-d" data-i18n="trust_intel_d">Findings are compared with defined threat families and recorded scan intelligence. Historical signals support review, but never replace checking the current source.</div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-k" data-i18n="trust_policy_k">Layer 5</div>
+      <div class="trust-t" data-i18n="trust_policy_t">Policy and risk rules</div>
+      <div class="trust-d" data-i18n="trust_policy_d">Evidence, severity, scan coverage and verification rules are combined into a clear decision: Safe for Install, Needs Review, Danger for Install or Rescan Required.</div>
     </div>
   </div>
+  <div class="trust-note" data-i18n="trust_accuracy_note">Accuracy is reported carefully: the beta does not publish a measured false-positive rate yet. Needs Review means investigate before installing; Danger for Install is reserved for serious risk or strong malicious indicators.</div>
   <div class="trust-note" data-i18n="trust_note">Use the result as a security decision aid, not as a replacement for internal review, vendor due diligence, or production approval controls.</div>
 </section>
 

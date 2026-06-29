@@ -5140,6 +5140,61 @@ Object.entries(MALICIOUS_UNSAFE_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const DETECTION_ENGINE_COPY = {
+  en: {
+    trust_intel_k: "Layer 4", trust_intel_t: "Threat intelligence",
+    trust_intel_d: "Findings are compared with defined threat families and recorded scan intelligence. Historical signals support review, but never replace checking the current source.",
+    trust_policy_k: "Layer 5", trust_policy_t: "Policy and risk rules",
+    trust_policy_d: "Evidence, severity, scan coverage and verification rules are combined into a clear decision: Safe for Install, Needs Review, Danger for Install or Rescan Required.",
+    trust_accuracy_note: "Accuracy is reported carefully: the beta does not publish a measured false-positive rate yet. Needs Review means investigate before installing; Danger for Install is reserved for serious risk or strong malicious indicators."
+  },
+  he: {
+    trust_intel_k: "שכבה 4", trust_intel_t: "מודיעין איומים",
+    trust_intel_d: "הממצאים מושווים למשפחות איומים מוגדרות ולמידע מסריקות מתועדות. סימנים היסטוריים תומכים בבדיקה, אך אינם מחליפים בדיקה של המקור הנוכחי.",
+    trust_policy_k: "שכבה 5", trust_policy_t: "כללי מדיניות וסיכון",
+    trust_policy_d: "הראיות, החומרה, כיסוי הסריקה וכללי האימות מתחברים להחלטה ברורה: בטוח להתקנה, נדרשת בדיקה, מסוכן להתקנה או נדרשת סריקה מחדש.",
+    trust_accuracy_note: "הדיוק מוצג בזהירות: הבטא עדיין אינה מפרסמת שיעור מדוד של התראות שווא. נדרשת בדיקה פירושו לבדוק לפני התקנה; מסוכן להתקנה שמור לסיכון חמור או לסימנים חזקים של כוונת זדון."
+  },
+  de: {
+    trust_intel_k: "Ebene 4", trust_intel_t: "Threat Intelligence",
+    trust_intel_d: "Funde werden mit definierten Bedrohungsfamilien und aufgezeichneten Scan-Signalen verglichen. Historische Signale ersetzen nie die Pruefung der aktuellen Quelle.",
+    trust_policy_k: "Ebene 5", trust_policy_t: "Policy- und Risikoregeln",
+    trust_policy_d: "Nachweise, Schweregrad, Scan-Abdeckung und Verifizierungsregeln ergeben eine klare Entscheidung: Safe for Install, Needs Review, Danger for Install oder Rescan Required.",
+    trust_accuracy_note: "Die Beta veroeffentlicht noch keine gemessene False-Positive-Rate. Needs Review verlangt Untersuchung; Danger for Install ist ernsten Risiken oder starken boesartigen Hinweisen vorbehalten."
+  },
+  ja: {
+    trust_intel_k: "レイヤー4", trust_intel_t: "脅威インテリジェンス",
+    trust_intel_d: "検出結果を定義済み脅威ファミリーと記録済みスキャン情報と比較します。過去のシグナルは現在のソース確認に代わるものではありません。",
+    trust_policy_k: "レイヤー5", trust_policy_t: "ポリシーとリスクルール",
+    trust_policy_d: "証拠、重大度、スキャン範囲、検証ルールを組み合わせ、Safe for Install、Needs Review、Danger for Install、Rescan Required の判断を返します。",
+    trust_accuracy_note: "ベータ版では測定済みの誤検知率をまだ公開していません。Danger for Install は重大なリスクまたは強い悪意の兆候に限定されます。"
+  },
+  ko: {
+    trust_intel_k: "레이어 4", trust_intel_t: "위협 인텔리전스",
+    trust_intel_d: "발견 사항을 정의된 위협군과 기록된 스캔 정보와 비교합니다. 과거 신호는 현재 소스 확인을 대체하지 않습니다.",
+    trust_policy_k: "레이어 5", trust_policy_t: "정책 및 위험 규칙",
+    trust_policy_d: "증거, 심각도, 스캔 범위, 검증 규칙을 결합해 Safe for Install, Needs Review, Danger for Install 또는 Rescan Required 결정을 내립니다.",
+    trust_accuracy_note: "베타는 아직 측정된 오탐률을 공개하지 않습니다. Danger for Install은 심각한 위험이나 강한 악성 징후에만 사용됩니다."
+  },
+  fr: {
+    trust_intel_k: "Couche 4", trust_intel_t: "Threat intelligence",
+    trust_intel_d: "Les constats sont compares aux familles de menaces et aux signaux de scans enregistres. L'historique ne remplace jamais la verification de la source actuelle.",
+    trust_policy_k: "Couche 5", trust_policy_t: "Regles de politique et de risque",
+    trust_policy_d: "Preuves, severite, couverture et regles de verification produisent une decision claire: Safe for Install, Needs Review, Danger for Install ou Rescan Required.",
+    trust_accuracy_note: "La beta ne publie pas encore de taux de faux positifs mesure. Danger for Install est reserve aux risques graves ou aux indicateurs malveillants forts."
+  },
+  pt: {
+    trust_intel_k: "Camada 4", trust_intel_t: "Inteligencia de ameacas",
+    trust_intel_d: "Os achados sao comparados com familias de ameacas e sinais de scans registrados. O historico nunca substitui a verificacao da fonte atual.",
+    trust_policy_k: "Camada 5", trust_policy_t: "Regras de politica e risco",
+    trust_policy_d: "Evidencias, severidade, cobertura e regras de verificacao formam uma decisao clara: Safe for Install, Needs Review, Danger for Install ou Rescan Required.",
+    trust_accuracy_note: "A beta ainda nao publica uma taxa medida de falsos positivos. Danger for Install e reservado para riscos graves ou fortes indicadores maliciosos."
+  }
+};
+Object.entries(DETECTION_ENGINE_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 window.TRANSLATIONS = TRANSLATIONS;
 window.LANGS = LANGS;
 window.loadContentOverrides = loadContentOverrides;
