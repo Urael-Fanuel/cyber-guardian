@@ -19,6 +19,7 @@
 <meta name="twitter:image" content="https://cyberguardianscan.com/assets/cyber-guardian-scan-logo.png">
 
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Noto+Sans+Hebrew:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" rel="stylesheet">
 <link rel="preload" href="/api/site-stats?mode=verified" as="fetch" crossorigin>
 
 <style>
@@ -852,11 +853,120 @@ footer a:hover { color: var(--cyan); }
   .verdict { flex-direction: column; }
   .v-score { border-left: none !important; border-right: none !important; border-top: 1px solid var(--border); }
 }
+
+/* ── PRODUCT NAVIGATION SIDEBAR ── */
+:root { --sidebar-rail: 72px; --sidebar-open: 340px; }
+body { padding-inline-start: var(--sidebar-rail); transition: padding-inline-start 0.24s ease; }
+body.sidebar-expanded { padding-inline-start: var(--sidebar-open); }
+body.sidebar-expanded nav .logo { display: none; }
+body.sidebar-expanded .sidebar-menu-btn { visibility: hidden; }
+body.sidebar-modal-open { overflow: hidden; }
+.sidebar-menu-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-width: 40px; min-height: 36px; padding: 7px 10px; border: 1px solid rgba(49,74,97,0.8);
+  border-radius: 8px; background: rgba(13,25,36,0.68); color: var(--text);
+  font: 700 11px/1 var(--mono); cursor: pointer; transition: all 0.18s;
+}
+.sidebar-menu-btn:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+.sidebar-menu-btn i { font-size: 18px; }
+.service-sidebar {
+  position: fixed; z-index: 40; inset-block: 0; inset-inline-start: 0;
+  width: var(--sidebar-rail); overflow: hidden; display: flex; flex-direction: column;
+  border-inline-end: 1px solid rgba(49,74,97,0.72);
+  background: rgba(5,10,16,0.97); backdrop-filter: blur(22px);
+  box-shadow: 14px 0 40px rgba(0,0,0,0.2);
+  transition: width 0.24s ease, transform 0.24s ease;
+}
+[dir="rtl"] .service-sidebar { box-shadow: -14px 0 40px rgba(0,0,0,0.2); }
+.service-sidebar.expanded { width: var(--sidebar-open); }
+.sidebar-head {
+  position: relative; min-height: 67px; display: flex; align-items: center; gap: 11px;
+  padding: 12px 15px; border-bottom: 1px solid rgba(49,74,97,0.58);
+}
+.sidebar-brand-mark {
+  position: relative; width: 40px; height: 40px; flex: 0 0 40px; overflow: hidden;
+  border: 1px solid rgba(255,189,46,0.48); border-radius: 9px; background: #090909;
+  box-shadow: 0 0 20px rgba(255,189,46,0.17);
+}
+.sidebar-brand-mark img { position: absolute; width: 76px; max-width: none; left: 50%; top: -5px; transform: translateX(-50%); }
+.sidebar-brand { min-width: 0; opacity: 0; white-space: nowrap; color: #fff; font: 800 15px/1.25 var(--sans); transition: opacity 0.16s; }
+.service-sidebar.expanded .sidebar-brand { opacity: 1; }
+.sidebar-close-mobile {
+  display: none; margin-inline-start: auto; width: 38px; height: 38px; border: 0;
+  border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text); cursor: pointer; font-size: 20px;
+}
+.sidebar-nav { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 14px 10px; scrollbar-width: thin; }
+.sidebar-group { padding: 0 0 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(49,74,97,0.5); }
+.sidebar-group:last-child { margin-bottom: 0; border-bottom: 0; }
+.sidebar-link,.sidebar-control {
+  width: 100%; min-height: 48px; display: flex; align-items: center; gap: 13px;
+  margin: 3px 0; padding: 10px 13px; border: 1px solid transparent; border-radius: 9px;
+  background: transparent; color: #A9BBC9; text-decoration: none; text-align: start;
+  font: 600 12px/1.35 var(--mono); cursor: pointer; transition: all 0.18s;
+}
+.sidebar-link i,.sidebar-control i { width: 24px; flex: 0 0 24px; color: #9EB4C5; font-size: 22px; text-align: center; }
+.sidebar-link span,.sidebar-control span { min-width: 0; opacity: 0; white-space: nowrap; transition: opacity 0.16s; }
+.service-sidebar.expanded .sidebar-link span,.service-sidebar.expanded .sidebar-control span { opacity: 1; }
+.sidebar-link:hover,.sidebar-control:hover,.sidebar-link.active {
+  color: #fff; border-color: rgba(0,212,255,0.2); background: rgba(0,212,255,0.08);
+}
+.sidebar-link:hover i,.sidebar-control:hover i,.sidebar-link.active i { color: var(--cyan); }
+.sidebar-link.primary {
+  color: #001018; background: linear-gradient(135deg,var(--cyan),var(--green));
+  border-color: transparent; box-shadow: 0 10px 24px rgba(0,212,255,0.13);
+}
+.sidebar-link.primary i { color: #001018; }
+.sidebar-link.primary:hover { color: #001018; background: #fff; }
+.sidebar-footer { padding: 10px; border-top: 1px solid rgba(49,74,97,0.58); }
+.sidebar-language-options {
+  display: none; grid-template-columns: repeat(4,1fr); gap: 6px; padding: 8px 3px 10px;
+}
+.service-sidebar.language-open .sidebar-language-options { display: grid; }
+.sidebar-lang-btn {
+  min-height: 34px; border: 1px solid rgba(49,74,97,0.7); border-radius: 7px;
+  background: rgba(17,26,36,0.78); color: var(--text-dim); font: 700 10px/1 var(--mono); cursor: pointer;
+}
+.sidebar-lang-btn:hover,.sidebar-lang-btn.active { color: var(--cyan); border-color: var(--cyan); background: var(--cyan-dim); }
+.sidebar-collapse i { transition: transform 0.2s; }
+[dir="rtl"] .sidebar-collapse i { transform: rotate(180deg); }
+.service-sidebar.expanded .sidebar-collapse i { transform: rotate(180deg); }
+[dir="rtl"] .service-sidebar.expanded .sidebar-collapse i { transform: rotate(0); }
+.sidebar-backdrop {
+  position: fixed; z-index: 35; inset: 0; display: none; border: 0;
+  background: rgba(1,5,9,0.72); backdrop-filter: blur(3px);
+}
+
+@media(max-width:1180px) {
+  body,body.sidebar-expanded { padding-inline-start: 0; }
+  .service-sidebar {
+    width: min(88vw,340px); transform: translateX(-105%);
+  }
+  [dir="rtl"] .service-sidebar { transform: translateX(105%); }
+  .service-sidebar.expanded,[dir="rtl"] .service-sidebar.expanded { width: min(88vw,340px); transform: translateX(0); }
+  .service-sidebar .sidebar-brand,.service-sidebar .sidebar-link span,.service-sidebar .sidebar-control span { opacity: 1; }
+  .sidebar-brand { max-width: 205px; white-space: normal; font-size: 13px; line-height: 1.15; }
+  .sidebar-close-mobile { display: inline-flex; align-items: center; justify-content: center; }
+  .sidebar-collapse { display: none; }
+  .sidebar-backdrop.show { display: block; }
+}
+@media(min-width:1181px) {
+  .sidebar-menu-label { display: none; }
+  .service-sidebar:not(.expanded) .sidebar-link,.service-sidebar:not(.expanded) .sidebar-control { padding-inline: 13px; }
+}
+@media(max-width:520px) {
+  .sidebar-menu-btn { min-width: 36px; min-height: 32px; padding: 6px 8px; }
+  .sidebar-menu-label { display: none; }
+  .sidebar-head { padding-inline: 10px; }
+  .sidebar-brand { max-width: 190px; }
+}
 </style>
 </head>
 <body>
 
 <nav>
+  <button class="sidebar-menu-btn" id="sidebar-menu-btn" type="button" aria-controls="service-sidebar" aria-expanded="false" data-i18n-aria-label="sidebar_open">
+    <i class="ph ph-list" aria-hidden="true"></i><span class="sidebar-menu-label" data-i18n="sidebar_menu">Explore</span>
+  </button>
   <div class="logo">
     <span class="logo-mark" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
     Cyber Guardian Scan
@@ -871,6 +981,70 @@ footer a:hover { color: var(--cyan); }
     <a class="nav-link nav-login" href="#account-panel" onclick="setAccountMode('signin')" data-i18n="nav_account_cta">Sign in / Free account</a>
   </div>
 </nav>
+
+<aside class="service-sidebar" id="service-sidebar" aria-hidden="false" data-i18n-aria-label="sidebar_label">
+  <div class="sidebar-head">
+    <span class="sidebar-brand-mark" aria-hidden="true"><img src="/assets/cyber-guardian-scan-logo.png" alt=""></span>
+    <span class="sidebar-brand">Cyber Guardian Scan</span>
+    <button class="sidebar-close-mobile" id="sidebar-close-mobile" type="button" data-i18n-aria-label="sidebar_close">
+      <i class="ph ph-x" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="sidebar-nav" id="sidebar-navigation">
+    <div class="sidebar-group">
+      <a class="sidebar-link primary active" href="#scanner" data-sidebar-target="scanner" data-i18n-title="sidebar_scan">
+        <i class="ph ph-plus-circle" aria-hidden="true"></i><span data-i18n="sidebar_scan">New Scan</span>
+      </a>
+      <a class="sidebar-link" href="/verified-tools.html" data-i18n-title="sidebar_search">
+        <i class="ph ph-magnifying-glass" aria-hidden="true"></i><span data-i18n="sidebar_search">Search Scanned Tools</span>
+      </a>
+      <a class="sidebar-link" href="/dashboard.html" data-i18n-title="sidebar_dashboard">
+        <i class="ph ph-squares-four" aria-hidden="true"></i><span data-i18n="sidebar_dashboard">Dashboard</span>
+      </a>
+      <a class="sidebar-link" href="/report.html" data-i18n-title="sidebar_reports">
+        <i class="ph ph-file-text" aria-hidden="true"></i><span data-i18n="sidebar_reports">Scan Reports</span>
+      </a>
+      <a class="sidebar-link" href="#safe-alternatives" data-sidebar-target="safe-alternatives" data-i18n-title="sidebar_alternatives">
+        <i class="ph ph-shield-check" aria-hidden="true"></i><span data-i18n="sidebar_alternatives">Safe Alternatives</span>
+      </a>
+      <a class="sidebar-link" href="#developer-certification" data-sidebar-target="developer-certification" data-i18n-title="sidebar_certification">
+        <i class="ph ph-medal" aria-hidden="true"></i><span data-i18n="sidebar_certification">Developer Certification</span>
+      </a>
+    </div>
+    <div class="sidebar-group">
+      <a class="sidebar-link" href="#enterprise" data-sidebar-target="enterprise" data-i18n-title="sidebar_teams">
+        <i class="ph ph-users-three" aria-hidden="true"></i><span data-i18n="sidebar_teams">Teams &amp; Enterprise</span>
+      </a>
+      <a class="sidebar-link" href="#pricing" data-sidebar-target="pricing" data-i18n-title="sidebar_pricing">
+        <i class="ph ph-tag" aria-hidden="true"></i><span data-i18n="sidebar_pricing">Pricing</span>
+      </a>
+      <a class="sidebar-link" href="/resources.html" data-i18n-title="sidebar_resources">
+        <i class="ph ph-book-open" aria-hidden="true"></i><span data-i18n="sidebar_resources">Resources</span>
+      </a>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <button class="sidebar-control" id="sidebar-language-toggle" type="button" aria-expanded="false" aria-controls="sidebar-language-options" data-i18n-title="sidebar_language">
+      <i class="ph ph-globe" aria-hidden="true"></i><span data-i18n="sidebar_language">Language</span>
+    </button>
+    <div class="sidebar-language-options" id="sidebar-language-options">
+      <button class="sidebar-lang-btn" type="button" data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="sidebar-lang-btn" type="button" data-lang="he" onclick="setLang('he')">HE</button>
+      <button class="sidebar-lang-btn" type="button" data-lang="de" onclick="setLang('de')">DE</button>
+      <button class="sidebar-lang-btn" type="button" data-lang="ja" onclick="setLang('ja')">JA</button>
+      <button class="sidebar-lang-btn" type="button" data-lang="ko" onclick="setLang('ko')">KO</button>
+      <button class="sidebar-lang-btn" type="button" data-lang="fr" onclick="setLang('fr')">FR</button>
+      <button class="sidebar-lang-btn" type="button" data-lang="pt" onclick="setLang('pt')">PT</button>
+    </div>
+    <a class="sidebar-link" href="#account-panel" data-sidebar-target="account-panel" onclick="setAccountMode('signin')" data-i18n-title="sidebar_account">
+      <i class="ph ph-user-circle" aria-hidden="true"></i><span data-i18n="sidebar_account">Sign in / Free account</span>
+    </a>
+    <button class="sidebar-control sidebar-collapse" id="sidebar-collapse" type="button" data-i18n-title="sidebar_collapse">
+      <i class="ph ph-caret-right" aria-hidden="true"></i><span data-i18n="sidebar_collapse">Collapse menu</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-backdrop" id="sidebar-backdrop" type="button" tabindex="-1" data-i18n-aria-label="sidebar_close"></button>
 
 <style>
   /* ── Verified Tools Rotator Banner ── */
@@ -1823,6 +1997,108 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible 
 <script src="/analytics.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+(function initServiceSidebar() {
+  const sidebar = document.getElementById('service-sidebar');
+  const menuButton = document.getElementById('sidebar-menu-btn');
+  const closeButton = document.getElementById('sidebar-close-mobile');
+  const collapseButton = document.getElementById('sidebar-collapse');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const languageToggle = document.getElementById('sidebar-language-toggle');
+  const languageOptions = document.getElementById('sidebar-language-options');
+  const desktopQuery = window.matchMedia('(min-width: 1181px)');
+  let lastFocused = null;
+
+  function isDesktop() { return desktopQuery.matches; }
+
+  function setExpanded(expanded, options = {}) {
+    const desktop = isDesktop();
+    sidebar.classList.toggle('expanded', expanded);
+    document.body.classList.toggle('sidebar-expanded', desktop && expanded);
+    document.body.classList.toggle('sidebar-modal-open', !desktop && expanded);
+    backdrop.classList.toggle('show', !desktop && expanded);
+    menuButton.setAttribute('aria-expanded', String(expanded));
+    sidebar.setAttribute('aria-hidden', String(!desktop && !expanded));
+
+    if (desktop) {
+      localStorage.setItem('cg-sidebar-expanded', expanded ? '1' : '0');
+    } else if (expanded && options.focus !== false) {
+      lastFocused = document.activeElement;
+      closeButton.focus();
+    } else if (!expanded && options.restoreFocus !== false && lastFocused) {
+      lastFocused.focus();
+      lastFocused = null;
+    }
+  }
+
+  function toggleSidebar() {
+    setExpanded(!sidebar.classList.contains('expanded'));
+  }
+
+  function syncBreakpoint() {
+    const savedState = localStorage.getItem('cg-sidebar-expanded');
+    const expanded = isDesktop() && savedState !== '0';
+    setExpanded(expanded, { focus: false, restoreFocus: false });
+  }
+
+  menuButton.addEventListener('click', toggleSidebar);
+  closeButton.addEventListener('click', () => setExpanded(false));
+  collapseButton.addEventListener('click', () => setExpanded(false));
+  backdrop.addEventListener('click', () => setExpanded(false));
+  desktopQuery.addEventListener('change', syncBreakpoint);
+
+  languageToggle.addEventListener('click', () => {
+    if (isDesktop() && !sidebar.classList.contains('expanded')) setExpanded(true);
+    const open = !sidebar.classList.contains('language-open');
+    sidebar.classList.toggle('language-open', open);
+    languageToggle.setAttribute('aria-expanded', String(open));
+    languageOptions.hidden = !open;
+  });
+
+  sidebar.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (!isDesktop()) setExpanded(false, { restoreFocus: false });
+    });
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && sidebar.classList.contains('expanded')) {
+      setExpanded(false);
+      return;
+    }
+    if (event.key !== 'Tab' || isDesktop() || !sidebar.classList.contains('expanded')) return;
+    const focusable = Array.from(sidebar.querySelectorAll('a[href],button:not([disabled])'))
+      .filter(element => element.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  const sectionLinks = Array.from(sidebar.querySelectorAll('[data-sidebar-target]'));
+  const observedSections = sectionLinks
+    .map(link => document.getElementById(link.dataset.sidebarTarget))
+    .filter(Boolean);
+  if ('IntersectionObserver' in window && observedSections.length) {
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      sectionLinks.forEach(link => link.classList.toggle('active', link.dataset.sidebarTarget === visible.target.id));
+    }, { rootMargin: '-20% 0px -65% 0px', threshold: [0.05, 0.25] });
+    observedSections.forEach(section => observer.observe(section));
+  }
+
+  languageOptions.hidden = true;
+  syncBreakpoint();
+})();
+
 (function buildLangSwitcher() {
   const container = document.getElementById('lang-switcher');
   const languageButtons = [

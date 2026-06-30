@@ -4019,6 +4019,139 @@ Object.entries(ACCOUNT_CONFIRMATION_COPY).forEach(([lang, copy]) => {
   TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
 });
 
+const SIDEBAR_COPY = {
+  en: {
+    sidebar_label: "Product navigation",
+    sidebar_menu: "Explore",
+    sidebar_open: "Open product navigation",
+    sidebar_close: "Close product navigation",
+    sidebar_scan: "New Scan",
+    sidebar_search: "Search Scanned Tools",
+    sidebar_dashboard: "Dashboard",
+    sidebar_reports: "Scan Reports",
+    sidebar_alternatives: "Safe Alternatives",
+    sidebar_certification: "Developer Certification",
+    sidebar_teams: "Teams & Enterprise",
+    sidebar_pricing: "Pricing",
+    sidebar_resources: "Resources",
+    sidebar_language: "Language",
+    sidebar_account: "Sign in / Free account",
+    sidebar_collapse: "Collapse menu"
+  },
+  he: {
+    sidebar_label: "ניווט במוצר",
+    sidebar_menu: "אפשרויות",
+    sidebar_open: "פתיחת ניווט המוצר",
+    sidebar_close: "סגירת ניווט המוצר",
+    sidebar_scan: "סריקה חדשה",
+    sidebar_search: "חיפוש כלים שנסרקו",
+    sidebar_dashboard: "לוח בקרה",
+    sidebar_reports: "דוחות סריקה",
+    sidebar_alternatives: "חלופות בטוחות יותר",
+    sidebar_certification: "הסמכת מפתחים",
+    sidebar_teams: "צוותים וארגונים",
+    sidebar_pricing: "מחירים",
+    sidebar_resources: "משאבים",
+    sidebar_language: "שפה",
+    sidebar_account: "כניסה / חשבון חינמי",
+    sidebar_collapse: "צמצום התפריט"
+  },
+  de: {
+    sidebar_label: "Produktnavigation",
+    sidebar_menu: "Entdecken",
+    sidebar_open: "Produktnavigation öffnen",
+    sidebar_close: "Produktnavigation schließen",
+    sidebar_scan: "Neuer Scan",
+    sidebar_search: "Gescannte Tools suchen",
+    sidebar_dashboard: "Dashboard",
+    sidebar_reports: "Scan-Berichte",
+    sidebar_alternatives: "Sicherere Alternativen",
+    sidebar_certification: "Entwickler-Zertifizierung",
+    sidebar_teams: "Teams & Unternehmen",
+    sidebar_pricing: "Preise",
+    sidebar_resources: "Ressourcen",
+    sidebar_language: "Sprache",
+    sidebar_account: "Anmelden / Kostenloses Konto",
+    sidebar_collapse: "Menü einklappen"
+  },
+  ja: {
+    sidebar_label: "製品ナビゲーション",
+    sidebar_menu: "メニュー",
+    sidebar_open: "製品ナビゲーションを開く",
+    sidebar_close: "製品ナビゲーションを閉じる",
+    sidebar_scan: "新しいスキャン",
+    sidebar_search: "スキャン済みツールを検索",
+    sidebar_dashboard: "ダッシュボード",
+    sidebar_reports: "スキャンレポート",
+    sidebar_alternatives: "より安全な代替案",
+    sidebar_certification: "開発者認証",
+    sidebar_teams: "チーム・企業",
+    sidebar_pricing: "料金",
+    sidebar_resources: "リソース",
+    sidebar_language: "言語",
+    sidebar_account: "ログイン / 無料アカウント",
+    sidebar_collapse: "メニューを折りたたむ"
+  },
+  ko: {
+    sidebar_label: "제품 탐색",
+    sidebar_menu: "메뉴",
+    sidebar_open: "제품 탐색 열기",
+    sidebar_close: "제품 탐색 닫기",
+    sidebar_scan: "새 스캔",
+    sidebar_search: "스캔된 도구 검색",
+    sidebar_dashboard: "대시보드",
+    sidebar_reports: "스캔 보고서",
+    sidebar_alternatives: "더 안전한 대안",
+    sidebar_certification: "개발자 인증",
+    sidebar_teams: "팀 및 엔터프라이즈",
+    sidebar_pricing: "요금",
+    sidebar_resources: "리소스",
+    sidebar_language: "언어",
+    sidebar_account: "로그인 / 무료 계정",
+    sidebar_collapse: "메뉴 접기"
+  },
+  fr: {
+    sidebar_label: "Navigation du produit",
+    sidebar_menu: "Explorer",
+    sidebar_open: "Ouvrir la navigation du produit",
+    sidebar_close: "Fermer la navigation du produit",
+    sidebar_scan: "Nouveau scan",
+    sidebar_search: "Rechercher les outils scannés",
+    sidebar_dashboard: "Tableau de bord",
+    sidebar_reports: "Rapports de scan",
+    sidebar_alternatives: "Alternatives plus sûres",
+    sidebar_certification: "Certification développeur",
+    sidebar_teams: "Équipes & Entreprises",
+    sidebar_pricing: "Tarifs",
+    sidebar_resources: "Ressources",
+    sidebar_language: "Langue",
+    sidebar_account: "Connexion / Compte gratuit",
+    sidebar_collapse: "Réduire le menu"
+  },
+  pt: {
+    sidebar_label: "Navegação do produto",
+    sidebar_menu: "Explorar",
+    sidebar_open: "Abrir navegação do produto",
+    sidebar_close: "Fechar navegação do produto",
+    sidebar_scan: "Nova verificação",
+    sidebar_search: "Buscar ferramentas verificadas",
+    sidebar_dashboard: "Painel",
+    sidebar_reports: "Relatórios de verificação",
+    sidebar_alternatives: "Alternativas mais seguras",
+    sidebar_certification: "Certificação de desenvolvedor",
+    sidebar_teams: "Equipes e Empresas",
+    sidebar_pricing: "Preços",
+    sidebar_resources: "Recursos",
+    sidebar_language: "Idioma",
+    sidebar_account: "Entrar / Conta gratuita",
+    sidebar_collapse: "Recolher menu"
+  }
+};
+
+Object.entries(SIDEBAR_COPY).forEach(([lang, copy]) => {
+  TRANSLATIONS[lang] = { ...(TRANSLATIONS[lang] || {}), ...copy };
+});
+
 const LANGS = {
   en: { name: "English",    flag: "🇺🇸", dir: "ltr" },
   de: { name: "Deutsch",    flag: "🇩🇪", dir: "ltr" },
@@ -4076,8 +4209,16 @@ async function setLang(code) {
     const key = el.getAttribute('data-i18n-placeholder');
     el.placeholder = translateContent('site', code, key);
   });
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+    const key = el.getAttribute('data-i18n-aria-label');
+    el.setAttribute('aria-label', translateContent('site', code, key));
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    el.title = translateContent('site', code, key);
+  });
 
-  document.querySelectorAll('.lang-btn').forEach(b => {
+  document.querySelectorAll('.lang-btn,.sidebar-lang-btn').forEach(b => {
     b.classList.toggle('active', b.getAttribute('data-lang') === code);
   });
   if (window.refreshAccountUi) window.refreshAccountUi();
